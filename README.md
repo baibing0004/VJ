@@ -1,0 +1,10 @@
+# VJ
+网站VESH架构思想的View层JS实现
+对应view/viewmodel/control/entity/server 分别对应实现的JS框架
+总体思想是使用viewmodel层定义最纯粹的控件对象，
+由middler为IOC中枢控制产生对应viewmodel层需要的view层真实控件对象实例（该层可以自由切换不同风格和容器的框架)
+与ni层真实服务访问对象实例（该层屏蔽一切ajax,jsonp,objectdb（LocalStorage,SessionStorage）,webdb,websocket等等区别给业务代码提供最统一的访问DB与缓存接口）
+与业务实体积累SessionDataManager(会话信息管理屏蔽Cookie还是SessionStorage会话）
+清晰分层实现业务代码与后台DB与前端具体控件的分离，将样式与适配，业务逻辑，后台数据访问与缓存三层的清晰分离，
+保证业务逻辑代码的最大程度复用与快速开发，技术响应，负载扩展等等插件式功能。
+该框架本身使用middler.getObjectByAppName/getTypeByAppName方法实现CMD方法

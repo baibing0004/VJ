@@ -309,6 +309,7 @@
 				V.inherit.apply(v,[M.Control,[]]);
 				_.vm.models = V.merge(_.vm.models,{key:v});
 				obj.bind(v);
+				return v;
 			};
 			//可以将数据更新
 			_.render = function(data){

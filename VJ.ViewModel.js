@@ -281,7 +281,7 @@
 					V.for(_.page.getModels(),function(key,v){
 						if(v.type && !v.v){
 							var obj = _.middler.getObjectByAppName(W.APP,v.type);
-							if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+nodeName);
+							if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
 							var node = V.newEl('div');
 							_.node.append(node);
 							obj.init(_,node,null);
@@ -289,13 +289,26 @@
 							_.views[key] = obj;
 							V.inherit.apply(v,[M.Control,[]]);
 							obj.bind(v);
-							console.log(node.html());
 						}
 					},function(){
 						_.onReady();
 						_.call('Ready');
 					});
 				});
+			};
+			//动态添加控件到指定位置 如果不指定那么会添加到最后
+			_.addControl = function(node,v){
+				var obj = _.middler.getObjectByAppName(W.APP,v.type);
+				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
+				node = node?node:V.newEl('div');
+				_.node.append(node);
+				obj.init(_,node,null);
+				_.controls.push(obj);
+				var key = V.random();
+				_.views[key] = obj;
+				V.inherit.apply(v,[M.Control,[]]);
+				_.vm.models = V.merge(_.vm.models,{key:v});
+				obj.bind(v);
 			};
 			//可以将数据更新
 			_.render = function(data){

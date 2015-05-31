@@ -59,23 +59,25 @@
 			WTemplates[path].addCallback(func);			
 		};
 		//html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 控件均支持先创建 再init 然后绑定的过程
-		W.Control = function(path){
+		W.Control = function(path,params){
 			var _ = this,__ = {};
 			{		
 				_.path = path;
 				_.vm = null;
 				_.events = {};
+				_.params = V.getValue(params,{});
 			}
 			_.init = function(page,node,params){				
 				_.page = page;		
 				_.node = node;
-				_.params = V.getValue(params,{});
+				_.params = V.merge(_.params,V.getValue(params,{}));
 			};
 			_.call = function(name,param){
 				//所有的事件调用全部采用异步调用方式 V.once
 				if(param){
 					_.vm.data = V.merge(_.vm.data,param);
 				}
+				_.vm.data = V.merge(_.vm.data,_.fill());
 				if(_.events['on'+name]){
 					V.once(function(){
 						eval('(function(){_.render(_.events.on'+name+'.apply(_.vm,[_.vm.data,_.page.models]))})()');
@@ -84,8 +86,7 @@
 			};
 			//初始化viewmodel操作
 			_.bind = function(vm){
-				if(vm){
-					_.vm = vm;
+				if(vm){					
 					//完成配置合并
 					_.vm.data = V.merge(_.params,_.vm.data);
 					//完成方法注入
@@ -101,34 +102,41 @@
 				}
 				if(_.path){
 					W.getTemplate(_.path,function(node){
+						_.replaceNode(node);
 						_.onLoad(node);
 					});
 				} else {
 					_.node.show();
+					_.onLoad(_.node);
 				}
 			};
 			//在更新_.vm.data
 			_.fill = function(){
-				//更新			
+				return {};	
 			};
 			//可以将数据更新
 			_.render = function(data){
+				var isfullupdate = false;
 				if(data){
 					_.vm.data = V.merge(_.vm.data,data);
 				} else {
 					data = _.vm.data;
+					isfullupdate = true;
 					//专门用于初始化操作
 				}
 				V.for(data,function(key,value){
 					switch(key){
 						case 'attr':
 							V.for(value,function(key2,value2){_.node.attr(key2,value2);},function(){});
+							if(!isfullupdate) {delete data[key];}
 							break;
 						case 'enable':
 							if(value){_.node.removeAttr('disabled');}else{_node.attr('disabled','disabled');}
+							if(!isfullupdate) {delete data[key];}
 							break;
 						case 'visible':
 							if(value){_.node.show();} else {_.node.hide();}
+							if(!isfullupdate) {delete data[key];}
 							break;
 					}
 				});
@@ -136,7 +144,6 @@
 			};
 			//处理控件下载完成后的操作
 			_.onLoad = function(node){
-				_.replaceNode(node);
 				_.call('Ready');
 				_.render();
 			};
@@ -318,6 +325,7 @@
 					switch(key){
 						case 'title':
 							document.title = value;
+							if(data != _.vm.data) {delete data[key];}
 							break;						
 					}
 				});
@@ -480,6 +488,262 @@
 				};
 			}
 		};
-		//todo 加解密
+		//todo 加解密DataResource
+	}
+	{
+		W.TextBox = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.Control,[path || '<span><span style="display:none;"></span><input type="text"></input></span>']]);
+				__.render = _.render;
+				__.onLoad = _.onLoad;
+			}
+			_.onLoad = function(node){
+				__.onLoad(node);
+				_.txt = node.find('span:first');
+				_.input = node.find('input:first');
+				V.for(_.events,function(k,v){
+					switch(k.toLowerCase()){
+						case 'hover':
+							_.node.hover(function(){
+								_.call('Hover',{hover:true});
+							},function(){
+								_.call('Hover',{hover:false});
+							});
+							break;
+						case 'keypress':
+							_.input.keypress(function(e){
+								_.call('KeyPress',{keyCode:e.keyCode});
+							});
+							break;
+					}
+				},null,true);
+			};
+			_.fill = function(){
+				return {text:_.input.val()};
+			};
+			_.render = function(data){
+				data = __.render(data);
+				V.for(data,function(key,value){
+					switch(key){
+						case 'text':
+							_.input.val(value);
+							break;
+						case 'name':
+							_.input.attr('name',value);
+							break;
+						case 'key':
+							_.txt.text(value).show();
+							break;
+						case 'size':
+							_.input.attr('size',value);
+							break;
+					}
+				});
+			};			
+		};
+		W.RadioBox = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.TextBox,[path || '<span><span style="display:none;"></span><input type="radio"></input></span>']]);
+				__.render = _.render;
+			}
+			_.fill = function(){
+				return {checked:_.input.attr('checked')};
+			};
+			_.render = function(data){
+				data = __.render(data);
+				V.for(data,function(key,value){
+					switch(key){
+						case 'checked':
+							V.setChecked(_.input,value);
+							break;
+					}
+				});
+			};
+		};
+		W.CheckBox = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.RadioBox,[path || '<span><span style="display:none;"></span><input type="checked"></input></span>']]);
+			}
+		};
+		W.Select = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.Control,[path || '<span><span style="display:none;"></span><select></select></span>']]);
+				__.render = _.render;
+				__.onLoad = _.onLoad;
+			}
+			_.onLoad = function(node){
+				__.onLoad(node);
+				_.txt = node.find('span:first');
+				_.sel = node.find('select:first');
+				V.for(_.events,function(k,v){
+					switch(k.toLowerCase()){
+						case 'change':
+							_.node.change(function()(
+								_.call('Change',{});
+							));
+							break;
+					}
+				},null,true);
+			};
+			_.fill = function(){
+				return {val:_.sel.val()};
+			};
+			_.render = function(data){
+				data = __.render(data);
+				V.for(data,function(key,value){
+					switch(key){
+						case 'options':
+							_.sel.empty();
+							if(V.getType(value) == 'string'){
+								value = eval('('+value+')');
+							}
+							V.for(value,function(k,v){
+								_.sel.append('<option value="'+v+'">'+k+'</option>');
+							})
+							break;
+						case 'name':
+							_.sel.attr('name',value);
+							break;
+						case 'key':
+							_.txt.text(value).show();
+							break;
+					}
+				});
+			};
+		};
+		W.Hidden = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.Control,[path || '<input type="hidden"></input>']]);
+				__.render = _.render;
+			}
+			_.fill = function(){
+				return {val:_.node.val()};
+			};
+			_.render = function(data){
+				data = __.render(data);
+				V.for(data,function(key,value){
+					switch(key){
+						case 'value':
+							_.node.val(value);
+							break;
+						case 'name':
+							_.node.attr('name',value);
+							break;
+					}
+				});
+			};
+		};		
+		W.PasswordBox = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.TextBox,[path || '<span><span style="display:none;"></span><input type="password"></input></span>']]);
+				__.render = _.render;
+			}
+			_.render = function(data){
+				data = __.render(data);
+				V.for(data,function(key,value){
+					switch(key){
+						case 'alt':
+						case 'passchar':
+							_.input.attr('alt',value);							
+							break;
+					}
+				});
+			};
+		};		
+		W.Button = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.TextBox,[path || '<span><span style="display:none;"></span><input type="button"></input></span>']]);
+				__.render = _.render;
+				__.onLoad = _.onLoad;
+			}
+			_.fill = function(){return {};};
+			_.onLoad = function(node){
+				__.onLoad(node);
+				V.for(_.events,function(k,v){
+					switch(k.toLowerCase()){
+						case 'click':
+							_.input.click(function(e){
+								_.call('Click',{altKey:e.altKey,ctrlKey:e.ctrlKey});
+							});
+							break;
+					}
+				},null,true);
+			};
+			_.render = function(data){
+				data = __.render(data);
+				V.for(data,function(key,value){
+					switch(key){
+						case 'name':
+							_.input.attr('name',value);
+							break;
+						case 'key':
+							_.txt.text(value).show();
+							break;
+						case 'text':
+							_.input.html(value);
+							break;
+					}
+				});
+			};
+		};
+		W.Submit = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.Button,[path || '<span><span style="display:none;"></span><input type="submit"></input></span>']]);
+			}
+		};
+		W.Reset = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.Button,[path || '<span><span style="display:none;"></span><input type="reset"></input></span>']]);
+			}
+		};
+		W.Form = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.Control,[path || '<form method="get" action=""></form>',{enctype:'multipart/form-data'}]]);
+				__.render = _.render;
+				__.onLoad = _.onLoad;
+			}
+			_.onLoad = function(node){
+				__.onLoad(node);
+			};
+			_.fill = function(){
+				return {value:_.node.val()};
+			};
+			_.render = function(data){
+				data = __.render(data);
+				V.for(data,function(key,value){
+					switch(key){
+						case 'method':
+							_.node.attr('method',value);
+							break;
+						case 'action':
+							_.node.attr('action',value);
+							break;
+						case 'target':
+							_.node.attr('target',value);
+							break;
+						case 'name':
+							_.node.attr('name',value);
+							break;
+						case 'enctype':
+							_.node.attr('enctype',value);
+							break;							
+						case 'enctype':
+							_.node.attr('enctype',value);
+							break;
+					}
+				});
+			};
+		};
+		//todo file
 	}
 })(VJ,jQuery)

@@ -866,4 +866,4 @@
 			}
 		};
 	}
-})(VJ,jQuery)
+})(VJ,jQuery);

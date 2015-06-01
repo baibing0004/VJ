@@ -4,7 +4,30 @@ window.top.config = {
 			package:'VJ.view',
 			method:'constructor',
 			mode:'instance',
-			page:{type:'.Page'}
+			page:{type:'.Page'},
+			textbox:{type:'.TextBox'},
+			radiobox:{type:'.RadioBox'},
+			checkbox:{type:'.CheckBox'},
+			select:{type:'.Select'},
+			hidden:{type:'.Hidden'},
+			passwordbox:{type:'.PasswordBox'},
+			button:{type:'.Button'},
+			submit:{type:'.Submit'},
+			reset:{type:'.Reset'},
+			form:{type:'.Form'}
+		},
+		'VESH.viewmodel':{
+			package:'VJ.viewmodel',
+			method:'constructor',
+			mode:'instance',
+			SessionDataManager:{type:'.SessionDataManager',mode:'static',params:[
+				{ref:'SessionDataAdapter'}
+			]},
+			SessionDataAdapter:{type:'.SessionDataAdapter',method:'constructorbean',mode:'static',constructorparalength:1,params:[
+				{ref:'CookieDataResource'},
+				{params:'Resource','abc':{ref:'CookieDataResource'}}
+			]},
+			CookieDataResource:{type:'.CookieDataResource',mode:'static',params:[]}			
 		},
 		Ni:{
 			package:'VJ.ni',

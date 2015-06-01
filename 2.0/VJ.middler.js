@@ -383,4 +383,4 @@
 	M.getMiddlerFromObj = function(obj){
 		return new M.Middler(V.config.getApplicationConfigManagerFromObj(obj));
 	};
-})(VJ,jQuery)
+})(VJ,jQuery);

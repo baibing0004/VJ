@@ -4,12 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>VJ test</title>
     <script src="2.0/jquery-1.8.0.min.js" type="text/javascript"></script>
-	<script src="2.0/VJ.base.js" type="text/javascript"></script>
-	<script src="2.0/VJ.config.js" type="text/javascript"></script>
-	<script src="2.0/VJ.collection.js" type="text/javascript"></script>
-	<script src="2.0/VJ.middler.js" type="text/javascript"></script>
-	<script src="2.0/VJ.Ni.js" type="text/javascript"></script>
-	<script src="2.0/VJ.ViewModel.js" type="text/javascript"></script>
+	<script src="2.0/VJ.js" type="text/javascript"></script>
 	<script src="config.js" type="text/javascript"></script>
 	<script src="ni.js" type="text/javascript"></script>
 	<script type="text/javascript">
@@ -372,6 +367,8 @@
 					alert(222);
 				};
 			};
+
+			
 			(function(V,M,$,cm){
 				new function(){
 					var _ = this,__ = {};
@@ -381,10 +378,21 @@
 							txt:{
 								type:'textbox',
 								data:{text:'hello world'},
+								onReady:function(){
+									
+								},
+								onKeyPress:function(data,cons){
+								},
 								onChange:function(data){
-									console.log(this);// W.Control 对 事件的处理
-									console.log('输入的值是空的');
-									return {};
+									console.log(data);// W.Control 对 事件的处理
+									return {key:'222'};
+								}
+							},
+							radio:{
+								data:{checked:true},
+								onChange:function(data){
+									console.log(data);
+									return {checked:!data.checked};
 								}
 							},
 							page:{
@@ -401,20 +409,6 @@
 								}
 							}
 						}]]);
-						//console.log(_.config);
-						//console.log(_.middler);
-						//console.log(_.ni);
-						//console.log(_.permission);
-						//console.log(_.session);
-						//console.log(_.middler.getObjectByAppName('VESH','SessionDataAdapter'));
-						//_.session.get
-						//_.session.set
-						/*
-						console.log(_.session.data('abc'));
-						_.session.data('abc').bcd = '33';
-						_.session.data('abc').ecf = '44';
-						_.session.update('abc');
-						*/	
 					}
 				}
 			})(VJ,VJ.viewmodel,jQuery,VJ.merge(window.top.config,{
@@ -435,7 +429,7 @@
 						
 					},
 					'VESH.view':{
-						textbox:{type:'textbox',params:[]},
+						textbox2:{type:'textbox',params:[]},
 						page2:{type:'page2',params:[]}
 					}
 				}
@@ -459,19 +453,21 @@
 			VJ.inherit.apply(s,[a,[]]);
 			console.log(s);
 			s.abc();*/
-			window.onbeforeunload  = function(){alert(222);};
-		})		
+			window.onbeforeunload  = function(){console.log('退出事件');};
+		})
 	</script>
 </head>
-<body> 
-    <p><input type="file" id="file1" name="file" /></p>
-	<p><textbox id="txt2" _>233f3dkkkefe</textbox></p>
-    <input type="button" value="上传" />
-	<script>
-		window.onUnload = function(){
-			alert('onUnload');
-		}
-		console.log(window);
-	</script>
+<body>
+	<form id='frmMain' Action="" _>
+		<p><textbox id="txt" _="key:'输入框:'"></textbox></p>
+		<p><radiobox id="radio" _="key:'单选框:'"></radiobox></p>
+		<p><checkbox id="chk" _="key:'确认框:'"></checkbox></p>
+		<p><select id="sel" _="key:'下拉框:'"></select></p>
+		<p><hidden id="hid" _="key:'隐藏框:'"></hidden></p>
+		<p><passwordbox id="pass" _="key:'密码框:'"></passwordbox></p>
+		<p><button id="but" _="key:'按钮'"></button>
+		<submit id="sub" _="key:'提交钮'"></submit>
+		<reset id="ret" _="key:'重置钮'"></reset></p>
+	</form>
 </body>
 </html>

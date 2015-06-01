@@ -78,27 +78,30 @@
 					_.vm.data = V.merge(_.vm.data,param);
 				}
 				_.vm.data = V.merge(_.vm.data,_.fill());
-				if(_.events['on'+name]){
+				name = name.toLowerCase();
+				if(_.events[name]){
 					V.once(function(){
-						eval('(function(){_.render(_.events.on'+name+'.apply(_.vm,[_.vm.data,_.page.models]))})()');
+						eval('(function(){_.render(_.events.'+name+'.apply(_.vm,[_.vm.data,_.page.models]))})()');
 					});
 				}
 			};
 			//初始化viewmodel操作
 			_.bind = function(vm){
-				if(vm){					
+				if(vm){			
+					_.vm = vm;
 					//完成配置合并
-					_.vm.data = V.merge(_.params,_.vm.data);
+					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
 					V.for(_.vm,function(key,value){
+						key = key.toLowerCase();
 						if(key.indexOf('on')==0){
 							//事件注册
-							_.events[key] = value;
+							_.events[key.substring(2)] = value;
 						}
 					},function(){_.vm.bind(_);},true);						
 				} else{
-					_.vm = {};
+					_.vm = {data:V.merge(_.params,{})};
 				}
 				if(_.path){
 					W.getTemplate(_.path,function(node){
@@ -116,27 +119,22 @@
 			};
 			//可以将数据更新
 			_.render = function(data){
-				var isfullupdate = false;
 				if(data){
 					_.vm.data = V.merge(_.vm.data,data);
 				} else {
-					data = _.vm.data;
-					isfullupdate = true;
+					data = V.merge({},_.vm.data);
 					//专门用于初始化操作
 				}
 				V.for(data,function(key,value){
 					switch(key){
 						case 'attr':
 							V.for(value,function(key2,value2){_.node.attr(key2,value2);},function(){});
-							if(!isfullupdate) {delete data[key];}
 							break;
 						case 'enable':
 							if(value){_.node.removeAttr('disabled');}else{_node.attr('disabled','disabled');}
-							if(!isfullupdate) {delete data[key];}
 							break;
 						case 'visible':
 							if(value){_.node.show();} else {_.node.hide();}
-							if(!isfullupdate) {delete data[key];}
 							break;
 					}
 				});
@@ -154,14 +152,15 @@
 					var i = attrs.length;
 					V.while(function(){i--;return i>=0?{key:attrs[i].name,val:attrs[i].value}:null},function(v){node.attr(v.key,v.val);},function(){},true);
 				}
-				node.append(_.node.html());				
+				node.append(_.node.children());				
 				if(_.node[0].nodeName.toLowerCase() == 'body'){					
 					_.node.empty().append(node);
 				}else{
 					_.node.after(node).remove();
 				}
 				_.node = node;
-			}
+			};
+			_.dispose = function(){};
 		};
 	}
 	{
@@ -235,33 +234,39 @@
 				if(vm){
 					_.vm = vm;
 					//完成配置合并
-					_.vm.data = V.merge(_.params,_.vm.data);
+					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
 					V.for(vm,function(key,value){
+						key = key.toLowerCase();
 						if(key.indexOf('on')==0){
 							//事件注册
-							_.events[key] = value;
+							_.events[key.substring(2)] = value;
 						}
 					},function(){page.bind(_);},true);								
 				} else{
-					_.vm = {};
-				}				
+					_.vm = {data:V.merge(_.params,{})};
+				}
+				
 				if(_.path){
 					W.getTemplate(_.path,function(node){
+						_.replaceNode(node);
 						_.onLoad(node);
 					});
 				} else {
 					_.node.show();
+					_.onLoad(_.node);
 				}
 				_.middler = page.middler
 				_.ni = page.ni;
 				_.session = page.session;
 				_.config = page.config;
 			}
+			_.dispose = function(){_.call('dispose');};
 			//用于重载触发方式
 			_.ready = function(func){
 				$(function(){func();_.bindControl();});
+				window.onbeforeunload = _.dispose;
 			};
 			//用于覆盖引起页面布局改变
 			_.onReady = function(){
@@ -499,11 +504,10 @@
 				__.onLoad = _.onLoad;
 			}
 			_.onLoad = function(node){
-				__.onLoad(node);
 				_.txt = node.find('span:first');
 				_.input = node.find('input:first');
 				V.for(_.events,function(k,v){
-					switch(k.toLowerCase()){
+					switch(k){
 						case 'hover':
 							_.node.hover(function(){
 								_.call('Hover',{hover:true});
@@ -513,14 +517,20 @@
 							break;
 						case 'keypress':
 							_.input.keypress(function(e){
-								_.call('KeyPress',{keyCode:e.keyCode});
+								_.call('KeyPress',{keyCode:e.keyCode || e.keyChar});
+							});
+							break;
+						case 'change':
+							_.input.keydown(function(e){
+								_.call('change',{keyCode:e.keyCode || e.keyChar});
 							});
 							break;
 					}
 				},null,true);
+				__.onLoad(node);
 			};
 			_.fill = function(){
-				return {text:_.input.val()};
+				return {oldtext:_.input.val(),text:_.input.val()+(_.vm.data.keyCode?String.fromCharCode(_.vm.data.keyCode):'')};
 			};
 			_.render = function(data){
 				data = __.render(data);
@@ -530,16 +540,19 @@
 							_.input.val(value);
 							break;
 						case 'name':
-							_.input.attr('name',value);
+							_.input.attr('name',value);	
 							break;
 						case 'key':
 							_.txt.text(value).show();
+							delete data[key];
 							break;
 						case 'size':
 							_.input.attr('size',value);
+							delete data[key];
 							break;
 					}
 				});
+				return data;
 			};			
 		};
 		W.RadioBox = function(path){
@@ -547,7 +560,22 @@
 			{
 				V.inherit.apply(_,[W.TextBox,[path || '<span><span style="display:none;"></span><input type="radio"></input></span>']]);
 				__.render = _.render;
+				__.onLoad = _.onLoad;
 			}
+			_.onLoad = function(node){
+				__.onLoad(node);
+				V.for(_.events,function(k,v){
+					switch(k){
+						case 'change':
+							_.input.change(function(e){
+								console.log('change');
+								console.log(e);
+								_.call('change',{});
+							});
+							break;
+					}
+				},null,true);
+			};
 			_.fill = function(){
 				return {checked:_.input.attr('checked')};
 			};
@@ -560,12 +588,13 @@
 							break;
 					}
 				});
+				return data;
 			};
 		};
 		W.CheckBox = function(path){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.RadioBox,[path || '<span><span style="display:none;"></span><input type="checked"></input></span>']]);
+				V.inherit.apply(_,[W.RadioBox,[path || '<span><span style="display:none;"></span><input type="checkbox"></input></span>']]);
 			}
 		};
 		W.Select = function(path){
@@ -576,18 +605,18 @@
 				__.onLoad = _.onLoad;
 			}
 			_.onLoad = function(node){
-				__.onLoad(node);
 				_.txt = node.find('span:first');
 				_.sel = node.find('select:first');
 				V.for(_.events,function(k,v){
 					switch(k.toLowerCase()){
 						case 'change':
-							_.node.change(function()(
+							_.node.change(function(){
 								_.call('Change',{});
-							));
+							});
 							break;
 					}
 				},null,true);
+				__.onLoad(node);
 			};
 			_.fill = function(){
 				return {val:_.sel.val()};
@@ -613,6 +642,7 @@
 							break;
 					}
 				});
+				return data;
 			};
 		};
 		W.Hidden = function(path){
@@ -636,6 +666,7 @@
 							break;
 					}
 				});
+				return data;
 			};
 		};		
 		W.PasswordBox = function(path){
@@ -645,7 +676,7 @@
 				__.render = _.render;
 			}
 			_.render = function(data){
-				data = __.render(data);
+				data = __.render(data);				
 				V.for(data,function(key,value){
 					switch(key){
 						case 'alt':
@@ -654,6 +685,7 @@
 							break;
 					}
 				});
+				return data;
 			};
 		};		
 		W.Button = function(path){
@@ -665,7 +697,6 @@
 			}
 			_.fill = function(){return {};};
 			_.onLoad = function(node){
-				__.onLoad(node);
 				V.for(_.events,function(k,v){
 					switch(k.toLowerCase()){
 						case 'click':
@@ -675,6 +706,7 @@
 							break;
 					}
 				},null,true);
+				__.onLoad(node);
 			};
 			_.render = function(data){
 				data = __.render(data);
@@ -691,6 +723,7 @@
 							break;
 					}
 				});
+				return data;
 			};
 		};
 		W.Submit = function(path){
@@ -742,8 +775,9 @@
 							break;
 					}
 				});
+				return data;
 			};
 		};
 		//todo file
 	}
-})(VJ,jQuery)
+})(VJ,jQuery);

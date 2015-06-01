@@ -1,0 +1,477 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>VJ test</title>
+    <script src="2.0/jquery-1.8.0.min.js" type="text/javascript"></script>
+	<script src="2.0/VJ.base.js" type="text/javascript"></script>
+	<script src="2.0/VJ.config.js" type="text/javascript"></script>
+	<script src="2.0/VJ.collection.js" type="text/javascript"></script>
+	<script src="2.0/VJ.middler.js" type="text/javascript"></script>
+	<script src="2.0/VJ.Ni.js" type="text/javascript"></script>
+	<script src="2.0/VJ.ViewModel.js" type="text/javascript"></script>
+	<script src="config.js" type="text/javascript"></script>
+	<script src="ni.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		/*
+		VJ.ajax({url:'http://www.sohu.com',data:{a:1},bindData:function(){alert(222);}});
+		//VJ.each([1,2,3,4,5],function(i,v){//console.log(i+":"+v);
+		//console.log(VJ.format('<%=i%>==<%=v%>',{i:i,v:v}));});
+		console.log(VJ.config.getBaseConfigManager());
+		console.log(VJ.config.getBaseConfigManager().getConfigValue('AppSettings','a'));
+		var a = VJ.config.getApplicationConfigManagerFromObj({AppSettings:{a:1,b:2,c:3}});
+		console.log(a.getConfigValue('AppSettings','a'));
+		console.log(VJ.config.getBaseConfigManager().getConfigValue("AppSettings",'a'));
+		var b = new function(){
+			var _= this;
+			{_['abc']=function(a,b,c){console.log(a+b+c+_.bcd);};_.bcd = 22;}
+		};
+		console.log(b["bcd"]);
+		b['abc']();
+		b.package = 33;
+		console.log(b['package']);
+		console.log("1.a.b".indexOf('\.'));
+		b.abc.apply(b.abc,[1,2,3]);
+		b.abc.call([1,2,3]);
+		console.log(typeof(11223)=='number');
+		var data = [{},1,""];
+		for(var i in data){
+			if(typeof(data[i])==='object'){
+				console.log('obj');
+			}else{console.log(data[i]);}
+		}
+		console.log(VJ.random());
+		console.log(VJ.random());
+		console.log(b);
+		b = VJ.merge(b,{test:222});
+		console.log(b);
+		var a = {};
+		a.a=1;
+		a.b=2;
+		for(var i in a){
+			console.log(a[i]);
+		}*/
+	</script>
+	<script type="text/javascript">
+		/*
+		var hello = function(a,b){			
+			var _ = this;
+			var num = VJ.random();
+			{
+				console.log('hello create '+num);
+				console.log(arguments);
+				console.log(a);
+				console.log(b);
+			}
+			_.firstLove = function(){console.log('firstLove');return true;};
+			_.test = function(){console.log(num);return num;}
+		};
+		hello.prototype.Instance = function(){return new hello();};
+		var test = function(a,b){
+			var _ = this;
+			var __ = {};
+			{
+				console.log('test create '+VJ.random());
+				console.log(arguments);
+				console.log(a);
+				console.log(b);
+			}
+			_.abc = function(){
+				console.log('test.abc');
+			};
+		};
+		//console.log(VJ.create(hello,[1,2]));
+		
+		//var val = VJ.create2('hello',[111,2222]);eval('(new hello(args[0],args[1]))')
+		//console.log(eval(concreate('hello',paras)));
+		//console.log(eval('(VJ.create(hello,args))'));
+		//console.log(hello.prototype.constructor(1,2));//.constructor.apply({},[1,2])
+		//console.log(new function(){var _ = this;hello.apply(_,[{a:3},{b:4}]);});
+		//var v = new function(){var _ = this;VJ.inherit.apply(_,[hello,[{a:3},{b:4}]]);};
+		//console.log(v.Instance());
+		/*测试目的，应可以支持本地对象生成，远程对象生成，支持mode为static instance pool 支持 method 为constructor，bean，factory，constructorbean，factorybean 5种方式 并支持 package */
+		//本地+static+constructor+bean+pool+factory+factorybean+constructorparalength+size+package+path
+		/*var middler = VJ.middler.getMiddlerFromObj({
+			Middler:{
+				KD:{
+					package:'hello',
+					path1:'http://localhost/dl/hello.js',
+					method:'constructor',
+					mode:'static',
+					helloword2:{type:'.prototype.Instance',mode:'static',size:1,method:'factorybean',constructorparalength:1,
+						params:[
+							{a:1},
+							{b:1}
+						]
+					},
+					helloword:{type:'hello',mode:'pool',params:[
+						{a:1},
+						{ref:'Ni/test'}
+					]},
+					h3:{type:'hl',params:[1,2]}
+				},
+				Ni:{
+					test:{type:'test',params:[4,{this:true}]},
+					test2:{mode:'instance',params:[
+						{type:'hello',params:[1,1]},
+						{type:'hello',params:[2,{ref:'Ni/test'}]},
+					]}
+				}
+			}
+		});
+		//console.log(middler);
+		//本地+static+constructor+bean+pool+factory+factorybean+constructorparalength+size+package+path
+		var val = middler.getObjectByAppName('Ni','test2');
+		middler.getObjectByAppName('KD','h3');
+		var val1 = middler.getObjectByAppName('KD','helloword');
+		console.log(val);
+		/*middler.setObjectByAppName('KD','helloword2',val);
+		var val1 = middler.getObjectByAppName('KD','helloword2');
+		console.log(val1);
+		
+		val.firstLove();
+		val.test();
+		val1.test();
+		console.log(middler.getTypeByAppName('KD','helloword'));
+		middler.setObjectByAppName('KD','helloword',val1);
+		var val2 = middler.getObjectByAppName('KD','helloword');
+		val2.test();		
+		middler.setObjectByAppName('KD','helloword',val);
+		setTimeout(function(){
+			val1 = middler.getObjectByAppName('KD','helloword');
+			val1.test();
+		},20000);*/
+		/*
+		console.log(val);	
+		var __ = {};
+		__.data = {a:1};
+		for(var i in __.data){delete __.data[i];}
+		console.log([].shift());
+		console.log(typeof([]));
+		//throw new Error('不支持WebSocket!');
+		var a = function(){
+			var _ = this,__= {};
+				{
+					__.c = function(){alert(33);};
+					console.log('a create')
+				}
+			_.cc = function(){alert('44');};
+			a.prototype.b = function(){alert('11');};
+			a.prototype.dd  = function(){alert(55);};
+		};
+		var b = function(){
+			VJ.inherit.apply(this,[a,[]]);
+			this.b = function(){alert(22);}
+		};
+		var c = function(){			
+			VJ.inherit.apply(this,[b,[]]);
+		};
+		console.log(new c());
+		new c().base.dd();
+		
+		var test3 = function(){
+			var _ = this,__= {};
+			{
+				_.a= 1;
+				_.b = 2;
+				_.show = function(){console.log(_);};
+			}
+			
+		};
+		var bb = (function(){return eval('(new test3())');})();
+		bb.config = function(){console.log(444);};
+		bb.show();
+		console.log(bb);	
+		console.log(VJ.merge({},{a:'111',b:[{a:1,b:2},{a:2,b:3}]}));
+		console.log('insert into ?,?'.split('?'));
+		console.log([1,2].slice(1,1));*/
+	</script>
+	<script type="text/javascript">
+		//totest ajax jsonp/getScript localStorage sessionStorage js ObjectDB websocket
+		//template能够返回数据，能正常关闭，能顺序调用和提交
+		//可以定义和调用多个template
+		//可以通过Ni文件中规定的template名字调用真实的template
+		
+		//localStorage sessionStorage js ObjectDB websocket
+		//可以通过定义Decator的template附件缓存
+		if(false){
+		var niconfig = {
+			Ni:{
+				ajaxtest2:{command:'http://localhost/VESHTest/Module/help/test.tjsonp?_n=recorder',dbtype:'tjson',params:{limit:11},template:'template1'},
+				ajaxtest1:{command:'http://localhost/KDAPI/Module/GetOrderTrackItems.tjsonp?_n=Order',dbtype:'tjson',params:{},template:'template1'},
+				'ajaxtest1.Ca,che':{command1:function(res,params){return res[params.cacheKey];},dbtype:'json',params:{},template:'template2'},
+				'ajaxtest1.Set':{command1:function(res,params){res[params.cacheKey] = params.cacheValue;},dbtype:'json',params:{timeout1:{interval:'s',number:50}},template:'template2'},
+				sqlinsert:{command:'create table if not exists table1(name Text,message text,time integer);insert into table1 values(?,?,?);',dbtype:'json',params:{data:[]},template:'sqltemp'},
+				sqlselect:{command:'select * from table1;',dbtype:'json',params:{data:[]},template:'sqltemp'},
+				sqlselect2:{command:'select * from table1 where name=?',dbtype:'json',params:{data:[]},template:'sqltemp'}
+			}
+		};
+		var conf = VJ.config.getApplicationConfigManagerFromObj({
+			Middler:{
+				VESH:{
+					AREADROP:{type:'',params:['']}
+				},
+				Ni:{
+					package:'VJ.ni',
+					constructorparalength:false,size:50,app:'33',
+					method:'constructor',
+					mode:'static',
+					test1:{type:'test',params:[4,{self:true}]},
+					test:{type:'test',method:'bean',params:[{params:'Item','a':1,b:2,c:3,d:{type:'test',method:'constructor',params:[4,{self1:true}]}}]},
+					ajaxresource:{type:'.NiAjaxDataFactory'},
+					objresource:{type:'.NiObjectDataFactory'},
+					sqlitefactory:{type:'.NiSqliteDataFactory'},
+					cm:{type:'VJ.config.getApplicationConfigManagerFromObj',params:[niconfig],method:'factory'},
+					template3:{type:'.NiTemplate',mode:'instance',params:[
+						{type:'.NiPoolDataResource',params:[{ref:'ajaxresource'},{dbtype:'tjson',jsonp:'_bk'}]},
+						{ref:'cm'}
+					]},
+					template2:{type:'.NiTemplateDecorator',mode:'instance',params:[
+						{type:'.NiStaticDataResource',params:[{ref:'ajaxresource'},{dbtype:'tjson',jsonp:'_bk'}]},
+						{type:'.NiStaticDataResource',params:[{ref:'objresource'},{resource:window.sessionStorage}]},
+						{ref:'cm'},
+						{timeout:{interval:'s',number:50}}
+					]},	
+					template1:{type:'.NiTemplate',mode:'instance',params:[
+						{type:'.NiPoolDataResource',params:[{ref:'ajaxresource'},{dbtype:'tjson',jsonp:'_bk'}]},
+						{ref:'cm'}
+					]},				
+					template:{type:'.NiMultiTemplateDecorator',mode:'instance',params:[
+						{type:'.NiStaticDataResource',params:[{ref:'ajaxresource'},{dbtype:'tjson',jsonp:'_bk'}]},
+						{ref:'cm'},
+						{self:true},
+						'Ni'
+					]},
+					sqltemp:{type:'.NiTemplateDecorator',mode:'instance',params:[
+						{type:'.NiStaticDataResource',params:[{ref:'sqlitefactory'},{name:'baibings',version:'1.0',desc:'baibings',size:2*1024*1024}]},
+						{type:'.NiStaticDataResource',params:[{ref:'objresource'},{resource:window.sessionStorage}]},
+						{ref:'cm'},
+						{timeout:{interval:'s',number:50}}
+					]}
+				}
+			}
+		});
+		var test = function(a,b){
+			var _ = this;
+			var __ = {};
+			{
+				console.log('test create '+VJ.random());
+				console.log(arguments);
+				console.log(a);
+				console.log(b);
+			}
+			_.abc = function(){
+				console.log('test.abc');
+			};
+			_.setItem = function(key,val){console.log(key+':'+val);};
+		};
+		
+		var mid = new VJ.middler.Middler(conf);
+		mid.getObjectByAppName('Ni','test');
+		/*var ni = new VJ.ni.NiTemplateManager(conf,'Ni');
+		
+		ni.transaction = true;
+		var res = ni.excute('template','ajaxtest1',{SONumber:10000923117184},function(res){	
+			res.each('ajaxtest1',function(data){
+				VJ.each(data,function(v){
+					console.log(v);
+				});
+			});
+		});*/
+		var temp = mid.getObjectByAppName('Ni','template');
+		temp.transaction = true;
+		/*
+		temp.excute('ajaxtest1',{SONumber:10000923117184},function(res){		
+			res.each('ajaxtest1',function(data){
+				VJ.each(data,function(v){
+					console.log(v);
+				});
+			});
+		});		
+		temp.excute('ajaxtest1',{SONumber:10001103386854},function(res){		
+			res.each('ajaxtest1',function(data){
+				VJ.each(data,function(v){
+					console.log(v);
+				});
+			});
+		});
+		setTimeout(function(){
+			temp.excute('ajaxtest1',{SONumber:10001103386854},function(res){
+				console.log(22);
+				res.each('ajaxtest1',function(data){
+					VJ.each(data,function(v){
+						console.log(v);
+					});
+				});
+			});
+		},3000);
+		console.log(temp.commit().last());*/
+		//ajax+static+instance+pool
+		//连续提交 
+		//console.log(VJ.merge({a:1},{b:2}));
+		/*
+		console.log(mid.getObjectByAppName('Ni','template'));
+		console.log(mid.getObjectByAppName('Ni','ajaxresource'));console.log(mid.getObjectByAppName('Ni','cm').getConfigValue('Ni','ajaxtest1'));
+		*/
+		//如何设置timeout decorator调用的缓存和命令是否还需要？不需要了 params里面的timeout 分为 interval,number 是否需要Cookie 不实现Cookie
+		/*window.localStorage.setItem('1','1');
+		if(window.localStorage.setItem)
+			console.log(window.localStorage.setItem);*/
+		if(false){
+			var conn = openDatabase('mydb','1.0','mydbdesc',2*1024*1024);
+			conn.transaction(function(tx){
+				tx.executeSql('create table if not exists table1(name Text,message text,time integer);insert into table1 values(?,?,?);',[1,1,1],function(){console.log('success');},function(){console.log('error');});
+			});
+		}
+		if(false){
+			temp.excute('sqlinsert',{data:['1','1',1]},function(res){		
+				console.log(res.last());
+			});
+			temp.excute('sqlinsert',{data:['2','2',2]},function(res){		
+				console.log(res.last());
+			});
+			temp.excute('sqlselect',{},function(res){
+				//console.log(res.last());
+				res.each('sqlselect',function(data){
+					VJ.each(data,function(v){console.log(v);});
+				});
+			});
+			temp.commit();
+		}
+		}
+	</script>
+	<script type="text/javascript">
+		if(true){
+			//测试SessionDataManager
+			//需要考虑真实环境下的config ni 页面当前对象的特有配置的合一 一般地页面加载时需要添加 JQuery VJ VJ.view config.js ni.js 5个不同的文件 或者压缩后合并的文件
+			//包括其特有的控件文件 将由配置文件middler调用
+			var textbox = function(){
+				var _ = this,__ = {};
+				{
+					VJ.inherit.apply(_,[VJ.view.Control,['<input type="text" style="display:none;"></input>']]);
+					__.render = _.render;
+				}
+				_.render = function(data){
+					data = __.render(data);
+					VJ.for(data,function(key,value){
+						switch(key){
+							case 'text':
+								_.node.val(value);
+								break;
+						}
+					});					
+					_.node.show();
+				};
+			};
+			var page2 = function(){
+				var _ = this,__ = {};
+				{
+					VJ.inherit.apply(_,[VJ.view.Page,['<div class="css">确认确认这里是配置中心</div>']]);
+				}
+				_.onReady = function(){
+					alert(222);
+				};
+			};
+			(function(V,M,$,cm){
+				new function(){
+					var _ = this,__ = {};
+					{
+						V.isDebug = true;
+						V.inherit.apply(_,[M.Page,[cm,{
+							txt:{
+								type:'textbox',
+								data:{text:'hello world'},
+								onChange:function(data){
+									console.log(this);// W.Control 对 事件的处理
+									console.log('输入的值是空的');
+									return {};
+								}
+							},
+							page:{
+								data:{
+									title:'测试页面aa'
+								},
+								onReady:function(data,controls){
+									VJ.once(function(){
+										controls.txt.update({enable:true,visiable:true,text:'22233'});
+									},2000);
+								},
+								onDispose:function(){
+									
+								}
+							}
+						}]]);
+						//console.log(_.config);
+						//console.log(_.middler);
+						//console.log(_.ni);
+						//console.log(_.permission);
+						//console.log(_.session);
+						//console.log(_.middler.getObjectByAppName('VESH','SessionDataAdapter'));
+						//_.session.get
+						//_.session.set
+						/*
+						console.log(_.session.data('abc'));
+						_.session.data('abc').bcd = '33';
+						_.session.data('abc').ecf = '44';
+						_.session.update('abc');
+						*/	
+					}
+				}
+			})(VJ,VJ.viewmodel,jQuery,VJ.merge(window.top.config,{
+				Middler:{
+					'VESH.viewmodel':{
+						package:'VJ.viewmodel',
+						method:'constructor',
+						mode:'instance',
+						SessionDataManager:{type:'.SessionDataManager',mode:'static',params:[
+							{ref:'SessionDataAdapter'}
+						]},
+						SessionDataAdapter:{type:'.SessionDataAdapter',method:'constructorbean',mode:'static',constructorparalength:1,params:[
+							{ref:'CookieDataResource'},
+							{params:'Resource','abc':{ref:'CookieDataResource'},'bcd':1},
+							{a:1}
+						]},
+						CookieDataResource:{type:'.CookieDataResource',mode:'static',params:[]},
+						
+					},
+					'VESH.view':{
+						textbox:{type:'textbox',params:[]},
+						page2:{type:'page2',params:[]}
+					}
+				}
+			}));
+		}
+		$(function(){
+		/*
+			var attrs = $('input')[0].attributes;
+			var i = attrs.length;
+			VJ.while(function(){i--;return i>=0?{key:attrs[i],val:attrs[i].value}:null},function(v){console.log(v);},function(){},true);
+			
+			var a = function(){
+				var _ = this;
+				_.abc = function(){
+					console.log(_.b);
+				}
+			};
+			var s = {
+				b:22
+			};
+			VJ.inherit.apply(s,[a,[]]);
+			console.log(s);
+			s.abc();*/
+			window.onbeforeunload  = function(){alert(222);};
+		})		
+	</script>
+</head>
+<body> 
+    <p><input type="file" id="file1" name="file" /></p>
+	<p><textbox id="txt2" _>233f3dkkkefe</textbox></p>
+    <input type="button" value="上传" />
+	<script>
+		window.onUnload = function(){
+			alert('onUnload');
+		}
+		console.log(window);
+	</script>
+</body>
+</html>

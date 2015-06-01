@@ -81,7 +81,10 @@
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){
-						eval('(function(){_.render(_.events.'+name+'.apply(_.vm,[_.vm.data,_.page.models]))})()');
+						var val = _.events[name].apply(_.vm,[_.vm.data,_.page.models]);
+						if(val && val != {}){
+							_.render(val);
+						}
 					});
 				}
 			};
@@ -517,12 +520,12 @@
 							break;
 						case 'keypress':
 							_.input.keypress(function(e){
-								_.call('KeyPress',{keyCode:e.keyCode || e.keyChar});
+								_.call('KeyPress',{keyCode:e.keyCode || e.keyChar,Char:String.fromCharCode(e.keyCode)});
 							});
 							break;
 						case 'change':
-							_.input.keydown(function(e){
-								_.call('change',{keyCode:e.keyCode || e.keyChar});
+							_.input.change(function(e){
+								_.call('change',{keyCode:e.keyCode || e.keyChar,Char:String.fromCharCode(e.keyCode)});
 							});
 							break;
 					}
@@ -530,7 +533,7 @@
 				__.onLoad(node);
 			};
 			_.fill = function(){
-				return {oldtext:_.input.val(),text:_.input.val()+(_.vm.data.keyCode?String.fromCharCode(_.vm.data.keyCode):'')};
+				return {text:_.input.val()};
 			};
 			_.render = function(data){
 				data = __.render(data);
@@ -538,9 +541,11 @@
 					switch(key){
 						case 'text':
 							_.input.val(value);
+							delete data[key];
 							break;
 						case 'name':
-							_.input.attr('name',value);	
+							_.input.attr('name',value);
+							delete data[key];
 							break;
 						case 'key':
 							_.txt.text(value).show();
@@ -562,20 +567,6 @@
 				__.render = _.render;
 				__.onLoad = _.onLoad;
 			}
-			_.onLoad = function(node){
-				__.onLoad(node);
-				V.for(_.events,function(k,v){
-					switch(k){
-						case 'change':
-							_.input.change(function(e){
-								console.log('change');
-								console.log(e);
-								_.call('change',{});
-							});
-							break;
-					}
-				},null,true);
-			};
 			_.fill = function(){
 				return {checked:_.input.attr('checked')};
 			};
@@ -585,6 +576,7 @@
 					switch(key){
 						case 'checked':
 							V.setChecked(_.input,value);
+							delete data[key];
 							break;
 					}
 				});
@@ -608,9 +600,9 @@
 				_.txt = node.find('span:first');
 				_.sel = node.find('select:first');
 				V.for(_.events,function(k,v){
-					switch(k.toLowerCase()){
+					switch(k){
 						case 'change':
-							_.node.change(function(){
+							_.sel.change(function(){
 								_.call('Change',{});
 							});
 							break;

@@ -381,18 +381,23 @@
 								onReady:function(){
 									
 								},
+								onHover:function(data){
+									console.log(data);
+								},
 								onKeyPress:function(data,cons){
 								},
 								onChange:function(data){
 									console.log(data);// W.Control 对 事件的处理
 									return {key:'222'};
+									//return {key:'222'};
 								}
 							},
-							radio:{
-								data:{checked:true},
+							chk:{
+								data:{checked:true},onHover:function(data){
+									console.log(data);
+								},
 								onChange:function(data){
 									console.log(data);
-									return {checked:!data.checked};
 								}
 							},
 							page:{

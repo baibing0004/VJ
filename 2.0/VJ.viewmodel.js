@@ -81,7 +81,7 @@
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){
-						var val = _.events[name].apply(_.vm,[_.vm.data,_.page.models]);
+						var val = _.events[name].apply(_.vm,[_.vm.data,_.page.page.models]);
 						if(val && val != {}){
 							_.render(val);
 						}
@@ -689,16 +689,16 @@
 			}
 			_.fill = function(){return {};};
 			_.onLoad = function(node){
+				__.onLoad(node);
 				V.for(_.events,function(k,v){
-					switch(k.toLowerCase()){
+					switch(k){
 						case 'click':
 							_.input.click(function(e){
-								_.call('Click',{altKey:e.altKey,ctrlKey:e.ctrlKey});
+								_.call('click',{});
 							});
 							break;
 					}
 				},null,true);
-				__.onLoad(node);
 			};
 			_.render = function(data){
 				data = __.render(data);

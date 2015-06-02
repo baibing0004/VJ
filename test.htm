@@ -392,6 +392,9 @@
 									//return {key:'222'};
 								}
 							},
+							but:{
+								onClick:function(data,cons){console.log(cons);cons.txt.update({text:'点击收到!'});}
+							},
 							chk:{
 								data:{checked:true},onHover:function(data){
 									console.log(data);

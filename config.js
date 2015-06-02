@@ -27,7 +27,7 @@ window.top.config = {
 				{ref:'CookieDataResource'},
 				{params:'Resource','abc':{ref:'CookieDataResource'}}
 			]},
-			CookieDataResource:{type:'.CookieDataResource',mode:'static',params:[]}			
+			CookieDataResource:{type:'.CookieDataResource',path:'2.0/jquery.cookie.js',mode:'static',params:[]}			
 		},
 		Ni:{
 			package:'VJ.ni',
@@ -39,7 +39,8 @@ window.top.config = {
 			ajaxresource:{type:'.NiAjaxDataFactory'},
 			objresource:{type:'.NiObjectDataFactory'},
 			sqlitefactory:{type:'.NiSqliteDataFactory'},
-			cm:{type:'VJ.config.getApplicationConfigManagerFromObj',params:[window.top.ni],method:'factory'},
+			cm:{type:'VJ.config.getApplicationConfigManagerFromJS',params:['ni','ni.js'],method:'factory'},
+			cm1:{type:'VJ.config.getApplicationConfigManagerFromObj',params:[window.top.ni],method:'factory'},
 			template3:{type:'.NiTemplate',mode:'instance',params:[
 				{type:'.NiPoolDataResource',params:[{ref:'ajaxresource'},{dbtype:'tjson',jsonp:'_bk'}]},
 				{ref:'cm'}

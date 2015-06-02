@@ -74,7 +74,7 @@
 					if(_cms.length>0){
 						V.tryC(function(){
 							var conn = res.getDBConnection();
-							if(_cmd.length>1){conn.transaction = true;}
+							if(_cms.length>1){conn.transaction = true;}
 							var cmd = res.getDBCommand();
 							cmd.connection = conn;
 							V.while2(function(){return _cms.shift();},function(v,next){

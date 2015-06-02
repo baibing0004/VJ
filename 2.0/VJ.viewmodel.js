@@ -81,7 +81,10 @@
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){
-						eval('(function(){_.render(_.events.'+name+'.apply(_.vm,[_.vm.data,_.page.models]))})()');
+						var val = _.events[name].apply(_.page.page.models,[_.vm.data,_.vm]);
+						if(val && val != {}){
+							_.render(val);
+						}
 					});
 				}
 			};
@@ -91,6 +94,8 @@
 					_.vm = vm;
 					//完成配置合并
 					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
+					//完成类型名注入
+					_.vm.nodeName = _.nodeName;
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
 					V.for(_.vm,function(key,value){
@@ -145,6 +150,15 @@
 				_.call('Ready');
 				_.render();
 			};
+			//用于扩展给主要对象绑定事件使用 一般用于bind事件的默认值
+			_.bindEvent = function(node,k,v){
+				node = $(node);
+				if(typeof(node[k]) == 'function'){
+					node[k](function(e){
+						_.call(k,{e:e});
+					});
+				}
+			};
 			_.replaceNode = function(node){
 				node = $(node);
 				var attrs = _.node[0].attributes;
@@ -191,7 +205,7 @@
 					_.config = V.config.getApplicationConfigManagerFromObj();
 				}
 				_.middler = new V.middler.Middler(_.config);
-				_.ni = new V.ni.NiTemplateManager(_.middler,M.NIAPP);
+				_.ni = new V.ni.NiTemplateManager(_.config,M.NIAPP);
 				_.session = _.middler.getObjectByAppName(M.APP,'SessionDataManager');
 				_.hasRight = function(name,isAdmin){
 					//TO修改
@@ -206,6 +220,7 @@
 					return false;
 				};
 				_.getModels = function(id){return id?(_.models[id]?_.models[id]:null):_.models;};
+				_.setModels = function(id,v){_.models[id] = v;};
 				__.bind = _.bind;
 				_.bind = function(view){__.bind(view);_.page.v = view;}
 				{
@@ -244,10 +259,9 @@
 							_.events[key.substring(2)] = value;
 						}
 					},function(){page.bind(_);},true);								
-				} else{
+				} else {
 					_.vm = {data:V.merge(_.params,{})};
-				}
-				
+				}				
 				if(_.path){
 					W.getTemplate(_.path,function(node){
 						_.replaceNode(node);
@@ -262,7 +276,7 @@
 				_.session = page.session;
 				_.config = page.config;
 			}
-			_.dispose = function(){_.call('dispose');};
+			_.dispose = function(){_.call('dispose');_.session.updateAll();};
 			//用于重载触发方式
 			_.ready = function(func){
 				$(function(){func();_.bindControl();});
@@ -270,6 +284,22 @@
 			};
 			//用于覆盖引起页面布局改变
 			_.onReady = function(){
+			};			
+			_.call = function(name,param){
+				//所有的事件调用全部采用异步调用方式 V.once
+				if(param){
+					_.vm.data = V.merge(_.vm.data,param);
+				}
+				_.vm.data = V.merge(_.vm.data,_.fill());
+				name = name.toLowerCase();
+				if(_.events[name]){
+					V.once(function(){
+						var val = _.events[name].apply(_.page.getModels(),[_.vm.data,_.vm]);
+						if(val && val != {}){
+							_.render(val);
+						}
+					});
+				}
 			};
 			//用于绑定对应的控件
 			_.bindControl = function(){
@@ -283,11 +313,17 @@
 					obj.init(_,v,V.isValid(v.attr('_'))?eval('({'+v.attr('_')+'})'):null);
 					_.controls.push(obj);
 					var id = v.attr('id');
-					if(id && _.page.getModels(id)){
-						_.views[v.attr['id']] = obj;
-						V.inherit.apply(_.page.getModels(id),[M.Control,[]]);
-						obj.bind(_.page.getModels(id));
-					}else{obj.bind();}				
+					if(!id) {
+						id = nodeName+V.random();
+					}
+					obj.nodeName = nodeName;
+					if(!_.page.getModels(id)){
+						_.page.setModels(id,{data:{}});
+						_.controls.push(_.page.getModels(id));
+					}
+					_.views[v.attr['id']] = obj;
+					V.inherit.apply(_.page.getModels(id),[M.Control,[]]);
+					obj.bind(_.page.getModels(id));		
 				},function(){
 					//实现通过type属性完成数据初始化的功能
 					V.for(_.page.getModels(),function(key,v){
@@ -304,7 +340,7 @@
 						}
 					},function(){
 						_.onReady();
-						_.call('Ready');
+						_.call('start');
 					});
 				});
 			};
@@ -505,7 +541,7 @@
 			}
 			_.onLoad = function(node){
 				_.txt = node.find('span:first');
-				_.input = node.find('input:first');
+				_.input = node.find('input:first');				
 				V.for(_.events,function(k,v){
 					switch(k){
 						case 'hover':
@@ -515,22 +551,15 @@
 								_.call('Hover',{hover:false});
 							});
 							break;
-						case 'keypress':
-							_.input.keypress(function(e){
-								_.call('KeyPress',{keyCode:e.keyCode || e.keyChar});
-							});
-							break;
-						case 'change':
-							_.input.keydown(function(e){
-								_.call('change',{keyCode:e.keyCode || e.keyChar});
-							});
+						default:
+							_.bindEvent(_.input,k,v);
 							break;
 					}
 				},null,true);
 				__.onLoad(node);
 			};
 			_.fill = function(){
-				return {oldtext:_.input.val(),text:_.input.val()+(_.vm.data.keyCode?String.fromCharCode(_.vm.data.keyCode):'')};
+				return {text:_.input.val()};
 			};
 			_.render = function(data){
 				data = __.render(data);
@@ -538,9 +567,11 @@
 					switch(key){
 						case 'text':
 							_.input.val(value);
+							delete data[key];
 							break;
 						case 'name':
-							_.input.attr('name',value);	
+							_.input.attr('name',value);
+							delete data[key];
 							break;
 						case 'key':
 							_.txt.text(value).show();
@@ -562,22 +593,8 @@
 				__.render = _.render;
 				__.onLoad = _.onLoad;
 			}
-			_.onLoad = function(node){
-				__.onLoad(node);
-				V.for(_.events,function(k,v){
-					switch(k){
-						case 'change':
-							_.input.change(function(e){
-								console.log('change');
-								console.log(e);
-								_.call('change',{});
-							});
-							break;
-					}
-				},null,true);
-			};
 			_.fill = function(){
-				return {checked:_.input.attr('checked')};
+				return {checked:_.input.attr('checked')?true:false};
 			};
 			_.render = function(data){
 				data = __.render(data);
@@ -585,6 +602,7 @@
 					switch(key){
 						case 'checked':
 							V.setChecked(_.input,value);
+							delete data[key];
 							break;
 					}
 				});
@@ -608,13 +626,7 @@
 				_.txt = node.find('span:first');
 				_.sel = node.find('select:first');
 				V.for(_.events,function(k,v){
-					switch(k.toLowerCase()){
-						case 'change':
-							_.node.change(function(){
-								_.call('Change',{});
-							});
-							break;
-					}
+					_.bindEvent(_.sel,k,v);
 				},null,true);
 				__.onLoad(node);
 			};
@@ -629,10 +641,10 @@
 							_.sel.empty();
 							if(V.getType(value) == 'string'){
 								value = eval('('+value+')');
-							}
+							};
 							V.for(value,function(k,v){
 								_.sel.append('<option value="'+v+'">'+k+'</option>');
-							})
+							});
 							break;
 						case 'name':
 							_.sel.attr('name',value);
@@ -650,7 +662,12 @@
 			{
 				V.inherit.apply(_,[W.Control,[path || '<input type="hidden"></input>']]);
 				__.render = _.render;
+				__.onLoad = _.onLoad;
 			}
+			_.onLoad = function(node){
+				V.for(_.events,function(k,v){_.bindEvent(node,k,v);},null,true);
+				__.onLoad(node);
+			};
 			_.fill = function(){
 				return {val:_.node.val()};
 			};
@@ -693,21 +710,8 @@
 			{
 				V.inherit.apply(_,[W.TextBox,[path || '<span><span style="display:none;"></span><input type="button"></input></span>']]);
 				__.render = _.render;
-				__.onLoad = _.onLoad;
 			}
 			_.fill = function(){return {};};
-			_.onLoad = function(node){
-				V.for(_.events,function(k,v){
-					switch(k.toLowerCase()){
-						case 'click':
-							_.input.click(function(e){
-								_.call('Click',{altKey:e.altKey,ctrlKey:e.ctrlKey});
-							});
-							break;
-					}
-				},null,true);
-				__.onLoad(node);
-			};
 			_.render = function(data){
 				data = __.render(data);
 				V.for(data,function(key,value){
@@ -719,7 +723,7 @@
 							_.txt.text(value).show();
 							break;
 						case 'text':
-							_.input.html(value);
+							_.input.val(value);
 							break;
 					}
 				});
@@ -746,6 +750,7 @@
 				__.onLoad = _.onLoad;
 			}
 			_.onLoad = function(node){
+				V.for(_.events,function(k,v){_.bindEvent(node,k,v)},null,true);
 				__.onLoad(node);
 			};
 			_.fill = function(){

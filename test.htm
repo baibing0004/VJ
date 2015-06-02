@@ -6,7 +6,7 @@
     <script src="2.0/jquery-1.8.0.min.js" type="text/javascript"></script>
 	<script src="2.0/VJ.js" type="text/javascript"></script>
 	<script src="config.js" type="text/javascript"></script>
-	<script src="ni.js" type="text/javascript"></script>
+	<!--script src="ni.js" type="text/javascript"></script-->
 	<script type="text/javascript">
 		/*
 		VJ.ajax({url:'http://www.sohu.com',data:{a:1},bindData:function(){alert(222);}});
@@ -379,12 +379,16 @@
 								type:'textbox',
 								data:{text:'hello world'},
 								onReady:function(){
-									
+									console.log('');
+								},
+								onClick:function(data){
+										
 								},
 								onHover:function(data){
 									console.log(data);
 								},
-								onKeyPress:function(data,cons){
+								onKeyPress:function(data,self){
+									console.log(data);
 								},
 								onChange:function(data){
 									console.log(data);// W.Control 对 事件的处理
@@ -403,17 +407,34 @@
 									console.log(data);
 								}
 							},
+							but:{
+								onClick:function(data,self){
+									console.log(data);
+									console.log(this);
+									this.txt.update({text:'点击事件'});
+									this.txt2.update({text:'点击事件'});
+									this.txt3.update({text:'点击事件'});
+								}
+							},
 							page:{
 								data:{
 									title:'测试页面aa'
 								},
-								onReady:function(data,controls){
+								onStart:function(data,self){
+									var __ = this;
 									VJ.once(function(){
-										controls.txt.update({enable:true,visiable:true,text:'22233'});
+										__.txt.update({enable:true,visiable:true,text:'22233'});
 									},2000);
+									console.log(this);
+									_.ni.excute('template','ajaxtest1',{SONumber:10001103386854},function(res){
+										res.each('ajaxtest1',function(v){V.each(v,function(v){console.log(v);});});
+									});
+									console.log(_.middler.getObjectByAppName(M.APP,'SessionDataManager'));
+									_.session.update('ssss',{aaaa:22});
+									
 								},
 								onDispose:function(){
-									
+									console.log('dispose');
 								}
 							}
 						}]]);
@@ -421,7 +442,7 @@
 				}
 			})(VJ,VJ.viewmodel,jQuery,VJ.merge(window.top.config,{
 				Middler:{
-					'VESH.viewmodel':{
+					'VESH.viewmodel1':{
 						package:'VJ.viewmodel',
 						method:'constructor',
 						mode:'instance',
@@ -433,8 +454,7 @@
 							{params:'Resource','abc':{ref:'CookieDataResource'},'bcd':1},
 							{a:1}
 						]},
-						CookieDataResource:{type:'.CookieDataResource',mode:'static',params:[]},
-						
+						CookieDataResource:{type:'.CookieDataResource',mode:'static',params:[]}						
 					},
 					'VESH.view':{
 						textbox2:{type:'textbox',params:[]},
@@ -461,13 +481,15 @@
 			VJ.inherit.apply(s,[a,[]]);
 			console.log(s);
 			s.abc();*/
-			window.onbeforeunload  = function(){console.log('退出事件');};
+			//window.onbeforeunload  = function(){console.log('退出事件');};
 		})
 	</script>
 </head>
 <body>
 	<form id='frmMain' Action="" _>
 		<p><textbox id="txt" _="key:'输入框:'"></textbox></p>
+		<p><textbox id="txt2" _="key:'输入框:'"></textbox></p>
+		<p><textbox id="txt3" _="key:'输入框:'"></textbox></p>
 		<p><radiobox id="radio" _="key:'单选框:'"></radiobox></p>
 		<p><checkbox id="chk" _="key:'确认框:'"></checkbox></p>
 		<p><select id="sel" _="key:'下拉框:'"></select></p>
@@ -475,7 +497,7 @@
 		<p><passwordbox id="pass" _="key:'密码框:'"></passwordbox></p>
 		<p><button id="but" _="key:'按钮'"></button>
 		<submit id="sub" _="key:'提交钮'"></submit>
-		<reset id="ret" _="key:'重置钮'"></reset></p>
+		<reset _="key:'重置钮'"></reset></p>
 	</form>
 </body>
 </html>

@@ -541,7 +541,7 @@
 			}
 			_.onLoad = function(node){
 				_.txt = node.find('span:first');
-				_.input = node.find('input:first');				
+				_.input = node.find('input:first');
 				V.for(_.events,function(k,v){
 					switch(k){
 						case 'hover':

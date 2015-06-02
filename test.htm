@@ -375,11 +375,14 @@
 					{
 						V.isDebug = true;
 						V.inherit.apply(_,[M.Page,[cm,{
-							txt2:{
+							txt:{
 								type:'textbox',
 								data:{text:'hello world'},
 								onReady:function(){
-									
+									console.log('');
+								},
+								onClick:function(data){
+										
 								},
 								onHover:function(data){
 									console.log(data);
@@ -405,7 +408,9 @@
 								onClick:function(data,self){
 									console.log(data);
 									console.log(this);
-									this.txt.update({text:'点击事件'});									
+									this.txt.update({text:'点击事件'});
+									this.txt2.update({text:'点击事件'});
+									this.txt3.update({text:'点击事件'});
 								}
 							},
 							page:{
@@ -480,6 +485,8 @@
 <body>
 	<form id='frmMain' Action="" _>
 		<p><textbox id="txt" _="key:'输入框:'"></textbox></p>
+		<p><textbox id="txt2" _="key:'输入框:'"></textbox></p>
+		<p><textbox id="txt3" _="key:'输入框:'"></textbox></p>
 		<p><radiobox id="radio" _="key:'单选框:'"></radiobox></p>
 		<p><checkbox id="chk" _="key:'确认框:'"></checkbox></p>
 		<p><select id="sel" _="key:'下拉框:'"></select></p>

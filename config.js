@@ -1,7 +1,7 @@
 window.top.config = {
 	Middler:{
 		'VESH.view':{
-			package:'VJ.view',
+			pack:'VJ.view',
 			method:'constructor',
 			mode:'instance',
 			page:{type:'.Page'},
@@ -17,7 +17,7 @@ window.top.config = {
 			form:{type:'.Form'}
 		},
 		'VESH.viewmodel':{
-			package:'VJ.viewmodel',
+			pack:'VJ.viewmodel',
 			method:'constructor',
 			mode:'instance',
 			SessionDataManager:{type:'.SessionDataManager',mode:'static',params:[
@@ -30,7 +30,7 @@ window.top.config = {
 			CookieDataResource:{type:'.CookieDataResource',path:'2.0/jquery.cookie.js',mode:'static',params:[]}			
 		},
 		Ni:{
-			package:'VJ.ni',
+			pack:'VJ.ni',
 			constructorparalength:false,size:50,app:'33',
 			method:'constructor',
 			mode:'static',

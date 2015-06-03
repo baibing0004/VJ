@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>VJ test</title>
     <script src="2.0/jquery-1.8.0.min.js" type="text/javascript"></script>
-	<script src="2.0/VJ.js" type="text/javascript"></script>
+	<script src="2.0/VJ.min.js" type="text/javascript"></script>
 	<script src="config.js" type="text/javascript"></script>
 	<!--script src="ni.js" type="text/javascript"></script-->
 	<script type="text/javascript">
@@ -23,8 +23,8 @@
 		};
 		console.log(b["bcd"]);
 		b['abc']();
-		b.package = 33;
-		console.log(b['package']);
+		b.pack = 33;
+		console.log(b['pack']);
 		console.log("1.a.b".indexOf('\.'));
 		b.abc.apply(b.abc,[1,2,3]);
 		b.abc.call([1,2,3]);
@@ -84,12 +84,12 @@
 		//console.log(new function(){var _ = this;hello.apply(_,[{a:3},{b:4}]);});
 		//var v = new function(){var _ = this;VJ.inherit.apply(_,[hello,[{a:3},{b:4}]]);};
 		//console.log(v.Instance());
-		/*测试目的，应可以支持本地对象生成，远程对象生成，支持mode为static instance pool 支持 method 为constructor，bean，factory，constructorbean，factorybean 5种方式 并支持 package */
-		//本地+static+constructor+bean+pool+factory+factorybean+constructorparalength+size+package+path
+		/*测试目的，应可以支持本地对象生成，远程对象生成，支持mode为static instance pool 支持 method 为constructor，bean，factory，constructorbean，factorybean 5种方式 并支持 pack */
+		//本地+static+constructor+bean+pool+factory+factorybean+constructorparalength+size+pack+path
 		/*var middler = VJ.middler.getMiddlerFromObj({
 			Middler:{
 				KD:{
-					package:'hello',
+					pack:'hello',
 					path1:'http://localhost/dl/hello.js',
 					method:'constructor',
 					mode:'static',
@@ -115,7 +115,7 @@
 			}
 		});
 		//console.log(middler);
-		//本地+static+constructor+bean+pool+factory+factorybean+constructorparalength+size+package+path
+		//本地+static+constructor+bean+pool+factory+factorybean+constructorparalength+size+pack+path
 		var val = middler.getObjectByAppName('Ni','test2');
 		middler.getObjectByAppName('KD','h3');
 		var val1 = middler.getObjectByAppName('KD','helloword');
@@ -207,7 +207,7 @@
 					AREADROP:{type:'',params:['']}
 				},
 				Ni:{
-					package:'VJ.ni',
+					pack:'VJ.ni',
 					constructorparalength:false,size:50,app:'33',
 					method:'constructor',
 					mode:'static',
@@ -348,7 +348,7 @@
 				}
 				_.render = function(data){
 					data = __.render(data);
-					VJ.for(data,function(key,value){
+					VJ.forC(data,function(key,value){
 						switch(key){
 							case 'text':
 								_.node.val(value);
@@ -443,7 +443,7 @@
 			})(VJ,VJ.viewmodel,jQuery,VJ.merge(window.top.config,{
 				Middler:{
 					'VESH.viewmodel1':{
-						package:'VJ.viewmodel',
+						pack:'VJ.viewmodel',
 						method:'constructor',
 						mode:'instance',
 						SessionDataManager:{type:'.SessionDataManager',mode:'static',params:[
@@ -467,7 +467,7 @@
 		/*
 			var attrs = $('input')[0].attributes;
 			var i = attrs.length;
-			VJ.while(function(){i--;return i>=0?{key:attrs[i],val:attrs[i].value}:null},function(v){console.log(v);},function(){},true);
+			VJ.whileC(function(){i--;return i>=0?{key:attrs[i],val:attrs[i].value}:null},function(v){console.log(v);},function(){},true);
 			
 			var a = function(){
 				var _ = this;

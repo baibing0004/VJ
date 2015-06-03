@@ -75,7 +75,7 @@
 			method:'',
 			mode:'',
 			path:'',
-			package:'',
+			pack:'',
 			ObjectName:{type:'',path:'',method:'',mode:'',constractparalength:'',params:[
 				{type:'',path:'',method:'',mode:'',constractparalength:''},
 				{ref:''},
@@ -181,7 +181,7 @@
 			__.convertCreater = function(config,v,defParam,app,pcm){
 				var method = V.getValue(v.method,defParam.method);
 				var path = V.getValue(v.path,defParam.path);
-				var type = ((V.isValid(v.type) && v.type.indexOf('\.')==0)?defParam.package:'')+v.type;
+				var type = ((V.isValid(v.type) && v.type.indexOf('\.')==0)?defParam.pack:'')+v.type;
 				if(type=='undefined' && !V.isValid(v.ref)) {
 					if(V.isValid(v.params)){
 						method="objects";
@@ -190,8 +190,8 @@
 					}
 				}
 				var constructorparalength = V.getValue(v.constructorparalength,defParam.constructorparalength);
-				//使用Objects的默认配置对下传递 仅仅传递 path 和 package
-				var para = __.convertParas(config,v.params,V.merge(defParam,{path:path,package:defParam.package}),app,pcm);
+				//使用Objects的默认配置对下传递 仅仅传递 path 和 pack
+				var para = __.convertParas(config,v.params,V.merge(defParam,{path:path,pack:defParam.pack}),app,pcm);
 				return new function(){
 					var _ = this;
 					_.getType = function(){
@@ -344,7 +344,7 @@
 			}
 			//转换成App对象
 			__.convertApp = function(config,v,app,pcm){
-				var keys = {method:'constructor',mode:'static',path:false,package:false,constructorparalength:false,size:50,app:app};
+				var keys = {method:'constructor',mode:'static',path:false,pack:false,constructorparalength:false,size:50,app:app};
 				return new function(){
 					var _ = this;
 					var defParam = {};

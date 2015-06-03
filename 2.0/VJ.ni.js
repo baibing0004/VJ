@@ -77,7 +77,7 @@
 							if(_cms.length>1){conn.transaction = true;}
 							var cmd = res.getDBCommand();
 							cmd.connection = conn;
-							V.while2(function(){return _cms.shift();},function(v,next){
+							V.whileC2(function(){return _cms.shift();},function(v,next){
 								cmd.command = v.name;
 								cmd.params = v.params;
 								var _func = v.func;
@@ -408,7 +408,7 @@
 						};
 						__.callback = function(){
 							if(__.datas.length>0){
-								V.while(function(){return __.datas.shift();},function(val){
+								V.whileC(function(){return __.datas.shift();},function(val){
 									if(typeof(val) == 'string'){
 										val = eval('('+val+')');
 									}
@@ -442,7 +442,7 @@
 						__.callfunc = function(index){
 							var oCall = __.calls[index];
 							if(oCall && oCall.datas.length>0 && oCall.func){								
-								V.while(function(){return oCall.datas.shift();},function(val){
+								V.whileC(function(){return oCall.datas.shift();},function(val){
 									if(typeof(val) == 'string'){
 										val = eval('('+val+')');
 									}
@@ -587,7 +587,7 @@
 							var w = 0;
 							var ret = [];
 							var cmslength = cms.length-1;
-							V.while(function(){var command = cms.shift();return '' == command?null:command;},function(command){
+							V.whileC(function(){var command = cms.shift();return '' == command?null:command;},function(command){
 								//需要计算出这次使用的参数
 								var _w = command.split('?').length-1;
 								var p = params.slice(w,w+_w);
@@ -596,7 +596,7 @@
 									tx.executeSql(command,p,function(tran,data){
 										var i = -1;
 										var _data = [];
-										V.while(
+										V.whileC(
 										function(){
 											i++;return i<data.rows.length?data.rows.item(i):null;
 										},
@@ -747,7 +747,7 @@
 									next();
 								});
 							};
-							V.while2(function(){return _cms.shift();},function(v,next){	
+							V.whileC2(function(){return _cms.shift();},function(v,next){	
 								var _nicmd = __.lstCmd[i];
 								//准备处理缓存
 								if(_nicmd){
@@ -836,7 +836,7 @@
 							};
 							var _cms2 = __.lstCmd;
 							__.lstCmd = [];
-							V.while2(function(){return _cms.shift();},function(_v,next){
+							V.whileC2(function(){return _cms.shift();},function(_v,next){
 								var v = _v;
 								//准备处理缓存
 								if(_cms2[i]){									

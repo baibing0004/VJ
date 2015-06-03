@@ -43,7 +43,7 @@
 						}
 					};
 					_.callback = function(){
-						V.while(function(){__.funs.shift()},function(v){v(__.template.clone());},function(){});						
+						V.whileC(function(){__.funs.shift()},function(v){v(__.template.clone());},function(){});						
 					};
 					if(path.indexOf('<')>=0){	
 						__.node.append($(path));
@@ -98,7 +98,7 @@
 					_.vm.nodeName = _.nodeName;
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
-					V.for(_.vm,function(key,value){
+					V.forC(_.vm,function(key,value){
 						key = key.toLowerCase();
 						if(key.indexOf('on')==0){
 							//事件注册
@@ -130,10 +130,10 @@
 					data = V.merge({},_.vm.data);
 					//专门用于初始化操作
 				}
-				V.for(data,function(key,value){
+				V.forC(data,function(key,value){
 					switch(key){
 						case 'attr':
-							V.for(value,function(key2,value2){_.node.attr(key2,value2);},function(){});
+							V.forC(value,function(key2,value2){_.node.attr(key2,value2);},function(){});
 							break;
 						case 'enable':
 							if(value){_.node.removeAttr('disabled');}else{_node.attr('disabled','disabled');}
@@ -164,7 +164,7 @@
 				var attrs = _.node[0].attributes;
 				if(attrs){
 					var i = attrs.length;
-					V.while(function(){i--;return i>=0?{key:attrs[i].name,val:attrs[i].value}:null},function(v){node.attr(v.key,v.val);},function(){},true);
+					V.whileC(function(){i--;return i>=0?{key:attrs[i].name,val:attrs[i].value}:null},function(v){node.attr(v.key,v.val);},function(){},true);
 				}
 				node.append(_.node.children());				
 				if(_.node[0].nodeName.toLowerCase() == 'body'){					
@@ -252,7 +252,7 @@
 					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
-					V.for(vm,function(key,value){
+					V.forC(vm,function(key,value){
 						key = key.toLowerCase();
 						if(key.indexOf('on')==0){
 							//事件注册
@@ -305,7 +305,7 @@
 			_.bindControl = function(){
 				//这里应该由真实的View层调用使用document.ready实现
 				var p = _.node.find('[_]').toArray();				
-				V.while(function(){return p.shift();},function(v1){
+				V.whileC(function(){return p.shift();},function(v1){
 					v = $(v1);
 					var nodeName = v[0].nodeName.toLowerCase();
 					var obj = _.middler.getObjectByAppName(W.APP,nodeName);
@@ -326,7 +326,7 @@
 					obj.bind(_.page.getModels(id));		
 				},function(){
 					//实现通过type属性完成数据初始化的功能
-					V.for(_.page.getModels(),function(key,v){
+					V.forC(_.page.getModels(),function(key,v){
 						if(v.type && !v.v){
 							var obj = _.middler.getObjectByAppName(W.APP,v.type);
 							if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
@@ -362,7 +362,7 @@
 			//可以将数据更新
 			_.render = function(data){
 				data = __.render(data);
-				V.for(data,function(key,value){
+				V.forC(data,function(key,value){
 					switch(key){
 						case 'title':
 							document.title = value;
@@ -400,7 +400,7 @@
 				for(var i in __.data){
 					ret.push({key:i,value:__.data[i]});
 				}
-				V.while(function(){ret.shift();},function(v){_.update(v.key,v.value);},function(){},true);
+				V.whileC(function(){ret.shift();},function(v){_.update(v.key,v.value);},function(){},true);
 			};
 			_.clear = function(){};
 			_.isLogin = function(){};
@@ -542,7 +542,7 @@
 			_.onLoad = function(node){
 				_.txt = node.find('span:first');
 				_.input = node.find('input:first');
-				V.for(_.events,function(k,v){
+				V.forC(_.events,function(k,v){
 					switch(k){
 						case 'hover':
 							_.node.hover(function(){
@@ -563,7 +563,7 @@
 			};
 			_.render = function(data){
 				data = __.render(data);
-				V.for(data,function(key,value){
+				V.forC(data,function(key,value){
 					switch(key){
 						case 'text':
 							_.input.val(value);
@@ -598,7 +598,7 @@
 			};
 			_.render = function(data){
 				data = __.render(data);
-				V.for(data,function(key,value){
+				V.forC(data,function(key,value){
 					switch(key){
 						case 'checked':
 							V.setChecked(_.input,value);
@@ -625,7 +625,7 @@
 			_.onLoad = function(node){
 				_.txt = node.find('span:first');
 				_.sel = node.find('select:first');
-				V.for(_.events,function(k,v){
+				V.forC(_.events,function(k,v){
 					_.bindEvent(_.sel,k,v);
 				},null,true);
 				__.onLoad(node);
@@ -635,14 +635,14 @@
 			};
 			_.render = function(data){
 				data = __.render(data);
-				V.for(data,function(key,value){
+				V.forC(data,function(key,value){
 					switch(key){
 						case 'options':
 							_.sel.empty();
 							if(V.getType(value) == 'string'){
 								value = eval('('+value+')');
 							};
-							V.for(value,function(k,v){
+							V.forC(value,function(k,v){
 								_.sel.append('<option value="'+v+'">'+k+'</option>');
 							});
 							break;
@@ -665,7 +665,7 @@
 				__.onLoad = _.onLoad;
 			}
 			_.onLoad = function(node){
-				V.for(_.events,function(k,v){_.bindEvent(node,k,v);},null,true);
+				V.forC(_.events,function(k,v){_.bindEvent(node,k,v);},null,true);
 				__.onLoad(node);
 			};
 			_.fill = function(){
@@ -673,7 +673,7 @@
 			};
 			_.render = function(data){
 				data = __.render(data);
-				V.for(data,function(key,value){
+				V.forC(data,function(key,value){
 					switch(key){
 						case 'value':
 							_.node.val(value);
@@ -694,7 +694,7 @@
 			}
 			_.render = function(data){
 				data = __.render(data);				
-				V.for(data,function(key,value){
+				V.forC(data,function(key,value){
 					switch(key){
 						case 'alt':
 						case 'passchar':
@@ -714,7 +714,7 @@
 			_.fill = function(){return {};};
 			_.render = function(data){
 				data = __.render(data);
-				V.for(data,function(key,value){
+				V.forC(data,function(key,value){
 					switch(key){
 						case 'name':
 							_.input.attr('name',value);
@@ -750,7 +750,7 @@
 				__.onLoad = _.onLoad;
 			}
 			_.onLoad = function(node){
-				V.for(_.events,function(k,v){_.bindEvent(node,k,v)},null,true);
+				V.forC(_.events,function(k,v){_.bindEvent(node,k,v)},null,true);
 				__.onLoad(node);
 			};
 			_.fill = function(){
@@ -758,7 +758,7 @@
 			};
 			_.render = function(data){
 				data = __.render(data);
-				V.for(data,function(key,value){
+				V.forC(data,function(key,value){
 					switch(key){
 						case 'method':
 							_.node.attr('method',value);

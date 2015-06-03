@@ -35,7 +35,7 @@ VJ = window.top.VJ;
 			var _ = this;
 			var index = 0;
 			data = Array.prototype.slice.call(data, 0);
-			V.while(function(){return data.shift();},func);
+			V.whileC(function(){return data.shift();},func);
 		};
 		V.once = function(func,timeout){
 			timeout = timeout || 1;
@@ -44,22 +44,22 @@ VJ = window.top.VJ;
 			}
 			func.timeoutID = window.setTimeout(function(){V.tryC(function(){func();})},timeout);
 		};
-		V.for = function(data,func,finalf,isSync){
+		V.forC = function(data,func,finalf,isSync){
 			var ret = [];
 			for(var i in data){
 				ret.push({key:i,value:data[i]});
 			}
-			V.while(function(){return ret.shift();},function(v){if(func){func(v.key,v.value);}},finalf,isSync);
-		}		
-		V.for2 = function(data,func,finalf,isSync){
+			V.whileC(function(){return ret.shift();},function(v){if(func){func(v.key,v.value);}},finalf,isSync);
+		};		
+		V.forC2 = function(data,func,finalf,isSync){
 			var ret = [];
 			for(var i in data){
 				ret.push({key:i,value:data[i]});
 			}
-			V.while(function(){return ret.shift();},function(v,next){if(func){V.tryC(function(){func(v.key,v.value);});if(next){next();}}},finalf,isSync);
-		}
+			V.whileC(function(){return ret.shift();},function(v,next){if(func){V.tryC(function(){func(v.key,v.value);});if(next){next();}}},finalf,isSync);
+		};
 		//while 方法要求 四个参数 exp 给出需要处理的值，func进行处理，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的但是不保证前后两次调用是顺序的只能保证是异步的 第四个参数如果为真那么就是同步执行
-		V.while = function(exp,func,finalf,isSync){
+		V.whileC = function(exp,func,finalf,isSync){
 			var _ = this;
 			var _func = null;
 			if(isSync){
@@ -82,7 +82,7 @@ VJ = window.top.VJ;
 			_func(exp());
 		};
 		//while2 方法要求 四个参数 exp 给出需要处理的值，func进行处理，同时当处理完成是 调用 第二个参数执行next方法，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的而且保证前后两次调用是顺序的 第四个参数如果为真那么就是同步执行
-		V.while2 = function(exp,func,finalf,isSync){
+		V.whileC2 = function(exp,func,finalf,isSync){
 			var _ = this;
 			var _func = null;
 			if(isSync){

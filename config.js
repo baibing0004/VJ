@@ -14,7 +14,8 @@ window.top.config = {
 			button:{type:'.Button'},
 			submit:{type:'.Submit'},
 			reset:{type:'.Reset'},
-			form:{type:'.Form'}
+			form:{type:'.Form'},
+			box:{type:'.Box'}
 		},
 		'VESH.viewmodel':{
 			pack:'VJ.viewmodel',

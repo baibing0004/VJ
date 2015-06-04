@@ -251,6 +251,31 @@
 				return data;
 			};
 		};
+		W.Box = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.Control,[path || '<div></div>']]);
+				__.render = _.render;
+				__.onLoad = _.onLoad;
+			}			
+			_.onLoad = function(node){
+				V.forC(_.events,function(k,v){
+					_.bindEvent(_.node,k,v);					
+				},null,true);
+				__.onLoad(node);
+			};
+			_.render = function(data){
+				data = __.render(data);
+				V.forC(data,function(k,v){
+					switch(k.toLowerCase()){
+						case 'key':							
+							_.node.css({'text-align':'center','line-height':_.node.height()+'px','vertical-align':'middle',border:'solid 1px',margin:'0 auto','minwidth':'40px','minheight':'20px'}).html(v);
+							break;
+					}
+				});
+			};
+		};
+		//todo panel 容器类对象的controls对象设置 bind方法设置 与 validate框架设置 move类对象动画设置
 		//todo file
 	}
 })(VJ,jQuery,VJ.view,VJ.viewmodel);

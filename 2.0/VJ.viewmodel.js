@@ -31,7 +31,8 @@
 					var _ = this,__ = {};
 					{
 						__.funs = [];
-						__.node = $(window.document.createDocumentFragment());
+						//__.node = $(window.document.createDocumentFragment()); 因为在某些页面jQuery无法操作此种节点						
+						__.node = $('<div style="display:none;"></div>').appendTo(window.document.body);
 					}
 					_.addCallback = function(fun){
 						if(__.template){
@@ -46,7 +47,7 @@
 						V.whileC(function(){__.funs.shift()},function(v){v(__.template.clone());},function(){});						
 					};
 					if(path.indexOf('<')>=0){	
-						__.node.append($(path));
+						__.node.append(path);
 						__.template = __.node.children(':first');
 					} else {
 						__.node.load(url,function(){
@@ -147,7 +148,7 @@
 			};
 			//处理控件下载完成后的操作
 			_.onLoad = function(node){
-				_.call('Ready');
+				_.call('load');
 				_.render();
 			};
 			//用于扩展给主要对象绑定事件使用 一般用于bind事件的默认值
@@ -309,7 +310,7 @@
 					v = $(v1);
 					var nodeName = v[0].nodeName.toLowerCase();
 					var obj = _.middler.getObjectByAppName(W.APP,nodeName);
-					if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+nodeName);
+					if(!obj) V.showException('配置文件中没有找到对象类型定义:'+nodeName);
 					obj.init(_,v,V.isValid(v.attr('_'))?eval('({'+v.attr('_')+'})'):null);
 					_.controls.push(obj);
 					var id = v.attr('id');

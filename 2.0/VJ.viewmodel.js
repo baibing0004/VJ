@@ -36,7 +36,7 @@
 					}
 					_.addCallback = function(fun){
 						if(__.template){
-							fun(__.template.clone());
+							fun($(__.template));
 						}else{
 							if(fun){
 								__.funs.push(fun);
@@ -44,14 +44,16 @@
 						}
 					};
 					_.callback = function(){
-						V.whileC(function(){__.funs.shift()},function(v){v(__.template.clone());},function(){});						
+						V.whileC(function(){__.funs.shift()},function(v){v($(__.template));},function(){});						
 					};
 					if(path.indexOf('<')>=0){	
 						__.node.append(path);
-						__.template = __.node.children(':first');
+						__.template = __.node.html();
+						__.node.remove();
 					} else {
 						__.node.load(url,function(){
-							__.template = __.node.children(':first');
+							__.template = __.node.html();
+							__.node.remove();
 							_.callback();
 						});
 					}					
@@ -165,7 +167,7 @@
 				var attrs = _.node[0].attributes;
 				if(attrs){
 					var i = attrs.length;
-					V.whileC(function(){i--;return i>=0?{key:attrs[i].name,val:attrs[i].value}:null},function(v){node.attr(v.key,v.val);},function(){},true);
+					V.whileC(function(){i--;return i>=0?{key:attrs[i].name,val:attrs[i].value}:null},function(v){node.attr(v.key,(V.isValid(_.node.attr(v.key))?_.node.attr(v.key)+" ":"")+v.val);},function(){},true);
 				}
 				node.append(_.node.children());				
 				if(_.node[0].nodeName.toLowerCase() == 'body'){					

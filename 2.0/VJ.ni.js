@@ -630,10 +630,10 @@
 			var _ = this, __ = {};
 			{
 				V.inherit.apply(_,[N.NiTemplate,[res,cm]]);
-				__.KEY = 'Ni';
+				_.KEY = 'Ni';
 				__._addCommand = _._addCommand;
 				__._excute = _._excute;
-				__.lstCmd = {};
+				_.lstCmd2 = {};
 				{
 					__.params = V.getValue(params,{});
 					//缓存专用默认方法
@@ -693,7 +693,7 @@
 							command = V.getValue(cmd.command,_.cacheCommand);
 						}
 						if(cmd){
-							__.lstCmd[index] = {
+							_.lstCmd2[index] = {
 								name:command,
 								key:name,
 								params:V.merge(cmd.params,{cacheKey:V.hash(name+'.Set.'+V.toJsonString(_.lstCmd[_.lstCmd.length-1].params))})
@@ -721,7 +721,9 @@
 										}
 										_.result.add(data,v.key);
 										if(_func){
-											_func(_.result);
+											V.tryC(function(){
+												_func(_.result);
+											});
 										}
 									});
 									if(data){
@@ -748,7 +750,7 @@
 								});
 							};
 							V.whileC2(function(){return _cms.shift();},function(v,next){	
-								var _nicmd = __.lstCmd[i];
+								var _nicmd = _.lstCmd2[i];
 								//准备处理缓存
 								if(_nicmd){
 									i++;
@@ -766,7 +768,9 @@
 											if(data){
 												_.result.add(data,v.key);
 												if(v.func){
-													v.func(_.result);
+													V.tryC(function(){
+														v.func(_.result);
+													});
 												}
 												next();
 											} else {
@@ -777,6 +781,99 @@
 								} else {
 									i++;
 									func(v,next);
+								}
+							},function(){
+								res.backDBConnection(conn);
+							});
+						});
+					} else { V.showException('不能调用空的命令对象!'); }
+					return _.result;
+				};
+			}
+		};
+		//用于先读取缓存同步请求真实数据的情况
+		N.NiLazyTemplateDecorator = function(res,cacheres,cm,params){			
+			var _ = this, __ = {};
+			{
+				V.inherit.apply(_,[N.NiTemplateDecorator,[res,cacheres,cm,params]]);				
+				_._excute = function(){
+					var _cms = _.lstCmd;
+					_.lstCmd = [];
+					if(_cms.length>0){					
+						V.tryC(function(){							
+							var conn = res.getDBConnection();
+							var cmd = res.getDBCommand();
+							cmd.connection = conn;
+							var i = 0;
+							var func = function(v){
+								cmd.command = v.name;
+								cmd.params = v.params;
+								var _func = v.func;
+								cmd.excute(_.result,function(data){
+									V.tryC(function(){
+										if(!data){
+											data = false;
+										}
+										_.result.add(data,v.key);
+										if(_func){
+											V.tryC(function(){
+												_func(_.result);
+											});
+										}
+									});
+									if(data){
+										//新增缓存
+										var _nicmd = cm.getConfigValue(__.KEY,v.key+'.Set');
+										if(_nicmd){
+											var _conn = cacheres.getDBConnection();
+											var _cmd = cacheres.getDBCommand();
+											_cmd.connection = _conn;
+											_cmd.command = V.getValue(_nicmd.command,_.setCommand);
+											_cmd.params = V.merge(_nicmd.params,{
+													cacheKey:V.hash(v.key+'.Set.'+V.toJsonString(cmd.params)),
+													cacheValue:data
+												});
+											_cmd.excute(_.result,function(data){
+												V.tryC(function(){
+													try{cacheres.backDBConnection(_conn);}catch(e){}												
+												});
+											});
+										}
+									}
+								});
+							};
+							V.whileC2(function(){return _cms.shift();},function(v,next){	
+								var _nicmd = _.lstCmd2[i];
+								//准备处理缓存
+								if(_nicmd){
+									i++;
+									var _conn = cacheres.getDBConnection();
+									var _cmd = cacheres.getDBCommand();
+									_cmd.connection = _conn;
+									_cmd.command = _nicmd.name;
+									_cmd.params = _nicmd.params;
+									_cmd.excute(_.result,function(data){
+										V.tryC(function(){
+											try{cacheres.backDBConnection(_conn);}catch(e){}
+											if(!data){
+												data = false;
+											}
+											if(data){
+												_.result.add(data,v.key);
+												if(v.func){
+													V.tryC(function(){
+														v.func(_.result);
+													});
+												}
+											}
+											func(v);
+											next();
+										});
+									});
+								} else {
+									i++;
+									func(v);
+									next();
 								}
 							},function(){
 								res.backDBConnection(conn);

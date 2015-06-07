@@ -357,9 +357,9 @@ VJ = window.top.VJ;
 			});
 		};
 		V.fill = function (node, data) {
-			$(node.find('[_]')).each(function (i, v) {
+			$(node.find('[__]')).each(function (i, v) {
 				v = $(v);
-				var option = V.merge({ formatter: function (val, v, data) { return val; } }, eval('[{' + v.attr('_') + '}]')[0]);
+				var option = V.merge({ formatter: function (val, v, data) { return val; } }, eval('[{' + v.attr('__') + '}]')[0]);
 				var val = V.getValue(data[option.field], '');
 				val = option.formatter.apply(v, [val, v, data]);
 				if (V.isValid(val) || val === '') {
@@ -394,12 +394,12 @@ VJ = window.top.VJ;
 			});
 		};
 		V.fillTo = function (sor, data, aim, func) {
-			$(sor.find('[data-options]')).each(function (i, v) {
+			$(sor.find('[__]')).each(function (i, v) {
 				V.tryC(function () {
 					v = $(v);
 					var node2 = func();
 					aim.append(node2);
-					var option = V.merge({ formatter: function (val, v, data) { return val; } }, eval('[{' + v.attr('data-options') + '}]')[0]);
+					var option = V.merge({ formatter: function (val, v, data) { return val; } }, eval('[{' + v.attr('__') + '}]')[0]);
 					var val = V.getValue(data[option.field], '');
 					val = option.formatter.apply(node2, [val, node2, data]);
 					var css = V.getValue(option.cssClass, '').split(';');

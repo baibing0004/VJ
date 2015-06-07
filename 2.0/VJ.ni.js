@@ -791,7 +791,7 @@
 				};
 			}
 		};
-		//用于先读取缓存同步请求真实数据的情况
+		//用于先读取缓存同步请求真实数据的情况 totest
 		N.NiLazyTemplateDecorator = function(res,cacheres,cm,params){			
 			var _ = this, __ = {};
 			{

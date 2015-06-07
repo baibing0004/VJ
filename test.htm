@@ -6,7 +6,7 @@
     <script src="2.0/jquery-1.8.0.min.js" type="text/javascript"></script>
 	<script src="2.0/VJ.min.js" type="text/javascript"></script>
 	<script src="config.js" type="text/javascript"></script>
-	<!--script src="ni.js" type="text/javascript"></script-->
+	<script src="ni.js" type="text/javascript"></script>
 	<script type="text/javascript">
 		/*
 		VJ.ajax({url:'http://www.sohu.com',data:{a:1},bindData:function(){alert(222);}});
@@ -194,7 +194,7 @@
 			Ni:{
 				ajaxtest2:{command:'http://localhost/VESHTest/Module/help/test.tjsonp?_n=recorder',dbtype:'tjson',params:{limit:11},template:'template1'},
 				ajaxtest1:{command:'http://localhost/KDAPI/Module/GetOrderTrackItems.tjsonp?_n=Order',dbtype:'tjson',params:{},template:'template1'},
-				'ajaxtest1.Ca,che':{command1:function(res,params){return res[params.cacheKey];},dbtype:'json',params:{},template:'template2'},
+				'ajaxtest1.Cache':{command1:function(res,params){return res[params.cacheKey];},dbtype:'json',params:{},template:'template2'},
 				'ajaxtest1.Set':{command1:function(res,params){res[params.cacheKey] = params.cacheValue;},dbtype:'json',params:{timeout1:{interval:'s',number:50}},template:'template2'},
 				sqlinsert:{command:'create table if not exists table1(name Text,message text,time integer);insert into table1 values(?,?,?);',dbtype:'json',params:{data:[]},template:'sqltemp'},
 				sqlselect:{command:'select * from table1;',dbtype:'json',params:{data:[]},template:'sqltemp'},
@@ -462,8 +462,7 @@
 					}
 				}
 			}));
-		}
-		$(function(){
+			$(function(){
 		/*
 			var attrs = $('input')[0].attributes;
 			var i = attrs.length;
@@ -480,9 +479,141 @@
 			};
 			VJ.inherit.apply(s,[a,[]]);
 			console.log(s);
-			s.abc();*/
+			s.abc();
 			//window.onbeforeunload  = function(){console.log('退出事件');};
+			$('#aaa').load("content.html",function(){
+				//$(this).after($(this).html()).after($(this).html());
+				var h = $(this)[0].innerHTML;
+				console.log($(this)[0]);
+				$(this).after(h).after(h).remove();
+				//var s = $(this).children();
+				//$(this).after(s.clone()).after(s.clone());
+			});*/
+			console.log(VJ.encHtml('<input/>'));
 		})
+		}
+		
+	</script>	
+	<script type="text/javascript">
+	if(false){
+		VJ.isDebug = true;
+		var start = new Date();
+		(function(V,W,$){
+			window.YT = {view:{}};
+			var Y = YT.view;
+			{
+				Y.YTSearchBox = function(path){
+					var _ = this,__ = {};
+					{
+						V.inherit.apply(_,[W.Control,[path || '<div class="shop-top-tip"><form action="" method="get" class="shop-searchForm"><p class="shop-search"><input type="text" placeholder="请输入关键词" autocomplete="off" name="keyword" class="s-searchInput" /><input type="submit" class="s-searchSubmit" value="" /><em></em></p></form></div><div class="com-mask m-hide"></div>']]);
+						__.onLoad = _.onLoad;
+						__.render = _.render;
+					}
+					_.fill = function(){
+						return {text:_.input.val()};
+					};
+					_.onLoad = function(node){
+						console.log(node.html());
+						_.input = node.find(':input.s-searchInput');
+						_.canbutton = node.find('em');
+						_.submit = node.find(':input.s-searchSubmit');
+						_.mask = node.find('div.com-mask');
+						_.vm.data.action = node.attr('action');
+						{
+							node.find('form').submit(function(){return false;});
+							_.input.focus(function(){_.canbutton.show();_.mask.show();});
+							_.canbutton.click(function(){_.canbutton.hide();_.mask.hide();});
+						}
+						V.forC(_.events,function(k,v){
+							switch(k.toLowerCase()){
+								case 'search':
+									_.submit.click(function(){
+										_.call(k);
+									});
+									break;
+								default:
+									_.bindEvent(_.input,k,v);
+									break;
+							}
+						},function(){__.onLoad(node)});
+					};
+					_.render = function(data){				
+						data = __.render(data);
+						V.forC(data,function(k,v){
+							switch(k.toLowerCase()){
+								case 'text':
+									_.input.val(v);
+									break;
+								case 'action':
+									_.node.find('form').attr('action',v);
+									break;
+							}
+						});
+					}
+				};
+			}	
+		})(VJ,VJ.view,jQuery);
+		(function(V,M,$){
+			VJ.isDebug = true;
+			 new function(){
+				 var _ = this,__ = {};
+				{
+					var cm = V.merge(window.top.config,{
+						Middler:{
+							'VESH.view':{
+								ytsearchbox:{type:'YT.view.YTSearchBox'},
+								imagesloopbox:{type:'VJ.view.Box'},
+								imagebutton:{type:'VJ.view.Box'},
+								ytproducttable:{type:"VJ.view.Box"}
+							}
+						}
+					});
+					console.log(cm);
+					var models = {
+						searchbox:{
+							data:{text:''},
+							onSearch:function(data,self){
+								alert(data.text);
+							}
+						},
+						imgPP:{
+							onclick:function(data,self){
+								console.log('品牌');
+							}
+						},
+						imgLM:{
+							onclick:function(data,self){
+								console.log('类目');
+							}
+						},
+						imgZC:{
+							onclick:function(data,self){
+								console.log('专场');
+							}
+						},
+						tabProduct:{
+							onload:function(data,self){
+								console.log('商品列表确定');
+							}
+						},
+						page:{
+							onStart:function(data,self){
+								console.log('页面初始化完成'+(start.diff('ms',new Date())));
+							}
+						}
+					};
+					V.inherit.apply(_,[M.Page,[cm,{
+						page:{
+							onStart:function(data,self){
+								console.log('页面初始化完成'+(start.diff('ms',new Date())));
+							}
+						}
+					}]]);
+					$(function(){console.log('页面Jquery完成'+(start.diff('ms',new Date())));})
+				}
+			 };
+		})(VJ,VJ.viewmodel,jQuery);
+		}
 	</script>
 	<style>
 		.abc {height:300px;}
@@ -490,6 +621,7 @@
 </head>
 <body>
 	<form id='frmMain' Action="" _>
+		<ruby>汉字<rt>han zi</rt><rp>{}</rp></ruby>
 		<p><textbox id="txt" _="key:'输入框:'"></textbox></p>
 		<p><textbox id="txt2" _="key:'输入框:'"></textbox></p>
 		<p><textbox id="txt3" _="key:'输入框:'"></textbox></p>
@@ -502,6 +634,7 @@
 		<submit id="sub" _="key:'提交钮'"></submit>
 		<reset _="key:'重置钮'"></reset></p>
 		<box  _="key:'中心'" style="width:200px;" class="abc"></box>
+		<!--ytsearchbox class="p_searchbox" id="aaa" _></ytsearchbox-->
 	</form>
 </body>
 </html>

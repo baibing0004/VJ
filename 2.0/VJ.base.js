@@ -27,15 +27,17 @@ VJ = window.top.VJ;
 				}
 			});
 		};
+	}
+	{
 		//数组处理
 		V.isArray = function (obj) {
 			return Object.prototype.toString.call(obj) === '[object Array]';
 		};
-		V.each = function(data,func){
+		V.each = function(data,func,finalF,isSync){
 			var _ = this;
 			var index = 0;
 			data = Array.prototype.slice.call(data, 0);
-			V.whileC(function(){return data.shift();},func);
+			V.whileC(function(){return data.shift();},func,finalF,isSync);
 		};
 		V.once = function(func,timeout){
 			timeout = timeout || 1;
@@ -56,9 +58,9 @@ VJ = window.top.VJ;
 			for(var i in data){
 				ret.push({key:i,value:data[i]});
 			}
-			V.whileC(function(){return ret.shift();},function(v,next){if(func){V.tryC(function(){func(v.key,v.value);});if(next){next();}}},finalf,isSync);
+			V.whileC(function(){return ret.shift();},function(v,next){if(func){V.tryC(function(){func(v.key,v.value,next);});}},finalf,isSync);
 		};
-		//while 方法要求 四个参数 exp 给出需要处理的值，func进行处理，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的但是不保证前后两次调用是顺序的只能保证是异步的 第四个参数如果为真那么就是同步执行
+		//whileC 方法要求 四个参数 exp 给出需要处理的值，func进行处理，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的但是不保证前后两次调用是顺序的只能保证是异步的 第四个参数如果为真那么就是同步执行
 		V.whileC = function(exp,func,finalf,isSync){
 			var _ = this;
 			var _func = null;
@@ -81,7 +83,7 @@ VJ = window.top.VJ;
 			}
 			_func(exp());
 		};
-		//while2 方法要求 四个参数 exp 给出需要处理的值，func进行处理，同时当处理完成是 调用 第二个参数执行next方法，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的而且保证前后两次调用是顺序的 第四个参数如果为真那么就是同步执行
+		//whileC2 方法要求 四个参数 exp 给出需要处理的值，func进行处理，同时当处理完成是 调用 第二个参数执行next方法，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的而且保证前后两次调用是顺序的 第四个参数如果为真那么就是同步执行
 		V.whileC2 = function(exp,func,finalf,isSync){
 			var _ = this;
 			var _func = null;
@@ -138,7 +140,7 @@ VJ = window.top.VJ;
 			}
 			return "ukObject";
 		};
-		//V.inherit.apply(_,parent,[……args])
+		//VJ.inherit.apply(this,[parent,[……args]])
 		V.inherit = function(parent,args){
 			//绕过了parent的构造函数，重新链接原型链条
 			var _temp = (function(){
@@ -167,7 +169,12 @@ VJ = window.top.VJ;
 			}
 		};
 		V.create = function(type,args){
-			return new function(){var _ = this;V.inherit.apply(_,[type,args]);}
+			var ret = {};
+			if(typeof(type)=='function'){
+				type.apply(ret,V.isArray(args)?args:[args]);
+			} else V.showException('请传入类定义');
+			return ret;
+			//return new function(){var _ = this;V.inherit.apply(_,[type,args]);}
 		};
 		V.create2 = function(type,args){
 			var ret = '(new '+type+'(';
@@ -320,7 +327,6 @@ VJ = window.top.VJ;
 		V.encHtml = function (html) {
 			//20120328 白冰 只转换标点符号!    
 			//return encodeURIComponent(V.getValue(html, '').replace(/\r\n/g, ''));
-			console.log((V.getValue(html, '').replace(/\s/g, ' ')));
 			return (V.getValue(html, '').replace(/\s/g, ' ').replace(/\r\n/g, '')).replace(new RegExp('~|!|@|#|\\$|%|\\^|;|\\*|\\(|\\)|_|\\+|\\{|\\}|\\||:|\"|\\?|`|\\-|=|\\[|\\]|\\\|;|\'|,|\\.|/|，|；', 'g'), function (a) { return encodeURIComponent(a); });
 		};
 		//对字符串进行解码
@@ -346,31 +352,14 @@ VJ = window.top.VJ;
 		};
 		V.maxlength = function () {
 			$("textarea[maxlength]").unbind('change').change(function (event) {
-				this.value = this.value.substring(0, $(this).attr("maxlength"));
-				return;
-				//先试试看
-				var key;
-				if ($.browser.msie) {//ie浏览器
-					var key = event.keyCode;
-				}
-				else {//火狐浏览器
-					key = event.which;
-				}
-
-				//all keys including return.
-				if (key >= 33 || key == 13) {
-					var maxLength = $(this).attr("maxlength");
-					var length = this.value.length;
-					if (length >= maxLength) {
-						event.preventDefault();
-					}
-				}
+				var _ = $(this);
+				_.val(_.val.substring(0, _.attr("maxlength")));
 			});
 		};
 		V.fill = function (node, data) {
-			$(node.find('[data-options]')).each(function (i, v) {
+			$(node.find('[_]')).each(function (i, v) {
 				v = $(v);
-				var option = V.merge({ formatter: function (val, v, data) { return val; } }, eval('[{' + v.attr('data-options') + '}]')[0]);
+				var option = V.merge({ formatter: function (val, v, data) { return val; } }, eval('[{' + v.attr('_') + '}]')[0]);
 				var val = V.getValue(data[option.field], '');
 				val = option.formatter.apply(v, [val, v, data]);
 				if (V.isValid(val) || val === '') {

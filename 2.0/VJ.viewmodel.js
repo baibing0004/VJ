@@ -48,11 +48,11 @@
 					};
 					if(path.indexOf('<')>=0){	
 						__.node.append(path);
-						__.template = __.node.html();
+						__.template = __.node[0].innerHTML;
 						__.node.remove();
 					} else {
 						__.node.load(url,function(){
-							__.template = __.node.html();
+							__.template = __.node[0].innerHTML
 							__.node.remove();
 							_.callback();
 						});
@@ -61,7 +61,7 @@
 			}			
 			WTemplates[path].addCallback(func);			
 		};
-		//html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 控件均支持先创建 再init 然后绑定的过程
+		//html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 控件均支持先创建 再init 然后bind绑定的过程 再调用onLoad和render事件
 		W.Control = function(path,params){
 			var _ = this,__ = {};
 			{		
@@ -125,7 +125,7 @@
 			_.fill = function(){
 				return {};	
 			};
-			//可以将数据更新
+			//可以将数据更新到标签上
 			_.render = function(data){
 				if(data){
 					_.vm.data = V.merge(_.vm.data,data);
@@ -143,6 +143,12 @@
 							break;
 						case 'visible':
 							if(value){_.node.show();} else {_.node.hide();}
+							break;
+						case 'addClass':
+							_.node.addClass(value);
+							break;
+						case 'removeClass':
+							_.node.removeClass(value);
 							break;
 					}
 				});
@@ -167,7 +173,10 @@
 				var attrs = _.node[0].attributes;
 				if(attrs){
 					var i = attrs.length;
-					V.whileC(function(){i--;return i>=0?{key:attrs[i].name,val:attrs[i].value}:null},function(v){node.attr(v.key,(V.isValid(_.node.attr(v.key))?_.node.attr(v.key)+" ":"")+v.val);},function(){},true);
+					V.whileC(function(){i--;return i>=0?{key:attrs[i].name,val:attrs[i].value}:null},function(v){
+						var n = v.key.toLowerCase() == 'id'?$(node[0]):node;
+						n.attr(v.key,((V.isValid(_.node.attr(v.key)) && _.node.attr(v.key) != v.val)?_.node.attr(v.key)+" ":"")+v.val);
+					},function(){},true);
 				}
 				node.append(_.node.children());				
 				if(_.node[0].nodeName.toLowerCase() == 'body'){					

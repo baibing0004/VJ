@@ -402,12 +402,9 @@ VJ = window.top.VJ;
 					var option = V.merge({ formatter: function (val, v, data) { return val; } }, eval('[{' + v.attr('__') + '}]')[0]);
 					var val = V.getValue(data[option.field], '');
 					val = option.formatter.apply(node2, [val, node2, data]);
-					var css = V.getValue(option.cssClass, '').split(';');
-					$(css).each(function (i, v) {
-						if (v === '') { } else {
-							node2.addClass(v);
-						}
-					});
+					if(V.isValid(option.cssClass)){
+						node2.addClass(option.cssClass)
+					}
 					if (V.isValid(option.click)) {
 						node2.click(function () {
 							option.click.apply($(this), data);
@@ -421,12 +418,12 @@ VJ = window.top.VJ;
 		};
 		//剪贴板
 		V.getClipBoardText = function(e){
-			var data = e.clipboardData || window.clipboardData;
+			var data = (e && e.originalEvent.clipboardData) || window.clipboardData;
 			return data.getData('text');
 		};
 		V.setClipBoardText = function(e,val){
-			if(e.clipboardData){
-				e.clipboardData.setData('text/plain',val);
+			if(e && e.originalEvent.clipboardData){
+				e.originalEvent.clipboardData.setData('text/plain',val);
 			} else if(window.clipboardData){
 				window.clipboardData.setData('text',val);
 			}

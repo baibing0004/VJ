@@ -175,7 +175,14 @@
 					var i = attrs.length;
 					V.whileC(function(){i--;return i>=0?{key:attrs[i].name,val:attrs[i].value}:null},function(v){
 						var n = v.key.toLowerCase() == 'id'?$(node[0]):node;
-						n.attr(v.key,((V.isValid(_.node.attr(v.key)) && _.node.attr(v.key) != v.val)?_.node.attr(v.key)+" ":"")+v.val);
+						if(n.length>1){
+							for(var i=0;i<n.length;i++){
+								var _n = $(n[i]);
+								_n.attr(v.key,((V.isValid(_n.attr(v.key)) && _n.attr(v.key) != v.val)?_n.attr(v.key)+" ":"")+v.val);
+							}
+						} else {
+							n.attr(v.key,((V.isValid(n.attr(v.key)) && n.attr(v.key) != v.val)?n.attr(v.key)+" ":"")+v.val);
+						}
 					},function(){},true);
 				}
 				node.append(_.node.children());				

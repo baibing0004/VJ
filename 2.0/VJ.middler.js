@@ -195,6 +195,10 @@
 				return new function(){
 					var _ = this;
 					_.getType = function(){
+						if(path) {
+							//以后可以修改 目前是有缓存的
+							V.include(path);
+						}
 						return eval('('+type+')');
 					};
 					_.getValue = function(){

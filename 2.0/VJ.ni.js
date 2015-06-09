@@ -62,11 +62,13 @@
 				_._addCommand = function(name,params,func){
 					var cmd = cm.getConfigValue(__.KEY,name);
 					var command = name;
+					var template = "";
 					if(cmd){						
 						command = cmd.command;
 						params = V.merge(cmd.params,V.getValue(params,{}));
+						template = cmd.template;
 					}
-					_.lstCmd.push({name:command,params:params,func:func,template:cmd.template,key:name});
+					_.lstCmd.push({name:command,params:params,func:func,template:template,key:name});
 				};
 				_._excute = function(){
 					var _cms = _.lstCmd;

@@ -90,7 +90,7 @@
 						V.inherit.apply(_,[C.Config,[]]);
 						//创建ConfigConverts解析器
 						_.data['ConfigConverts'] =  new function(){
-							var _ = this;
+							var _ = this;							
 							//根据val获取对应的ConfigConvert, ConfigConverts：{'AppSettings':{type:'',path:''}}
 							_.toConfig = function(val){
 								return new function(){

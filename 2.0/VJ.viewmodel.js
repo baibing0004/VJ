@@ -298,7 +298,7 @@
 			_.dispose = function(){_.call('dispose');_.session.updateAll();};
 			//用于重载触发方式
 			_.ready = function(func){
-				$(function(){func();_.bindControl();});
+				$(function(){func();_.bindControl(_.node);});
 				window.onbeforeunload = _.dispose;
 			};
 			//用于覆盖引起页面布局改变
@@ -321,9 +321,9 @@
 				}
 			};
 			//用于绑定对应的控件
-			_.bindControl = function(){
+			_.bindControl = function(node){
 				//这里应该由真实的View层调用使用document.ready实现
-				var p = _.node.find('[_]').toArray();				
+				var p = node.find('[_]').toArray();				
 				V.whileC(function(){return p.shift();},function(v1){
 					v = $(v1);
 					var nodeName = v[0].nodeName.toLowerCase();
@@ -349,9 +349,9 @@
 						if(v.type && !v.v){
 							var obj = _.middler.getObjectByAppName(W.APP,v.type);
 							if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
-							var node = V.newEl('div');
-							_.node.append(node);
-							obj.init(_,node,null);
+							var node2 = V.newEl('div');
+							node.append(node2);
+							obj.init(_,node2,null);
 							_.controls.push(obj);
 							_.views[key] = obj;
 							V.inherit.apply(v,[M.Control,[]]);
@@ -414,6 +414,10 @@
 				__.data[name] = V.merge(_.data(name),V.getValue(data,{}));
 				__.ada.update(__.data[name],name);
 			};
+			//支持 session.clear('会话key',[data]);
+			_.clear = function(name){
+				__.ada.clear(name);
+			};
 			_.updateAll = function(){
 				var ret = [];
 				for(var i in __.data){
@@ -421,8 +425,7 @@
 				}
 				V.whileC(function(){ret.shift();},function(v){_.update(v.key,v.value);},function(){},true);
 			};
-			_.clear = function(){};
-			_.isLogin = function(){};
+			_.isLogin = function(){return false;};
 		};
 		M.SessionDataAdapter = function(resource){
 			var _ = this,__ = {};
@@ -442,6 +445,9 @@
 			_.update = function(data,name){
 				_.getResource(name).save(name,V.getValue(data,{}));
 			};
+			_.clear = function(name){
+				_.getResource(name).clear(name);
+			}
 		};
 		//专门用于继承使用
 		M.SessionDataResource = function(){
@@ -449,6 +455,7 @@
 			{}
 			_.load = function(name){return '';};
 			_.save = function(name,data){};
+			_.clear = function(name){};
 		};
 		//定义时必须说明cookie.js的位置
 		M.CookieDataResource = function(param){
@@ -495,6 +502,9 @@
 						break;
 				}
 			};
+			_.clear = function(name){
+				$.cookie(name,'', {expires:-1});
+			};
 		};
 		//处理localStorage与sessionStorage 与 全局对象ObjectDB
 		M.StorageDataResource = function(storage,timeout){
@@ -502,6 +512,19 @@
 			{
 				V.inherit.apply(_,[M.SessionDataResource,[]]);
 				__.storage = V.getValue(storage,window.sessionStorage);
+				switch(typeof(__.storage)){
+					case 'string':
+						__.storage = eval('('+__.storage+')');
+						break;
+					case 'object':
+						if(V.isArray(__.storage)){
+							throw new Error('不能使用数组作为资源');
+						}
+						break;
+					default:
+						throw new Error('M.StorageDataResource 无法找到<'+storage+'>对象');
+						break;
+				}
 				//默认缓存8个小时
 				__.timeout = V.getValue(timeout,{interval:'h',number:'8'});
 				if(!storage){
@@ -546,6 +569,7 @@
 						};
 					}
 				};
+				_.clear = function(name){_.save(name);};
 			}
 		};
 		//todo 加解密DataResource

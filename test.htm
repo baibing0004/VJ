@@ -375,11 +375,12 @@
 					{
 						V.isDebug = true;
 						V.inherit.apply(_,[M.Page,[cm,{
-							txt:{
+							txt1:{
 								type:'textbox',
-								data:{text:'hello world'},
-								onReady:function(){
+								data:{text:'hello world',visible:false},
+								onReady:function(data,self){
 									console.log('');
+									setTimeout(function(){self.update({visible:true});},2000);
 								},
 								onClick:function(data){
 										

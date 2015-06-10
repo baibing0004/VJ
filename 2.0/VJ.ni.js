@@ -153,7 +153,7 @@
 					V.each(val,func);
 				}
 			};
-			_.dispose = function(){__.datas.splice(0,__.datas.length);for(var i in __.data){delete __.data[i];}};
+			_.clear = function(){__.datas = [];__.data = {};__.kv = {};};
 		};
 	}
 	//分离NiDataResource完成static instance pool各种调用方式
@@ -375,7 +375,11 @@
 							}else{
 								data = eval('('+cmd.command+')(_.params.resource,cmd.params)');
 							}
-							try{if(func){func(data);}}catch(e){}
+							if(typeof(data) == 'function'){
+								V.tryC(function(){if(func){data(func);}});
+							}else{
+								V.tryC(function(){if(func){func(data);}});
+							}
 						} catch (e) {
 							V.showException('V._ajaxOption success方法', e);
 							if(func){func(false);}

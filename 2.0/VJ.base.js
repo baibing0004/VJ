@@ -972,6 +972,37 @@ VJ = window.top.VJ;
 				return (value != null);
 			};
 		}})();
+		//定义的StringBuilder类
+		V.StringBuilder = function(){
+			var _ = this,__ = {};
+			{	
+				__.data= [];
+				__.length = 0;
+			}
+			_.append = function(str){
+				str = V.getValue(str,'');
+				__.data.push(str);
+				__.length += str.length;
+				return _;
+			};
+			_.appendFormat = function(format,data){
+				return _.append(V.format(format,data));
+			};
+			_.remove = function(start,length){
+				var str = _.toString().substr(start,length);
+				__.data = [str];
+				__.length = str.length;
+				return _;
+			};
+			_.toString = function(){
+				return __.data.join('');
+			};
+			_.clear = function(){
+				__.data = []
+				__.length = 0;
+			};
+			_.length = function(){return __.length;};
+		};
 		/* 得到日期年月日等加数字后的日期 new Date().add('h',1)*/ 
 		Date.prototype.add = function(interval,number) 
 		{ 

@@ -15,7 +15,9 @@ window.top.config = {
 			submit:{type:'.Submit'},
 			reset:{type:'.Reset'},
 			form:{type:'.Form'},
-			box:{type:'.Box'}
+			box:{type:'.Box'},
+			radiolist:{type:'.RadioList'},
+			checklist:{type:'.CheckList'}
 		},
 		'VESH.viewmodel':{
 			pack:'VJ.viewmodel',
@@ -46,12 +48,18 @@ window.top.config = {
 				{type:'.NiPoolDataResource',params:[{ref:'ajaxresource'},{dbtype:'tjson',jsonp:'_bk'}]},
 				{ref:'cm'}
 			]},
-			template2:{type:'.NiTemplateDecorator',mode:'instance',params:[
+			template21:{type:'.NiTemplateDecorator',mode:'instance',params:[
 				{type:'.NiStaticDataResource',params:[{ref:'ajaxresource'},{dbtype:'tjson',jsonp:'_bk'}]},
 				{type:'.NiStaticDataResource',params:[{ref:'objresource'},{resource:window.sessionStorage}]},
 				{ref:'cm'},
 				{timeout:{interval:'s',number:50}}
-			]},	
+			]},
+			template2:{type:'.NiLazyTemplateDecorator',mode:'instance',params:[
+				{type:'.NiStaticDataResource',params:[{ref:'ajaxresource'},{dbtype:'tjson',jsonp:'_bk'}]},
+				{type:'.NiStaticDataResource',params:[{ref:'objresource'},{resource:window.sessionStorage}]},
+				{ref:'cm'},
+				{timeout:{interval:'s',number:50}}
+			]},
 			template1:{type:'.NiTemplate',mode:'instance',params:[
 				{type:'.NiPoolDataResource',params:[{ref:'ajaxresource'},{dbtype:'tjson',jsonp:'_bk'}]},
 				{ref:'cm'}

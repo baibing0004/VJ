@@ -58,9 +58,9 @@
 			var _ = this,__ = {};
 			{
 				_.lstCmd = [];
-				__.KEY='Ni';
+				_.KEY='Ni';
 				_._addCommand = function(name,params,func){
-					var cmd = cm.getConfigValue(__.KEY,name);
+					var cmd = cm.getConfigValue(_.KEY,name);
 					var command = name;
 					var template = "";
 					if(cmd){						
@@ -120,17 +120,17 @@
 		N.NiTemplateManager = function(cm,appName){
 			var _ = this,__ = {};
 			{
-				__.KEY=V.getValue(appName,'Ni');
+				_.KEY=V.getValue(appName,'Ni');
 				__.middler = new V.middler.Middler(cm);
 			}
 			_.excute = function(tempName,name,params,func){
-				var temp = __.middler.getObjectByAppName(__.KEY,tempName);
+				var temp = __.middler.getObjectByAppName(_.KEY,tempName);
 				if(temp){
 					temp.excute(name,params,function(data){
 						V.tryC(function(){
 							if(func){func(data);}
 						});
-						__.middler.setObjectByAppName(__.KEY,tempName,temp);
+						__.middler.setObjectByAppName(_.KEY,tempName,temp);
 					});
 				}else{throw new Error('没有找到Template:'+tempName);}
 			}
@@ -144,8 +144,11 @@
 				__.kv = {};
 				__.datas = [];
 			}
-			_.get = function(key){return __.data[key]?__.data[key]:__.kv[key];};
-			_.add = function(data,name){if(data){__.data[__.datas.length]=data;__.kv[name]=data;__.datas.push(data);}};
+			_.get = function(key){return __.data[key]?__.data[key]:__.kv[key]?__.kv[key][1]:(function(){console.log(key);return null;})();};
+			_.add = function(data,name){
+				if(data && !__.kv[name]){__.data[__.datas.length]=data;__.kv[name]=[__.datas.length,data];__.datas.push(data);}
+				else if (__.kv[name]){var id = __.kv[name][0];__.data[id]=data;__.kv[name]=data;__.datas[id]=data;}
+			};
 			_.last = function(){return _.get(__.datas.length-1);};
 			_.each = function(key,func){
 				var val = _.get(key);
@@ -153,7 +156,7 @@
 					V.each(val,func);
 				}
 			};
-			_.clear = function(){__.datas = [];__.data = {};__.kv = {};};
+			_.clear = function(){__.datas = [];__.data = {};__.kv = {};console.log('clear');};
 		};
 	}
 	//分离NiDataResource完成static instance pool各种调用方式
@@ -268,7 +271,7 @@
 								case "object":
 									break;
 								default:
-									V.showException('V.NiDataCommand success方法 name:typeof错误 type:' + typeof (data));
+									V.showException('V.NiDataCommand success方法 name:typeof错误 type:' + data);
 									hasFalse = true;
 									break;
 							}            
@@ -689,9 +692,9 @@
 					__._addCommand(name,params,func);
 					if(_.lstCmd.length!=index){
 						var command = null;
-						var cmd = cm.getConfigValue(__.KEY,name+'.Cache');
+						var cmd = cm.getConfigValue(_.KEY,name+'.Cache');
 						if(!cmd){
-							cmd = cm.getConfigValue(__.KEY,name+'.Clear');
+							cmd = cm.getConfigValue(_.KEY,name+'.Clear');
 							if(cmd){
 								ommand = V.getValue(cmd.command,_.clearCommand);
 							}
@@ -734,7 +737,7 @@
 									});
 									if(data){
 										//新增缓存
-										var _nicmd = cm.getConfigValue(__.KEY,v.key+'.Set');
+										var _nicmd = cm.getConfigValue(_.KEY,v.key+'.Set');
 										if(_nicmd){
 											var _conn = cacheres.getDBConnection();
 											var _cmd = cacheres.getDBCommand();
@@ -798,10 +801,10 @@
 			}
 		};
 		//用于先读取缓存同步请求真实数据的情况 totest
-		N.NiLazyTemplateDecorator = function(res,cacheres,cm,params){			
+		N.NiLazyTemplateDecorator = function(res,cacheres,cm,params){
 			var _ = this, __ = {};
 			{
-				V.inherit.apply(_,[N.NiTemplateDecorator,[res,cacheres,cm,params]]);				
+				V.inherit.apply(_,[N.NiTemplateDecorator,[res,cacheres,cm,params]]);
 				_._excute = function(){
 					var _cms = _.lstCmd;
 					_.lstCmd = [];
@@ -829,7 +832,7 @@
 									});
 									if(data){
 										//新增缓存
-										var _nicmd = cm.getConfigValue(__.KEY,v.key+'.Set');
+										var _nicmd = cm.getConfigValue(_.KEY,v.key+'.Set');
 										if(_nicmd){
 											var _conn = cacheres.getDBConnection();
 											var _cmd = cacheres.getDBCommand();
@@ -848,7 +851,7 @@
 									}
 								});
 							};
-							V.whileC2(function(){return _cms.shift();},function(v,next){	
+							V.whileC2(function(){return _cms.shift();},function(v,next){
 								var _nicmd = _.lstCmd2[i];
 								//准备处理缓存
 								if(_nicmd){
@@ -869,17 +872,15 @@
 												if(v.func){
 													V.tryC(function(){
 														v.func(_.result);
-													});
-												}
+													});												
+												}			
 											}
-											func(v);
-											next();
+											func(v,next);
 										});
 									});
 								} else {
 									i++;
-									func(v);
-									next();
+									func(v,next);
 								}
 							},function(){
 								res.backDBConnection(conn);
@@ -895,8 +896,8 @@
 			var _ = this, __ = {};
 			{
 				V.inherit.apply(_,[N.NiTemplate,[res,cm]]);
-				__.KEY = V.getValue(appName,'Ni');				
-				__.ni = new N.NiTemplateManager(relcm,__.KEY);
+				_.KEY = V.getValue(appName,'Ni');				
+				__.ni = new N.NiTemplateManager(relcm,_.KEY);
 				__._addCommand = _._addCommand;
 				__._excute = _._excute;
 				__.lstCmd = {};

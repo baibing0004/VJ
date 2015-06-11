@@ -412,18 +412,25 @@
 								onClick:function(data,self){
 									var _ = this;
 									this.txt.update({text:_.rl.get().value});
+									console.log(_.cl.get().value);
 									this.txt2.update({text:_.cl.get().value});
-									this.txt3.update({text:'点击事件'});
+									this.txt3.update({text:_.sel.get().value});
 								}
 							},
 							rl:{
-								data:{list:{e:1,r:2,t:3},value:2},
+								data:{values:{e:1,r:2,t:3},value:2},
 								onLoad:function(data,self){
-									setTimeout(function(){self.update({list:{a:1,b:2,c:3}})},2000);
+									setTimeout(function(){self.update({values:{a:1,b:2,c:3}})},2000);
 								}
 							},							
 							cl:{
-								data:{list:{e:1,r:2,t:3},value:"2,3"}
+								data:{values:{e:1,r:2,t:3},value:"2,3"}
+							},					
+							sel:{
+								data:{values:{e:1,r:2,t:3},value:2},
+								onChange:function(data,self){
+									console.log(data.value);
+								}
 							},
 							page:{
 								data:{
@@ -446,9 +453,8 @@
 									console.log(sb.append(1).append(2).append(3).append(4).insertFormat(2,"__{abc}<%=abc%>__",{abc:22}).append(5).append(6).append(7).insert(3,"+++++").remove(1,1).append("KKKK").toString());
 									sb.clear();
 									sb = null;
-									var s = new function(){ var _ = this; _.final = function(){delete _;};};
-									s.final();
-									console.log(s);
+									console.log(V.format('<option value="{value}">{key}</option>',{key:'adfef',value:1}));
+									console.log(V.merge({abc:123,bd:22},{abc:''}));
 								},
 								onDispose:function(){
 									console.log('dispose');

@@ -83,7 +83,6 @@
 				V.inherit.apply(_,[W.RadioBox,[path || '<span><span style="display:none;"></span><input type="checkbox"></input></span>']]);
 			}
 		};
-		//totest
 		W.Select = function(path){
 			var _ = this,__ = {};
 			{
@@ -100,23 +99,27 @@
 				__.onLoad(node);
 			};
 			_.fill = function(){
-				return {value:_.sel.val()};
+				return {value:_.sel.find("option:selected").val()};
 			};
 			_.render = function(data){
 				data = __.render(data);
+				var setValue = function(value){
+					_.sel.find(':selected').attr('selected',false);
+					_.sel.find('option[value="'+value+'"]').attr('selected',true);
+				};
 				V.forC(data,function(key,value){
 					switch(key){
-						case 'options':
+						case 'values':
 							if(V.getType(value) == 'string'){
 								value = eval('('+value+')');
 							};
 							var sb = V.sb();
-							V.forC(value,function(k,v){
+							V.forC(value,function(k,v){								
 								sb.appendFormat('<option value="{value}">{key}</option>',{key:k,value:v});
-							},function(){_.sel.empty().append(sb.toString());sb.clear();sb = null;});
+							},function(){_.sel.empty().append(sb.clear());sb = null;if(_.vm.data.value){setValue(_.vm.data.value);}});
 							break;
-						case 'value':
-							_.sel.val(value);
+						case 'value':							
+							setValue(value);
 							break;
 						case 'name':
 							_.sel.attr('name',value);
@@ -305,7 +308,7 @@
 				};
 				V.forC(data,function(k,v){
 					switch(k){
-						case 'list':
+						case 'values':
 							var sb = V.sb();
 							V.forC(v,function(k,v2){
 								sb.appendFormat(_.content,{key:k,value:v2,name:_.vm.data.name});
@@ -335,13 +338,14 @@
 				_.content = V.getValue(content,'<li><span>{key}:</span><span class="p_CheckList_li"><input name="{name}" type="checkbox" value="{value}"/></span></li>');
 			}
 			_.fill = function(){
-				return {value:(function(){
+				//需要兼容没有数据未创建时的错误
+				return  _.ul.children().length>0?{value:(function(){
 					var ret = [];
 					_.ul.find(':checkbox:checked').each(function(i,v){
 						ret.push($(v).val());
 					});
 					return ret.join(',');
-				})()};
+				})()}:{};
 			};
 			_.onLoad = function(node){
 				_.ul = node.find('ul');
@@ -357,14 +361,15 @@
 					V.setChecked(_.ul.find(":checkbox:checked"),false);
 					V.each(value.split(','),function(v){V.setChecked(_.ul.find(':checkbox[value="'+v+'"]'),true);});
 				};
+				//未能更简单实现list与value方法之间异步处理的问题。
 				V.forC(data,function(k,v){
 					switch(k){
-						case 'list':
+						case 'values':
 							var sb = V.sb();
 							V.forC(v,function(k,v2){
 								sb.appendFormat(_.content,{key:k,value:v2,name:_.vm.data.name});
 							},function(){
-								_.ul.empty().append(sb.toString());sb.clear();sb=null;
+								_.ul.empty().append(sb.clear());sb=null;
 								if(_.vm.data.value){
 									setValue(_.vm.data.value);
 								}

@@ -28,7 +28,7 @@ VJ = window.top.VJ;
 			});
 		}
 		var funrep2 = function(s,o){
-			var reg = /\{\S+\}/gi;
+			var reg = /\{[^(})]+\}/gi;
 			return s.replace(reg,function(word){
 				var prop = word.replace(/\{/g,'').replace(/\}/g,'');
 				if(V.isValid(o[prop])){
@@ -275,7 +275,7 @@ VJ = window.top.VJ;
 			var _merge = function (aim, source) {
 				if (!(typeof (source) == 'object' && typeof (source.length) == 'undefined')) { return aim; }
 				for (var i in source) {
-					if (V.isValid(source[i])) {
+					if (source[i] != undefined) {
 						if (!V.isValid(aim[i])) {
 							aim[i] = _clone(source[i]);
 						} else {

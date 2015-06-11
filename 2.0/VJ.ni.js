@@ -144,10 +144,10 @@
 				__.kv = {};
 				__.datas = [];
 			}
-			_.get = function(key){return __.data[key]?__.data[key]:__.kv[key]?__.kv[key][1]:(function(){console.log(key);return null;})();};
+			_.get = function(key){return __.data[key]?__.data[key]:__.kv[key]?__.kv[key][1]:null;};
 			_.add = function(data,name){
 				if(data && !__.kv[name]){__.data[__.datas.length]=data;__.kv[name]=[__.datas.length,data];__.datas.push(data);}
-				else if (__.kv[name]){var id = __.kv[name][0];__.data[id]=data;__.kv[name]=data;__.datas[id]=data;}
+				else if (__.kv[name]){var id = __.kv[name][0];__.data[id]=data;__.kv[name]=[__.datas.length,data];__.datas[id]=data;}
 			};
 			_.last = function(){return _.get(__.datas.length-1);};
 			_.each = function(key,func){
@@ -156,7 +156,7 @@
 					V.each(val,func);
 				}
 			};
-			_.clear = function(){__.datas = [];__.data = {};__.kv = {};console.log('clear');};
+			_.clear = function(){__.datas = [];__.data = {};__.kv = {};};
 		};
 	}
 	//分离NiDataResource完成static instance pool各种调用方式
@@ -268,10 +268,12 @@
 										data = eval('('+data+')');	
 									}
 									break;
+								case 'undefined':
 								case "object":
+									hasFalse = !data;
 									break;
 								default:
-									V.showException('V.NiDataCommand success方法 name:typeof错误 type:' + data);
+									V.showException('V.NiDataCommand success方法 name:typeof错误 type:'+data);
 									hasFalse = true;
 									break;
 							}            
@@ -521,11 +523,12 @@
 												//如何判断tjson
 												data = eval('('+data+')');	
 											}
-											break;
-										case "object":
-											break;
+											break;										
+									case 'undefined':
+									case "object":
+										hasFalse = !data;
 										default:
-											V.showException('V.NiDataCommand success方法 name:typeof错误 type:' + typeof (data));
+											V.showException('V.NiSocketDataCommand success方法 name:typeof错误 type:' + (data));
 											hasFalse = true;
 											break;
 									}            
@@ -659,6 +662,7 @@
 								date:(params.timeout?new Date().add(params.timeout.interval,params.timeout.number).getTime():false)
 							};
 						}
+						return null;
 					};
 					//可以根据业务逻辑改为根据某个公共字段进行删除
 					_.clearCommand = function(res,params){
@@ -667,6 +671,7 @@
 						} else if(res[params.cacheKey]){
 							delete res[params.cacheKey];
 						}
+						return null;
 					};
 					_.cacheCommand = function(res,params){						
 						var val = null;
@@ -683,8 +688,8 @@
 									return null;
 								}
 							}
-						}
-						return val.data;
+							return val.data;
+						} else return null;
 					};
 				}
 				_._addCommand = function(name,params,func){
@@ -800,7 +805,7 @@
 				};
 			}
 		};
-		//用于先读取缓存同步请求真实数据的情况 totest
+		//用于先读取缓存同步请求真实数据的情况
 		N.NiLazyTemplateDecorator = function(res,cacheres,cm,params){
 			var _ = this, __ = {};
 			{

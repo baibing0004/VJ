@@ -101,6 +101,7 @@
 					_.vm.nodeName = _.nodeName;
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
+					_.vm.get = function(key){_.vm.data = V.merge(_.vm.data,_.fill());return key?_.vm.data[key]:_.vm.data;};
 					V.forC(_.vm,function(key,value){
 						key = key.toLowerCase();
 						if(key.indexOf('on')==0){

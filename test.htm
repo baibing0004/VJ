@@ -375,7 +375,7 @@
 					{
 						V.isDebug = true;
 						V.inherit.apply(_,[M.Page,[cm,{
-							txt1:{
+							txt:{
 								type:'textbox',
 								data:{text:'hello world',visible:false},
 								onReady:function(data,self){
@@ -410,12 +410,20 @@
 							},
 							but:{
 								onClick:function(data,self){
-									console.log(data);
-									console.log(this);
-									this.txt.update({text:'点击事件'});
-									this.txt2.update({text:'点击事件'});
+									var _ = this;
+									this.txt.update({text:_.rl.get().value});
+									this.txt2.update({text:_.cl.get().value});
 									this.txt3.update({text:'点击事件'});
 								}
+							},
+							rl:{
+								data:{list:{e:1,r:2,t:3},value:2},
+								onLoad:function(data,self){
+									setTimeout(function(){self.update({list:{a:1,b:2,c:3}})},2000);
+								}
+							},							
+							cl:{
+								data:{list:{e:1,r:2,t:3},value:"2,3"}
 							},
 							page:{
 								data:{
@@ -434,7 +442,13 @@
 									});
 									//console.log(_.middler.getObjectByAppName(M.APP,'SessionDataManager'));
 									_.session.update('ssss',{aaaa:22});
-									
+									var sb = V.sb();
+									console.log(sb.append(1).append(2).append(3).append(4).insertFormat(2,"__{abc}<%=abc%>__",{abc:22}).append(5).append(6).append(7).insert(3,"+++++").remove(1,1).append("KKKK").toString());
+									sb.clear();
+									sb = null;
+									var s = new function(){ var _ = this; _.final = function(){delete _;};};
+									s.final();
+									console.log(s);
 								},
 								onDispose:function(){
 									console.log('dispose');
@@ -626,7 +640,7 @@
 <body>
 	<form id='frmMain' Action="" _>
 		<ruby>汉字<rt>han zi</rt><rp>{}</rp></ruby>
-		<p><textbox id="txt" _="key:'输入框:'"></textbox></p>
+		<p><TextBox id="txt" _="key:'输入框:'"></TextBox></p>
 		<p><textbox id="txt2" _="key:'输入框:'"></textbox></p>
 		<p><textbox id="txt3" _="key:'输入框:'"></textbox></p>
 		<p><radiobox id="radio" _="key:'单选框:'"></radiobox></p>
@@ -637,7 +651,9 @@
 		<p><button id="but" _="key:'按钮'"></button>
 		<submit id="sub" _="key:'提交钮'"></submit>
 		<reset _="key:'重置钮'"></reset></p>
-		<box  _="key:'中心'" style="width:200px;" class="abc"></box>
+		<box  _="key:'中心'" style="width:200px;height:50px;" class="abc"></box>
+		<p><radiolist id="rl" _="name:'aaaa'"></radiolist></p>
+		<p><checklist id="cl" _="name:'bbbb'" ></checklist></p>
 		<!--ytsearchbox class="p_searchbox" id="aaa" _></ytsearchbox-->
 	</form>
 </body>

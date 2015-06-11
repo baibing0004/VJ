@@ -16,7 +16,7 @@ VJ = window.top.VJ;
 		V.getValue = function (data, defaultData) {
 			return V.isValid(data) ? data : defaultData;
 		};
-		V.format = function(s,o){
+		var funrep1 = function(s,o){
 			var reg = /<%=[^(%>)]+%>/gi;
 			return s.replace(reg,function(word){
 				var prop = word.replace(/<%=/g,'').replace(/%>/g,'');
@@ -26,7 +26,67 @@ VJ = window.top.VJ;
 					return "";
 				}
 			});
+		}
+		var funrep2 = function(s,o){
+			var reg = /\{\S+\}/gi;
+			return s.replace(reg,function(word){
+				var prop = word.replace(/\{/g,'').replace(/\}/g,'');
+				if(V.isValid(o[prop])){
+					return o[prop];
+				}else{
+					return "";
+				}
+			});
 		};
+		V.format = function(s,o){
+			if(!s || !o) {return V.getValue(s,'');}
+			if(s.indexOf('<%='>=0)){s = funrep1(s,o);}
+			if(s.indexOf('{'>=0)){s = funrep2(s,o);}
+			return s;
+		};
+		//定义的StringBuilder类
+		V.sb = function(){return new function(){
+			var _ = this,__ = {};
+			{	
+				__.data= [];
+				__.length = 0;
+			}
+			_.append = function(str){
+				str = V.getValue(str+'','');
+				__.data.push(str);
+				__.length += str.length;
+				return _;
+			};
+			_.appendFormat = function(format,data){
+				return _.append(V.format(format,data));
+			};
+			_.insert = function(start,data){
+				var str = _.toString();
+				data = V.getValue(data+'','');
+				__.data = [str.substr(0,start),data,str.substr(start)];
+				__.length = str.length+data.length;
+				return _;
+			};
+			_.insertFormat = function(start,format,data){
+				return _.insert(start,V.format(format,data));
+			};
+			_.remove = function(start,length){
+				var str = _.toString();
+				__.data = [str.substr(0,start),str.substr(start+length)];
+				__.length = Math.max(0,str.length-length);
+				return _;
+			};
+			_.toString = function(){
+				return __.data.join('');
+			};
+			_.clear = function(){
+				var s = _.toString();
+				__.data = []
+				__.length = 0;
+				return s;
+			};
+			_.length = function(){return __.length;};
+		};};
 	}
 	{
 		//数组处理
@@ -972,37 +1032,6 @@ VJ = window.top.VJ;
 				return (value != null);
 			};
 		}})();
-		//定义的StringBuilder类
-		V.StringBuilder = function(){
-			var _ = this,__ = {};
-			{	
-				__.data= [];
-				__.length = 0;
-			}
-			_.append = function(str){
-				str = V.getValue(str,'');
-				__.data.push(str);
-				__.length += str.length;
-				return _;
-			};
-			_.appendFormat = function(format,data){
-				return _.append(V.format(format,data));
-			};
-			_.remove = function(start,length){
-				var str = _.toString().substr(start,length);
-				__.data = [str];
-				__.length = str.length;
-				return _;
-			};
-			_.toString = function(){
-				return __.data.join('');
-			};
-			_.clear = function(){
-				__.data = []
-				__.length = 0;
-			};
-			_.length = function(){return __.length;};
-		};
 		/* 得到日期年月日等加数字后的日期 new Date().add('h',1)*/ 
 		Date.prototype.add = function(interval,number) 
 		{ 

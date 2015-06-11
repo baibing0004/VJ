@@ -107,13 +107,13 @@
 				V.forC(data,function(key,value){
 					switch(key){
 						case 'options':
-							_.sel.empty();
 							if(V.getType(value) == 'string'){
 								value = eval('('+value+')');
 							};
+							var sb = V.sb();
 							V.forC(value,function(k,v){
-								_.sel.append('<option value="'+v+'">'+k+'</option>');
-							});
+								sb.appendFormat('<option value="{value}">{key}</option>',{key:k,value:v});
+							},function(){_.sel.empty().append(sb.toString());sb.clear();sb = null;});
 							break;
 						case 'value':
 							_.sel.val(value);
@@ -279,18 +279,16 @@
 				});
 			};
 		};
-		//totest radiolist checklist 
-		
 		W.RadioList = function(path,content){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<div class="p_radioList"><ul></ul></div>']]);
+				V.inherit.apply(_,[W.Control,[path || '<div class="p_RadioList"><ul></ul></div>']]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
-				_.content = V.getValue(content,'<li><span><%=key%>:</span><span class="p_radiolist"><input name="<%=name%>" type="radio" value="<%=value%>"/></span></li>');
+				_.content = V.getValue(content,'<li><span>{key}:</span><span class="p_RadioList_li"><input name="{name}" type="radio" value="{value}"/></span></li>');
 			}
 			_.fill = function(){
-				return {value:_.node.find(':radio:checked').val()};
+				return {value:_.ul.find(':radio:checked').val()};
 			};
 			_.onLoad = function(node){
 				_.ul = node.find('ul');
@@ -298,29 +296,31 @@
 				V.forC(_.events,function(k,v){
 					_.bindEvent(node,k,v);
 				},function(){__.onLoad(node);});
-			};
-			
+			};			
 			_.render = function(data){
 				data = __.render(data);
+				var setValue = function(value){					
+					V.setChecked(_.ul.find(":radio:checked"),false);
+					V.setChecked(_.ul.find(':radio[value="'+value+'"]'),true);
+				};
 				V.forC(data,function(k,v){
 					switch(k){
 						case 'list':
-							var sb = new V.StringBuilder();
-							V.each(v,function(v2){
-								if(v2){
-									v2.name = _.vm.data.name;
-									sb.appendFormat(_.content,v2);
+							var sb = V.sb();
+							V.forC(v,function(k,v2){
+								sb.appendFormat(_.content,{key:k,value:v2,name:_.vm.data.name});
+							},function(){
+								_.ul.empty().append(sb.toString());sb.clear();sb=null;
+								if(_.vm.data.value){
+									setValue(_.vm.data.value);
 								}
-							},function(){_.ul.empty().append(sb.toString());sb.clear();sb=null;});
+							});
 							break;
 						case 'value':
-							var ret = [];
-							_.node.find(":radio:checked").each(function(i,v){ret.push(v);});
-							V.each(ret,function(v){V.setChecked(v,false)});
-							V.setChecked(_.node.find(':radio[value="'+v+'"]'),true);
+							setValue(v);
 							break;
 						case 'name':
-							_.node.find(":radio:checked").attr('name',v);
+							_.node.find(":radio").attr('name',v);
 							break;
 					}
 				});
@@ -329,13 +329,19 @@
 		W.CheckList = function(path,content){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<div class="p_checkList"><ul></ul></div>']]);
+				V.inherit.apply(_,[W.Control,[path || '<div class="p_CheckList"><ul></ul></div>']]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
-				_.content = V.getValue(content,'<li><span><%=key%>:</span><span class="p_radiolist"><input name="<%=name%>" type="checkbox" value="<%=value%>"/></span></li>');
+				_.content = V.getValue(content,'<li><span>{key}:</span><span class="p_CheckList_li"><input name="{name}" type="checkbox" value="{value}"/></span></li>');
 			}
 			_.fill = function(){
-				return {value:_.node.find(':check:checked').val()};
+				return {value:(function(){
+					var ret = [];
+					_.ul.find(':checkbox:checked').each(function(i,v){
+						ret.push($(v).val());
+					});
+					return ret.join(',');
+				})()};
 			};
 			_.onLoad = function(node){
 				_.ul = node.find('ul');
@@ -343,34 +349,38 @@
 				V.forC(_.events,function(k,v){
 					_.bindEvent(node,k,v);
 				},function(){__.onLoad(node);});
-			};
+			};			
 			_.render = function(data){
 				data = __.render(data);
+				var setValue = function(value){
+					value = V.getValue(value+'','');
+					V.setChecked(_.ul.find(":checkbox:checked"),false);
+					V.each(value.split(','),function(v){V.setChecked(_.ul.find(':checkbox[value="'+v+'"]'),true);});
+				};
 				V.forC(data,function(k,v){
 					switch(k){
 						case 'list':
-							var sb = new V.StringBuilder();
-							V.each(v,function(v2){
-								if(v2){
-									v2.name = _.vm.data.name;
-									sb.appendFormat(_.content,v2);
+							var sb = V.sb();
+							V.forC(v,function(k,v2){
+								sb.appendFormat(_.content,{key:k,value:v2,name:_.vm.data.name});
+							},function(){
+								_.ul.empty().append(sb.toString());sb.clear();sb=null;
+								if(_.vm.data.value){
+									setValue(_.vm.data.value);
 								}
-							},function(){_.ul.empty().append(sb.toString());sb.clear();sb=null;});
+							});
 							break;
 						case 'value':
-							var ret = [];
-							_.node.find(":radio:checked").each(function(i,v){ret.push(v);});
-							V.each(ret,function(v){V.setChecked(v,false)},function(){V.setChecked(_.node.find(':radio[value="'+v+'"]'),true);});							
+							setValue(v);
 							break;
 						case 'name':
-							_.node.find(":radio:checked").attr('name',v);
-							delete data[k];
+							_.node.find(":checkbox").attr('name',v);
 							break;
-
 					}
 				});
-			}
+			};
 		};
+		//totest StringBuilder
 		//todo panel 容器类对象的controls对象设置 bind方法设置 与 validate框架设置 move类对象动画设置
 		//todo file
 	}

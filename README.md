@@ -27,12 +27,13 @@
 
  * 要想完成这个过程就必须有个地方来管理用户自定义标签对应的控组模：
      * VJ通过`VJ.middler.Middler`定义的IOC容器分别将公共控件库，公共逻辑对象，数据访问对象分别定义和组织了起来，这样就需要一个独立的json配置代码段或者json配置文件，一般是根目录下的***config.js*** 配合`VJ.viewmodel.Page`完成了这个工作。
-     * 为了完成业务逻辑会话和数据交互是必不可少的，VJ将逻辑代码中与会话和数据操作有关的部分再次分离，完成了五花八门的业务处理与乱七八糟的数据访问分离的任务。这就是独立json配置代码段或者json配置文件一般是根目录下的***ni.js*** 配合`VJ.viewmodel.Page`完成了这个工作。  
-            那为毛不用$.cookie,$.ajax非要换成`this.session`,`this.ni`去调用呢?
-            因为基于统一的Middler容器，VJ框架才可以:
-            * 在不改动用户代码的情况下仅修改config.js便可以更换用户标签对应的UI控件、组件、模块
-            * 在不改动用户代码的情况下仅修改config.js更改某个会话是存放cookie还是sessionStorage,是明文还是加密，
-            * 在不改动用户代码的情况下仅修改ni.js配置某个数据请求是否需要缓存，是json还是jsonp，是ajax还是webdb甚至是WebSocket。'
+     * 为了完成业务逻辑会话和数据交互是必不可少的，VJ将逻辑代码中与会话和数据操作有关的部分再次分离，完成了五花八门的业务处理与乱七八糟的数据访问分离的任务。这就是独立json配置代码段或者json配置文件一般是根目录下的***ni.js*** 配合`VJ.viewmodel.Page`完成了这个工作。 
+			
+            那为毛不用$.cookie,$.ajax非要换成`this.session`,`this.ni`去调用呢?  
+            因为基于统一的Middler容器，VJ框架才可以:  
+            * 在不改动用户代码的情况下仅修改config.js便可以更换用户标签对应的UI控件、组件、模块  
+            * 在不改动用户代码的情况下仅修改config.js更改某个会话是存放cookie还是sessionStorage,是明文还是加密，  
+            * 在不改动用户代码的情况下仅修改ni.js配置某个数据请求是否需要缓存，是json还是jsonp，是ajax还是webdb甚至是WebSocket。  
 
  * 具体来说，就是用户的页面代码继承`VJ.viewmodel.Page`，用获取到的内置的会话管理对象`this.session(data(key),update(key,{json}))`完成了会话管理，通过内置的数据管理对象`this.ni(excute(command，params，function))`完成了数据访问管理。
         是的，这一切都是可以通过配置在 不改动用户代码 的情况下，分分钟搞定的。

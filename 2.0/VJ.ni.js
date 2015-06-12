@@ -41,7 +41,7 @@
 				if(val){
 					if(typeof(val) == 'object'){
 						for(var i in val){
-							if(val[i].command || val[i].params){
+							if(val[i]){
 								ret.data[i] = VJ.merge({params:{}},val[i]);
 							}
 						}
@@ -809,7 +809,11 @@
 		N.NiLazyTemplateDecorator = function(res,cacheres,cm,params){
 			var _ = this, __ = {};
 			{
+				__.lazyExp = V.getValue(params.lazyExp,function(p){return true;});
+				params = VJ.merge({},params);
+				if(params && params.lazyExp) {delete params.lazyExp;}
 				V.inherit.apply(_,[N.NiTemplateDecorator,[res,cacheres,cm,params]]);
+				
 				_._excute = function(){
 					var _cms = _.lstCmd;
 					_.lstCmd = [];
@@ -835,7 +839,7 @@
 											});
 										}
 									});
-									if(data){
+									if(data && __.lazyExp(v.params)){
 										//新增缓存
 										var _nicmd = cm.getConfigValue(_.KEY,v.key+'.Set');
 										if(_nicmd){
@@ -859,7 +863,7 @@
 							V.whileC2(function(){return _cms.shift();},function(v,next){
 								var _nicmd = _.lstCmd2[i];
 								//准备处理缓存
-								if(_nicmd){
+								if(_nicmd && __.lazyExp(v.params)){
 									i++;
 									var _conn = cacheres.getDBConnection();
 									var _cmd = cacheres.getDBCommand();

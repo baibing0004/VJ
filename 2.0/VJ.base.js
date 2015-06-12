@@ -575,6 +575,7 @@ VJ = window.top.VJ;
 								} else {
 									hasFalse = (data.indexOf('[False]') >= 0 || data.indexOf('[false]') >= 0)
 								}
+								data = data.replace(/[\r\n]+/g,'');
 								break;
 							case "object":
 								$(eval(data)).each(function (i, v) {
@@ -1005,6 +1006,15 @@ VJ = window.top.VJ;
 		V.qs = (function(){return new function(qs) { // optionally pass a querystring to parse
 			this.params = {};
 			if (qs == null) qs = location.search.substring(1, location.search.length);
+			//等同_VJ_QueryString.prototype.get
+			this.get = function (key, default_) {
+				var value = this.params[key];
+				return (value != null) ? value : default_;
+			};
+			this.contains = function (key) {
+				var value = this.params[key];
+				return (value != null);
+			};
 			if (qs.length == 0) return;
 			// Turn <plus> back to <space>
 			// See: http://www.w3.org/TR/REC-html40/interact/forms.html#h-17.13.4.1
@@ -1022,15 +1032,6 @@ VJ = window.top.VJ;
 
 				this.params[name] = value;
 			}
-			//等同_VJ_QueryString.prototype.get
-			this.get = function (key, default_) {
-				var value = this.params[key];
-				return (value != null) ? value : default_;
-			};
-			this.contains = function (key) {
-				var value = this.params[key];
-				return (value != null);
-			};
 		}})();
 		/* 得到日期年月日等加数字后的日期 new Date().add('h',1)*/ 
 		Date.prototype.add = function(interval,number) 

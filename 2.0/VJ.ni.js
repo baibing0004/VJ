@@ -263,9 +263,11 @@
 									} else {
 										hasFalse = (data.indexOf('False') >= 0 || data.indexOf('false') >= 0)
 									} 
-									if(!hasFalse){
+									if(!hasFalse){										
 										//如何判断tjson
-										data = eval('('+data+')');	
+										try{
+											data = eval('('+data.replace(/[\r\n]+/g,'')+')');
+										}catch(e){console.log(data);}
 									}
 									break;
 								case 'undefined':
@@ -521,7 +523,7 @@
 											} 
 											if(!hasFalse){
 												//如何判断tjson
-												data = eval('('+data+')');	
+												data = eval('('+data.replace(/[\r\n]+/g,'')+')');	
 											}
 											break;										
 									case 'undefined':

@@ -185,12 +185,8 @@
 							n.attr(v.key,((V.isValid(n.attr(v.key)) && n.attr(v.key) != v.val)?n.attr(v.key)+" ":"")+v.val);
 						}
 					},function(){},true);
-				}			
-				if(_.node[0].innerHTML.length>0 && _.node.children().length==0){
-					node[0].innerHTML = _.node[0].innerHTML;
-				} else {
-					node.append(_.node.children());
-				}
+				}		
+				node.append(_.node.children());
 				if(_.node[0].nodeName.toLowerCase() == 'body'){					
 					_.node.empty().append(node);
 				}else{

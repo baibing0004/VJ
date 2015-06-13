@@ -432,6 +432,18 @@
 									console.log(data.value);
 								}
 							},
+							panel:{
+								data:{value:0},
+								onLoad:function(data,self){
+									console.log(data);
+									setTimeout(function(){
+										self.update({value:2,pagination:true});
+									},2000);
+								},
+								onClick:function(data,self){
+									console.log(data);
+								}
+							},
 							page:{
 								data:{
 									title:'测试页面aa'
@@ -442,19 +454,13 @@
 										__.txt.update({enable:true,visiable:true,text:'22233'});
 									},2000);
 									//console.log(this);
-									_.ni.excute('template','ajaxtest1',{SONumber:10001103386854},function(res){
+									/*_.ni.excute('template','ajaxtest1',{SONumber:10001103386854},function(res){
 										//console.log(res.get('ajaxtest1'));
 										console.log(res.get('ajaxtest1'));
 										//res.each('ajaxtest1',function(v){V.each(v,function(v){console.log(v);});});
-									});
+									});*/
 									//console.log(_.middler.getObjectByAppName(M.APP,'SessionDataManager'));
 									_.session.update('ssss',{aaaa:22});
-									var sb = V.sb();
-									console.log(sb.append(1).append(2).append(3).append(4).insertFormat(2,"__{abc}<%=abc%>__",{abc:22}).append(5).append(6).append(7).insert(3,"+++++").remove(1,1).append("KKKK").toString());									
-									sb.clear();
-									sb = null;
-									console.log(V.format('<option value="{value}">{key}</option>',{key:'adfef',value:1}));
-									console.log(V.merge({abc:123,bd:22},{abc:''}));									
 								},
 								onDispose:function(){
 									console.log('dispose');
@@ -484,39 +490,47 @@
 						page2:{type:'page2',params:[]}
 					}
 				}
-			}));
-			$(function(){
-		/*
-			var attrs = $('input')[0].attributes;
-			var i = attrs.length;
-			VJ.whileC(function(){i--;return i>=0?{key:attrs[i],val:attrs[i].value}:null},function(v){console.log(v);},function(){},true);
-			
-			var a = function(){
-				var _ = this;
-				_.abc = function(){
-					console.log(_.b);
-				}
-			};
-			var s = {
-				b:22
-			};
-			VJ.inherit.apply(s,[a,[]]);
-			console.log(s);
-			s.abc();
-			//window.onbeforeunload  = function(){console.log('退出事件');};
-			$('#aaa').load("content.html",function(){
-				//$(this).after($(this).html()).after($(this).html());
-				var h = $(this)[0].innerHTML;
-				console.log($(this)[0]);
-				$(this).after(h).after(h).remove();
-				//var s = $(this).children();
-				//$(this).after(s.clone()).after(s.clone());
-			});*/
-			//console.log(VJ.encHtml('<input/>'));
-			$('.abc').addClass('a b');
-		})
+			}));			
 		}
-		
+		if(false){
+			$(function(){
+			/*
+				var attrs = $('input')[0].attributes;
+				var i = attrs.length;
+				VJ.whileC(function(){i--;return i>=0?{key:attrs[i],val:attrs[i].value}:null},function(v){console.log(v);},function(){},true);
+				
+				var a = function(){
+					var _ = this;
+					_.abc = function(){
+						console.log(_.b);
+					}
+				};
+				var s = {
+					b:22
+				};
+				VJ.inherit.apply(s,[a,[]]);
+				console.log(s);
+				s.abc();
+				//window.onbeforeunload  = function(){console.log('退出事件');};
+				$('#aaa').load("content.html",function(){
+					//$(this).after($(this).html()).after($(this).html());
+					var h = $(this)[0].innerHTML;
+					console.log($(this)[0]);
+					$(this).after(h).after(h).remove();
+					//var s = $(this).children();
+					//$(this).after(s.clone()).after(s.clone());
+				});*/
+				//console.log(VJ.encHtml('<input/>'));
+				var i = 0;
+				var nodes = $('[_]');
+				//测试结论对于自定义标签 html标准无法识别div类（section等等也算）的标签内容 故转换自定义标签为 div 设置_='type:"标签类型"'
+				VJ.whileC(function(){return i<nodes.length?nodes[i++]:null;},function(v){			
+					console.log(i);
+					console.log(v);
+					console.log(v[0].innerHTML+"::::"+v.html());
+				});
+			});
+		}
 	</script>	
 	<script type="text/javascript">
 	if(false){
@@ -660,6 +674,9 @@
 		<box  _="key:'中心'" style="width:200px;height:50px;" class="abc"></box>
 		<p><radiolist id="rl" _="name:'aaaa'"></radiolist></p>
 		<p><checklist id="cl" _="name:'bbbb'" ></checklist></p>
+		<p>
+		<div id="panel" style="width:200px;height:200px;"_="type:'swiperpanel'"><div>1</div><div>2</div><div>3</div></div>
+		</p>
 		<!--ytsearchbox class="p_searchbox" id="aaa" _></ytsearchbox-->
 	</form>
 </body>

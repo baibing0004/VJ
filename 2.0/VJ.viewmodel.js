@@ -185,8 +185,12 @@
 							n.attr(v.key,((V.isValid(n.attr(v.key)) && n.attr(v.key) != v.val)?n.attr(v.key)+" ":"")+v.val);
 						}
 					},function(){},true);
+				}			
+				if(_.node[0].innerHTML.length>0 && _.node.children().length==0){
+					node[0].innerHTML = _.node[0].innerHTML;
+				} else {
+					node.append(_.node.children());
 				}
-				node.append(_.node.children());				
 				if(_.node[0].nodeName.toLowerCase() == 'body'){					
 					_.node.empty().append(node);
 				}else{
@@ -327,12 +331,15 @@
 				var p = node.find('[_]').toArray();				
 				V.whileC(function(){return p.shift();},function(v1){
 					v = $(v1);
-					var nodeName = v[0].nodeName.toLowerCase();
+					var id = v.attr('id');
+					var json = eval("({"+v.attr('_')+"})");
+					var type = json.type?json.type:(id && _.page.getModels(id) && _.page.getModels(id).type)?_.page.getModels(id).type.toLowerCase():null;
+					//对于容器类对象的处理方式
+					var nodeName = type?type:v[0].nodeName.toLowerCase();
 					var obj = _.middler.getObjectByAppName(W.APP,nodeName);
 					if(!obj) V.showException('配置文件中没有找到对象类型定义:'+nodeName);
-					obj.init(_,v,V.isValid(v.attr('_'))?eval('({'+v.attr('_')+'})'):null);
+					obj.init(_,v,V.isValid(v.attr('_'))?json:null);
 					_.controls.push(obj);
-					var id = v.attr('id');
 					if(!id) {
 						id = nodeName+V.random();
 					}

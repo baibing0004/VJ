@@ -4,6 +4,7 @@ window.top.config = {
 			pack:'VJ.view',
 			method:'constructor',
 			mode:'instance',
+			host:'../../VJ/2.0/',
 			page:{type:'.Page'},
 			textbox:{type:'.TextBox'},
 			radiobox:{type:'.RadioBox'},
@@ -17,7 +18,8 @@ window.top.config = {
 			form:{type:'.Form'},
 			box:{type:'.Box'},
 			radiolist:{type:'.RadioList'},
-			checklist:{type:'.CheckList'}
+			checklist:{type:'.CheckList'},
+			swiperpanel:{type:'.SwiperPanel',path:'swiper3.07.min.css;animate.min.css;swiper3.07.jquery.min.js;swiper.animate1.0.2.min.js'}
 		},
 		'VESH.viewmodel':{
 			pack:'VJ.viewmodel',

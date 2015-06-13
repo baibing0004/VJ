@@ -385,7 +385,168 @@
 				});
 			};
 		};
-		//totest StringBuilder
+		//构建时需要swiper.js
+		W.SwiperPanel = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.Control,[path || '<div class="swiper-container"></div>']]);
+				__.onLoad = _.onLoad;
+				__.render = _.render;
+				_.params = {direction:'horizontal',loop:false,simulateTouch:true};
+			}
+			_.onLoad = function(node){				
+				V.forC(_.events,function(k,v){
+					switch(k){
+						default:
+							_.bindEvent(node,k,v);
+							break;
+					}
+				});
+				__.onLoad(node);
+			};
+			_.fill = function(){
+				return {value:_.swiper?_.swiper.activeIndex:undefined};
+			};
+			_.render = function(data){
+				var needRB = false;
+				data = __.render(data);
+				if(!_.swiper){
+					var child = _.node.children().addClass('swiper-slide');
+					_.node.append('<div class="swiper-wrapper"></div>');				
+					_.wrapper = _.node.find('.swiper-wrapper');
+					_.wrapper.append(child);					
+				}
+				_.params.simulateTouch = true;
+				V.forC(data,function(k,v){				
+					switch(k.toLowerCase()){
+						case 'direction':
+							needRB = true;
+							_.params.direction = v;
+							break;
+						case 'autoplay':
+							needRB = true;
+							if(v){
+								_.params = V.merge(_.params,{
+									autoplayDisableOnInteraction : false,
+									autoplay:true==v?3000:parseInt(v+'')
+								});
+							} else {
+								_.params = V.merge(_.params,{
+									autoplayDisableOnInteraction : true,
+									autoplay:0
+								});							
+							}
+							break;
+						case 'loop':		
+							needRB = true;			
+							if('true'==(v+'').toLowerCase()){
+								_.params = V.merge(_.params,{
+									freeMode : false,
+									freeModeSticky : false,
+									freeModeMomentumRatio:0,
+									loop:true
+								});
+							} else {
+								_.params = V.merge(_.params,{
+									freeMode : true,
+									freeModeSticky : true,
+									freeModeMomentumRatio:0,
+									loop:false
+								});								
+							}
+							break;
+						case 'scrollbar':
+							needRB = true;
+							if('true'==(v+'').toLowerCase()){
+								if(_.node.find('div.swiper-scrollbar').length==0){
+									_.node.append('<div class="swiper-scrollbar"></div>');
+								}
+								_.params.scrollbar = _.node.find('div.swiper-scrollbar')[0];								
+								_.params.simulateTouch = false;
+							} else if(_.node.find('div.swiper-scrollbar').length>0){
+								_.node.find('div.swiper-scrollbar').remove();
+								delete _.params.scrollbar;
+							}							
+							break;
+						case 'effect':
+							needRB = true;
+							switch((v+'').toLowerCase()){
+								case 'true':
+									_.params.effect = 'fade';
+									break;
+								case 'false':
+									delete _.params.effect;
+									break;
+								case 'cube':
+								case 'coverflow':
+									_.params.effect = (v+'').toLowerCase();
+									break;
+							}							
+							break;
+						case 'buttons':
+							needRB = true;
+							if('true'==(v+'').toLowerCase()){
+								if(_.node.find('div.swiper-button-prev').length==0){
+									_.node.append('<div class="swiper-button-prev"></div><div class="swiper-button-next"></div>');
+								}
+								_.params = V.merge(_.params,{
+									prevButton:_.node.find('div.swiper-button-prev')[0],
+									nextButton:_.node.find('div.swiper-button-next')[0],
+									simulateTouch:false
+								});
+							} else if(_.node.find('div.swiper-button-prev').length>0){
+								_.node.find('div.swiper-button-prev').remove();
+								_.node.find('div.swiper-button-next').remove();
+								delete _.params.prevButton;
+								delete _.params.nextButton;
+							}							
+							break;
+						case 'pagination':
+							needRB = true;
+							if('true'==(v+'').toLowerCase()){
+								if(_.node.find('div.swiper-pagination').length==0){
+									_.node.append('<div class="swiper-pagination"></div>');
+								}
+								_.params = V.merge(_.params,{
+									pagination :_.node.find('div.swiper-pagination')[0],
+									paginationClickable:true,
+									simulateTouch:false
+								});
+							} else if(_.node.find('div.swiper-pagination').length>0){
+								_.node.find('div.swiper-pagination').remove();
+								delete _.params.pagination;
+								delete _.params.paginationClickable;
+							}							
+							break;
+						case 'touch':
+							needRB = true;
+							if('true'==(v+'').toLowerCase()){								
+								_.params.simulateTouch=true;
+							} else {															
+								_.params.simulateTouch=false;
+							}		
+							break;
+						case 'value':
+							if(_.swiper){
+								_.swiper.slideTo(v);
+							} else {
+								_.params.initialSlide = v;
+							}
+							break;
+					}
+				},function(){
+					if(needRB){
+						if(_.swiper){
+							_.swiper.destroy(true);
+							_.swiper = null;
+						}
+						if(!Swiper) {throw new Error('请更新config.js中SwiperPanel节点对Swiper.js引用');}
+						console.log(_.params);
+						_.swiper = new Swiper(_.node[0],V.merge({},_.params));
+					}					
+				});
+			};
+		};
 		//todo panel 容器类对象的controls对象设置 bind方法设置 与 validate框架设置 move类对象动画设置
 		//todo file
 	}

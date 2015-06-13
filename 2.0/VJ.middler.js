@@ -75,6 +75,7 @@
 			method:'',
 			mode:'',
 			path:'',
+			host:'',
 			pack:'',
 			ObjectName:{type:'',path:'',method:'',mode:'',constractparalength:'',params:[
 				{type:'',path:'',method:'',mode:'',constractparalength:''},
@@ -181,6 +182,7 @@
 			__.convertCreater = function(config,v,defParam,app,pcm){
 				var method = V.getValue(v.method,defParam.method);
 				var path = V.getValue(v.path,defParam.path);
+				var host = V.getValue(v.host,defParam.host);
 				var type = ((V.isValid(v.type) && v.type.indexOf('\.')==0)?defParam.pack:'')+v.type;
 				if(type=='undefined' && !V.isValid(v.ref)) {
 					if(V.isValid(v.params)){
@@ -191,20 +193,31 @@
 				}
 				var constructorparalength = V.getValue(v.constructorparalength,defParam.constructorparalength);
 				//使用Objects的默认配置对下传递 仅仅传递 path 和 pack
-				var para = __.convertParas(config,v.params,V.merge(defParam,{path:path,pack:defParam.pack}),app,pcm);
+				var para = __.convertParas(config,v.params,V.merge(defParam,{path:path,pack:defParam.pack,host:host}),app,pcm);
 				return new function(){
 					var _ = this;
 					_.getType = function(){
 						if(path) {
-							//以后可以修改 目前是有缓存的
-							V.include(path);
+							V.each(path.split(';'),function(v){
+								if(defParam.host && v.toLowerCase().indexOf('http://')<0){
+									v = defParam.host + v;
+								}
+								V.include(v);
+							},null,true);
 						}
 						return eval('('+type+')');
 					};
 					_.getValue = function(){
 						if(path) {
-							//以后可以修改 目前是有缓存的
-							V.include(path);
+							//以后可以修改 目前是有缓存的 path改为支持;号隔开的各个路径
+							if(path) {
+								V.each(path.split(';'),function(v){
+									if(defParam.host && v.toLowerCase().indexOf('http://')<0){
+										v = defParam.host + v;
+									}
+									V.include(v);
+								},null,true);
+							}
 						}
 						var paras = para.getParas();
 						switch(method){
@@ -348,7 +361,7 @@
 			}
 			//转换成App对象
 			__.convertApp = function(config,v,app,pcm){
-				var keys = {method:'constructor',mode:'static',path:false,pack:false,constructorparalength:false,size:50,app:app};
+				var keys = {method:'constructor',mode:'static',path:false,pack:false,constructorparalength:false,size:50,app:app,host:''};
 				return new function(){
 					var _ = this;
 					var defParam = {};

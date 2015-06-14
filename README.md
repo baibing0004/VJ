@@ -257,12 +257,12 @@ var classname = function(构造参数){
                                         //_.session为会话对象 提供兼容多种数据媒介的会话记录
                                         var __ = this;
                                         VJ.once(function(){
-                                        __.txt.update({enable:true,visiable:true,text:'22233'});
+                                            __.txt.update({enable:true,visiable:true,text:'22233'});
                                         },2000);
                                         //调用的是template对象执行ni文件中的ajaxtest1方法，传入参数是 SONumber 处理数据的方法是 function(res) res是一个数据存放中介 调用res.get(方法名)或者res.each(方法名,function(){});可以遍历获取到的数据 如果需要多个template连续执行那么需要先使用_.middler获取tempate对象然后设置transaction=true 再连续调用excute之后 commit即可。
                                         _.ni.excute('template','ajaxtest1',{SONumber:10001103386854},function(res){
-                                        //访问并循环数据访问，查找并遍历数据
-                                        res.each('ajaxtest1',function(v){V.each(v,function(v){console.log(v);});});
+                                            //访问并循环数据访问，查找并遍历数据
+                                            res.each('ajaxtest1',function(v){V.each(v,function(v){console.log(v);});});
                                         });
                                         //获取一个新的SessionDataManager对象 这里没有放回，一般在对象使用完成后需要调用_.middler.setObjectByAppName('APP名','对象名',对象实例) 才能实现对Middler框架中的对象保持机制的完整调用（一般适用于池方式,另外及时销毁也是一个对象使用的好习惯）
                                         console.log(_.middler.getObjectByAppName(M.APP,'SessionDataManager'));

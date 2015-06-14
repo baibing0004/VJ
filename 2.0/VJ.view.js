@@ -34,6 +34,7 @@
 				V.forC(data,function(key,value){
 					switch(key){
 						case 'text':
+						case 'value':
 							_.input.val(value);
 							delete data[key];
 							break;

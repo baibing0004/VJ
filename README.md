@@ -405,8 +405,6 @@ var classname = function(构造参数){
     			constructorparalength:false,size:50,app:'33',
     			method:'constructor',
     			mode:'static',
-    			test1:{type:'test',params:[4,{self:true}]},
-    			test:{type:'test',method:'bean',params:[{params:'Item','a':1,b:2,c:3,d:{type:'test',method:'constructor',params:[4,{self1:true}]}}]},
     			ajaxresource:{type:'.NiAjaxDataFactory'},
     			objresource:{type:'.NiObjectDataFactory'},
     			sqlitefactory:{type:'.NiSqliteDataFactory'},

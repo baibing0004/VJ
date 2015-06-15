@@ -35,7 +35,7 @@
             * 在不改动用户代码的情况下仅修改ni.js配置某个数据请求是否需要缓存，是json还是jsonp，是ajax还是webdb甚至是WebSocket。  
 
  * 具体来说，就是用户的页面代码继承`VJ.viewmodel.Page`，用获取到的内置的会话管理对象`this.session(data(key),update(key,{json}))`完成了会话管理，通过内置的数据管理对象`this.ni(excute(command，params，function))`完成了数据访问管理。
-			是的，这一切都是可以通过配置在 不改动用户代码 的情况下，分分钟搞定的。
+    		是的，这一切都是可以通过配置在 不改动用户代码 的情况下，分分钟搞定的。
  * 至此VJ将开发人员做了清晰的分类：
 			1. config.js+公共控组模由前端架构组负责
 			2. page.html+page.js+私有组模由业务开发组+UI负责
@@ -536,7 +536,8 @@ var classname = function(构造参数){
 ####VJ类处理
  * getType:获取JS对象的真实父类类型 一般是通过prototype方式实现的继承模式 同时也返回各种基础对象类型 譬如 string,function,object,number,Array,ukObject,父类名等等 
     * 例子:```VJ.getType({})```
- * inherit 使得当前子类继承父类的对象同时链接prototype原型链条，并调用父类的构造函数。尽可能使得JS的继承类似高级语言，但是请慎用对prototype继承的类采用此方法，经测试对非prototype类方法的继承和父类构造函数调用多级别或者多父类的继承都正常，但是对于prototype类型的连续继承超过2次以上就导致较底层次的prototype方法丢失。 例子 VJ.inherit.apply(this,[parent,[……args]])
+ * inherit 使得当前子类继承父类的对象同时链接prototype原型链条，并调用父类的构造函数。尽可能使得JS的继承类似高级语言，但是请慎用对prototype继承的类采用此方法，经测试对非prototype类方法的继承和父类构造函数调用多级别或者多父类的继承都正常，但是对于prototype类型的连续继承超过2次以上就导致较底层次的prototype方法丢失。
+    * 例子: ```VJ.inherit.apply(this,[parent,[……args]])```
  * create 使用类继承方法新建一个JS类的实例，适用于动态生成对象实例场景，有可能打断prototype类型的继承。
 	 * 例子: var obj = VJ.create(Page,[para1,para2]);
  * create2 使用eval原生命令方法新建一个JS类的实例，适用于动态生成对象实例的场景，不会打断prototype类型的继承，完全JS原生方法解释执行，但是类名要求使用string声明，而且eval的执行效率上理论较第一种较慢一些 
@@ -610,55 +611,325 @@ var classname = function(构造参数){
  * part VJ的控件加载命令，用于将指定url的html内容按照iframe/jsonp方法获取 其参数提供(url,放入的节点node, mode(iframe/), callback) 
     * 例子:```VJ.part(url,node,null,function(){init})```
     
-####VJ异步触发事件处理 一般用于part未完成时，尚未定义方法与事件就已经被调用了这种情况，现在也被用于模块间通讯，一般用于未定义先调用的事件或者命令处理
- * registCommand 事件注册命令与事件调用命令用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。 例如 VJ.registCommand('showXXList',getData);这样保证事件通知与处理可以无缝的异步进行。
-callCommand用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。例如 VJ.callCommand('showXXList',[{id:1}]) 一般情况下代码都是不需要等待下载完成
-hasCommand用于判断是否已经定义该方法或者调用该方法 例如 if (!V.hasCommand('editor.open')) V.part("/FileServer/layout/editor/editor.htm");
-clearCommand 仅限iframe方式调用时，先取消原页面添加的方法 一定要在part前 例如 V.cleanCommand('editor.open');
- V.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){}); 仅限iframe方式调用时，先取消原页面添加的方法
-registEvent VJ用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。 
-	 * 例子: V.registEvent('showXXList',getData)
-callEvent VJ用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。 
-	 * 例子:V.callEvent('showXXList',[{id:1}])
- haseEvent VJ用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false; 
-	 * 例子: if (!V.hasEvent('editor.open')) V.part("/FileServer/layout/editor/editor.htm");
- clearEvent VJ仅限iframe方式调用时，先取消原页面添加的方法，业务逻辑深度交叉，iframe落后的控件连接方式时使用一定要在part前 
-	 * 例子: V.cleanEvent('editor.open'); V.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){});
- 
- V.cleanEvent(事件名)
-getTarget 通过事件对象获取发生事件的真实标签 例如 function(bean)
-cancel 通过事件对象取消事件 例如 VJ.cancel(事件实体)
-stopProp = 阻止事件向上冒泡 例如 VJ.stopProp(事件实体)
- VJ业务优化
-formatPrice 价格输出的格式化方式 
-	 * 例子: VJ.formatPrice(2,2232.2,'.','`')
-qs 当前页面的QueryString参数对象支持get与contain方法 例如 VJ.qs.get('abc'),VJ.qs.contain('abc')
-Date.add 为Date对象添加add方法 支持如下字段的加法运算 'y':'FullYear', 'q':'Month', 'm':'Month', 'w':'Date', 'd':'Date', 'h':'Hours', 'n':'Minutes', 's':'Seconds', 'ms':'MilliSeconds' 例如 new Date().add('h',1)
-Date.diff 为计算两日期相差的日期年月日等前比后面的数值高caiwei new Date().diff('h',new Date().add('d',1));
-Date.sub计算两日期相差的日期年月日等 new Date().sub('h',new Date().add('d',1));
-Date.toString 可以根据样式定义譬如 yyyy/MM/dd HH:mm:ss' 例如new Date().toString('yyyy-MM-dd');
-VJ处理永不重复的随机数
-random 保证随机生成在单页面运行期间不会相同，值规则是时间+次数的一个整数 
-	 * 例子: VJ.random()
-hash 获取字符串的hash散列值，第二个参数为是否忽略大小写 例如VJ.hash('test',false){
- string.startWith与string.ed
- //添加string.endWith与startWith方法 
-	 * 例子: "abc".startWith('a') "abc".endWith('C');
- json2 将json2对象全部引入VJ.base框架
-toJsonString 该方法调用json2的功能将任意类格式化 例如 VJ.toJsonString({a:1,b:2});
-json 该方法调用json2的功能将字符串反格式化 例如 VJ.json('{a:1,b:2}');
+####VJ异步触发事件处理 
+ * 一般用于part未完成时，尚未定义方法与事件就已经被调用了这种情况，现在也被用于模块间通讯，一般用于未定义先调用的事件或者命令处理
+ * registCommand 事件注册命令与事件调用命令用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+    *  例如 ```VJ.registCommand('showXXList',getData);```这样保证事件通知与处理可以无缝的异步进行。
+ * callCommand用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+    * 例如 ```VJ.callCommand('showXXList',[{id:1}])``` 一般情况下代码都是不需要等待下载完成
+ * hasCommand用于判断是否已经定义该方法或者调用该方法
+    *  例如  
+```
+        if (!V.hasCommand('editor.open')){
+            V.part("/FileServer/layout/editor/editor.htm");
+        }
+```
+ * clearCommand 仅限iframe方式调用时，先取消原页面添加的方法 一定要在part前
+    * 例如 ```V.cleanCommand('editor.open');```
+    * VJ.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){}); 仅限iframe方式调用时，先取消原页面添加的方法
+ * registEvent VJ用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。 
+	 * 例子: ```V.registEvent('showXXList',getData)```
+ * callEvent VJ用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。 
+	 * 例子: ```V.callEvent('showXXList',[{id:1}])```
+ * haseEvent VJ用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false; 
+	 * 例子: ```if (!V.hasEvent('editor.open')) V.part("/FileServer/layout/editor/editor.htm");```
+ * clearEvent VJ仅限iframe方式调用时，先取消原页面添加的方法，业务逻辑深度交叉，iframe落后的控件连接方式时使用时一定要在part前使用该方法
+	 * 例子: ```V.cleanEvent('editor.open'); V.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){});```
+     
+ * getTarget 通过事件对象获取发生事件的真实标签
+    * 例如 ```function(e){console.log(VJ.getTarget(e));}```
+ * cancel 通过事件对象取消事件
+    * 例如 ```VJ.cancel(事件实体)```
+ * stopProp = 阻止事件向上冒泡
+    * 例如 ```VJ.stopProp(事件实体)```
+    
+####VJ业务优化
+ * formatPrice 价格输出的格式化方式 
+	 * 例子: ```VJ.formatPrice(2,2232.2,'.','`')```
+ * qs 返回当前页面的QueryString参数对象支持get与contain方法
+    * 例如 ```VJ.qs.get('abc'),VJ.qs.contain('abc')```
+ * Date.add 为Date对象添加add方法 支持如下字段的加法运算 'y':'FullYear', 'q':'Month', 'm':'Month', 'w':'Date', 'd':'Date', 'h':'Hours', 'n':'Minutes', 's':'Seconds', 'ms':'MilliSeconds'
+    * 例如 ```new Date().add('h',1)```
+ * Date.diff 为计算两日期相差的日期年月日等前比后面的数值高的方式
+     * 例如 ```Date().diff('h',new Date().add('d',1));```
+ * Date.sub计算两日期相差的日期年月日等
+    * 例如 ```new Date().sub('h',new Date().add('d',1));```
+ * Date.toString 可以根据样式定义譬如 yyyy/MM/dd HH:mm:ss' 
+    * 例如 ```new Date().toString('yyyy-MM-dd');```
+    
+####VJ处理永不重复的随机数
+
+ * random 保证随机生成在单页面运行期间不会相同，值规则是时间+次数的一个整数 
+	 * 例子: ```VJ.random()```
+ * hash 获取字符串的hash散列值，第二个参数为是否忽略大小写
+    * 例如 ```VJ.hash('test',false)```
+ * string.startWith与string.endwith
+    //添加string.endWith与startWith方法 
+	 * 例子: ```"abc".startWith('a') "abc".endWith('C');```
+ * json2 将json2对象全部引入VJ.base框架
+    * toJsonString 该方法调用json2的功能将任意类格式化
+    * 例如 ```VJ.toJsonString({a:1,b:2});```
+    * json 该方法调用json2的功能将字符串反格式化 
+    * 例如 ```VJ.json('{a:1,b:2}');```
 
 
 ###VJ.config框架
-
+ * VJ.config 作为基础框架为VJ的上层框架提供可继承的链式配置文件访问方式，保证由叶子到根部的配置节点方式，提供基础类库为上层框架配置对象解析支持。
+ * VJ.config定义ConfigManager类管理一个配置文件的配置信息转换成的Config对象实例字典，同时通过自组织方式按照父子关系组成链式的配置文件查找树，基本逻辑是当下级ConfigManager找不到指定的Config对象或者指定的Config对象返回的值为空时请求父级节点的完成查找配置的相关信息，一直到根节点也找不到此类信息为止才会返回null。
+ * 同时其通过ConfigAdapter类的一个静态实例完成配置信息到指定Config对象的工作，在这个类工作原理是先读取ConfigManager初始化时注入的DataResource参数获取配置信息，然后从ConfigManager中找到Config一级节点的对应解析器将其转换为Config对象按照字典格式设置给ConfigManager，同时如果ConfigManager中某些配置项发生了改变，一旦调用update方法ConfigManager也会调用Config对应的解析器转换成json信息再交由DataResource数据源修改配置。
+ * 配置解析器定义在VJ.config.Configs.ConfigConverts中，并且都继承自VJ.config.ConfigConvert,其需要实现ToConfig方法与可修改的ToString方法与一个needConfigs这个属性，
+ * 第一个基础的配置解析器ConfigConverts节点解析器默认注册在根节点的ConfigManager中，其按照键值对方法认为键就是解析器对应的标签名，值type与[path]说明了解析器类的地址与类名，
+    * 例如 
+ ``` 
+    ConfigConverts:{
+        AppSettings:{type:'VJ.config.AppSettingsConfigConvert'}
+    }
+```
+就配置了AppSettings这个标签的解析器类，这样各个解析器类定义的扩展Config对象就可以返回各种类型的对象
+ * 同时其ConfigResource的设计也使得ConfigManager的配置对象的生成更加多源，可以对应不同种类的Resource获取ajax,Json,甚至websocket传入的配置节点。
+ * 下面是对VJ.config各对象的详情说明
+ * VJ.config.Configs 基本配置节点,是默认构造方法的根节点
+    * 例子：```VJ.config.Configs = VJ.merge(VJ.config.Configs,{'ConfigConvert':{XXXConfigConvert:{type:'',[path:'']}}});```
+ * VJ.config.Config 转换后的Config配置基类，具有getValue,setValue,merge等方法，_.data是其基本属性
+    * 例子 ```return new function(){VJ.inherit.apply(this,[VJ.config.Config,[]]);this.getValue = function(key){return this.data[key];}};```
+ * VJ.config.ConfigConvert 转换器基类，具有toConfig(json),toString(json)等方法与needConfig属性如果具有该属性那么解析时会自动设置解析器实例的configManagere对象为this的一个属性
+    * 例子 ```VJ.inherit.apply(this,[VJ.config.ConfigConvert,[]]);```
+ * VJ.config.ConfigResource 数据源基类，具有load(),save(string)方法获取与存储数据源数据
+ * VJ.config.AppSettingsConfigConvert AppSettings配置解析器类 将AppSettings属性解析为传统字典格式
+ * VJ.config.ConfigManager 配置管理器类 拥有getConfig(config),get/setConfigValue(config,key),update方法 
+ * VJ.config.ProxyConfig ConfigManager专用代理类 返回getConfig结果，将其getValue方法转换为getConfigValue方法
+ * VJ.config.ConfigAdapter Config适配器类，用于调用ConfigManger的resource将ConfigManaager的内容与resource之间进行相互调用 提供fill/update方法 并提供prototype.getInstance方法实现单例调用
+ * VJ.config.getConfigManagerFromObj 通过JS对象生成ConfigManager并提供匿名Resource类将JS对象单向转换为ConfigManager 例如 VJ.config.getConfigManagerFromObj(parent,{});
+ * VJ.config.getConfigManagerFromJS 通过JS文件获取JS对象生成ConfigManager,并提供匿名Resource类将JS对象单向转换为ConfigManager 例如 VJ.config.getConfigManagerFromJS(parent,name,path);这里允许path是路径数组，且引用对象首先通过merge方法进行自我扩展。
+ * VJ.config.getBaseConfigManager 通过直接使用VJ.config.Configs 生成基本节点ConfigManager
+ * VJ.config.getApplicationConfigManagerFromJS 将上一个方法的BaseConfigManger作为根节点按照JS文件方式向下创建配置树 例子 var conf = VJ.config.getApplicationConfigManagerFromJS('classname',[path/[path1,path2,p3,p4]])
+ * VJ.config.getApplicationConfigManagerFromObj 将上一个方法的BaseConfigManger作为根节点按照Json方式向下创建配置树 
+     * 例子 ```var conf = VJ.config.getApplicationConfigManagerFromObj ({AppSettings:{a:1},Middler:{……}})```
+ 
 ###VJ.collection
+ * VJ.collection 作为基础框架为VJ.middler框架提供Pool池方式的对象保持机制，提供对象池的自动增长，最大容量，自动缩减等等功能
+ * VJ.collection.Pool 池类，构造函数需要输入size最大池容量，func创建对象方法，timeout闲对象保持时间，它的基本原理是内部管理了一个栈和队列，栈用来处理空闲的对象，队列用来处理栈内始终未访问到的空闲对象，当到达过期时间时会自动启动掉队列里的栈与队列中空闲对象。
+    * 其方法有
+    
+    ```
+        getValue() 当池容量不足时会返回null 需要继续等待然后重新获取，
+        setValue 用于将使用状态的对象设置到空闲对象，等待清除任务的执行。
+        clear 彻底清理池
+    ```
 
 ###VJ.middler框架
+ * VJ.middler 提供了一个支持 **构造函数/Bean(无参构造+get/set属性名方式)/静态方法/构造+Bean方式/静态方法+Bean方式** 5种构造方法与 **Instance/Static/Pool** 3种对象保持方式，**本地/远程**两种加载方式，**getObjectByAppName/getTypeByAppName**两种对象访问方式的JS对象IOC生成框架，并依托config框架为ni框架和view,viewmodel层提供可继承的链式配置文件访问结构
+ * 
+ ``` 
+    //定义Middler节点的解析器
+    V.config.Configs = V.merge(V.config.Configs,{ConfigConverts:{Middler:{type:'VJ.middler.MiddlerConfigConvert'}}});
+ ```
+ * VJ.middler.Middler 中介者管理容器，其提供3个方法供外部获取配置文件定义的对象```get/setObjectByAppName(appName,name),getTypeByAppName(appName,name)```
+    * 例子:
+    * 
+```
+ var test = function(){};
+ var mid = new VJ.middler.Middler(VJ.config.getApplicationConfigManagerFromObj({
+           Middler:{test:{type:'test'}}
+ }));
+``` 
+ * getTypeByAppName配合Middler配置节点定义的Path属性实现了CMD对象定义方式
+ * getObjectByAppName配合Middler配置节点定义与Path属性实现了AMD对象定义方式
+ * **AMD与CMD真不是太大的技术创新，早就有无数先辈用过，不过是没有西方的新名词+大嗓门和中方的录音机而已。**
+ * VJ.middler.getMiddlerFromJS 直接使用上文所提到的写法完成Middler创建 
+    * 例子 ```var mid = VJ.middler.getMiddlerFromJS(className,[path/[path]])```
+ * VJ.middler.getMiddlerFromObj 直接使用上文所提到的写法完成Middler创建 
+    * 例子 ```var mid = VJ.middler.getMiddlerFromObj ({});```
 
 ###VJ.ni框架
-
+ * VJ.ni 对应VESH.view.storage层次提供了一个可配置化的支持**localStorage/sessionStorage/JS对象/function/ajax/jsonp/webdb/websocket**等多种访问媒介，**直接读取/缓存再读取/缓存同步懒读取**等多种读取逻辑，**顺序与随机**两种读取方式，**js数组/json/tjson**三种dbtype数据类型的统一数据访问方法的storage框架 
+ * 他的核心思想是充当VESH中的表现层与实体逻辑层之间适配器，提供统一的接口给业务开发人员，屏蔽底层获取数据的地址 方式 逻辑 缓存等等情况，由配置config文件与ni.js文件就能修改架构级别的逻辑表现机制，框架名泥巴就是随处都可贴都可使用的意思.
+ * 注册ni节点解释器
+    * ```V.config.Configs = V.merge(V.config.Configs,{ConfigConverts:{Ni:{type:'VJ.ni.NiDataConfigConvert'}}});```
+ * Ni继承的Config子类
+ * ```VJ.ni.NiDataConfig```
+ * Ni继承的NiDataConfigConvert子类负责将ni标签定义转化为NiDataConfig对象
+ * ```VJ.ni.NiDataConfigConvert```
+ * Ni框架的核心对象NiTemplate,高级装饰器与扩展类都以其为基础，一般通过Middler的getObjectByAppName获取，构造函数有NiDataResource res,Ni配置节点的ConfigManager对象 cm,在使用完成后通过Middler.setObjectByAppName再返回Middler容器(兼容Pool模式)：
+    * 主方法 ```excute excute('命令',{参数},function(res){res.get('命令')});```处理回调，特别注意如果没查找到数据那么返回false}) 特别地如果命令是NiTemplate的cm中可以对应的Ni命令那么会调用真实的Ni命令执行，否则将直接交由初始化时定义的Resource执行命令，譬如DataResource中的DBFactory如果是AjaxFactory则认为输入的命令是个url，如果是ObjectDBFactory那么则认为输入的命令是个function，如果是SqlitFactory则认为输入的是一个完整SQL。所以推荐命令参数输入的是构造参数cm引用的ni配置对象的Ni命令名，而真实的Ni命令则可以针对开发的不同阶段和状态修改为不同的方式，而且缓存装饰器必须使用Ni命令名才可使用。
+    * 主属性 result NiDataResult实例 具有add(data,name),get(name),last(),each(name,func),clear() 这几个主要方法
+    * 事务属性 transaction false 当设置为真时，excute命令都不会立即执行，而是存储起来，等待commit命令 或者设置为false时 下一次excute命令
+    * 事务方法 commit commit() 当transaction为真时 依次提交excute时存储起来的命令，并顺序调用回调函数 这时在回调函数时应尽量避免调用res.last()方法 而直接使用res.get(key)方法
+ * Ni框架的高级操作类 NiTemplateManager,Template管理者类，初始化时需要设置ConfigManager实例，与Middler的AppName（默认是Ni）。其只提供了excute方法，命令参数有 Middler中定义被调用的template名字，命令，参数，回调函数，与NiTemplate不同的是这个类不支持事务，仅适用单次独立调用的情景。
+    * 例子 
+    ```
+    var ni = new NiTemplateManager(cm,"Ni"); //这里res.get(name)与res.last返回结果一致。
+    ni.excute('templatename','GetData',{a:1},function(res){console.log(res.last())});
+    ```
+ * Ni框架的数据集合实例,result:NiDataResult，每一个Template都有一个独立的NiDataResult对象属性，负责将DataResource中获取到的数据按照dbType进行状态转换和判断一般地如果没有找到数据或者数据执行错误，result所对应的命令的数据结果都是false,通过这个可以判断是否返回了数据 其主要方法：**add(data,name),get(name),last(),each(name,func),clear()**。Template的两个主要函数excute,commit的返回值都是template的result属性.
+ * Ni框架的数据源基类 一共实现了**static instance pool**三种不同的管理数据源的数据源类，提供get/backDBConnection方法,getDBCommand方法，由Middler创建注入NiTemplate构造函数，不在外部使用。
+    * 其构造参数统一的有两个(各种NiDBFactory实例，其对应产生的DBConnection的默认配置(一般有dbtype:json/tjson,jsonp:ajax特有说明jsonp的回调参数名VESH框架一般使用_bk,host:ajax特有说明默认的站点路径与Ni配置定义的具体url共同拼装成完整URL(Ni配置定义含http的除外),resource：objectdb特有说明其操作的JS对象实例譬如window.top.sessionStorage
+ * ```VJ.ni.NiInstanceDataResource/VJ.ni.NiStaticDataResource/VJ.ni.NiPoolDataResource```
+     * Ni框架数据源抽象工厂基类，其负责产生与回收具体的NiDBConnection与NiDBCommand,一般在Middler容器中作为NiDataResource的构造参数被注入，一般对外使用
+     * Ni框架数据连接基类，其负责打开与关闭具体的链接，提供invoke方法完成真实的DB操作，方法有：
+     * 
+    ``` 
+        open() 默认仅仅更新isOpen属性为真
+        isOpen false 标示链接是否已打开
+        params {} 标示完成对应的DB链接所需要的参数由DBResource的第二个构造参数注入,可在Open时真实使用
+        close 默认仅仅设置isOpen属性为假
+        invoke invoke(cmd,func(data)) 调用cmd的配置信息，配合cmd完成真实的数据查询然后调用func回传数据
+    ```
+ * Ni框架DataCommand基类，会被传入connection DB连接,command 命令文本或者函数 ,params 命令参数
+ * 提供excute(result,func)主方法，一般是调用connection.invoke(this,func(data))方法，处理数据格式化等等情况，一般不需要重载
+###特别需要注意的是如果要创建新的DBFactory以访问各种新的DB资源类型，那么就需要重写DBConnection，甚至DBCommand类型。如下为Ni框架中已经实现的DBFactory
+ * VJ.ni.NiAjaxDataFactory 实现ajax jsonp/getScript方式获取数据的DBFactory 其DBResource的参数可作为jQuery.ajax的默认参数并新增host(../|http://www.abc.con)与dbtype(json/tjson)两个属性。
+ * VJ.ni.NiObjectDataFactory 实现对JS对象,localStorage sessionStorage json等等资源获取数据的DBFacotry 其DBResource的参数需要设置resource参数指定JS数据源或者是JS数据源的名字，其Ni命令要求是function(resource,params){return data/function(callback){callback(data)};} 或者是resource对象上的方法名，其定义的结构同上
+ * VJ.ni.NiSocketDataFactory 实现对WebSocket方式的持续通讯，DBResource的参数要求设置url参数，其Ni文件中的命令要求是命令字符串，参数的jsonstring为其对应值，服务端必须实现对niid字段的支持以实现命令与回调的对应
+ * VJ.ni.NiSqliteDataFactory 实现对WebDB方法的支持，其DBResource的参数要求是{name:'dbname',version:'dbver',desc:'',size:容量*1024*1024},其Ni命令要求是sqlite/SQL
+ * NiTemplate装饰器类，是NiTemplate的子类可以按照NiTemplate方式调用，但是其业务逻辑都进行了一定的修改。缓存类一般调用的都是ObjectDBFactory类型，并且请注意其缓存的参数都是在原命令参数的基础上添加了cacheKey与cackeValue(仅限.Set命令) cacheKey是所有参数的jsonstring的hash字符串
+ * VJ.ni.NiTemplateDecorator 缓存类,如果想在Middler中使用相关类则可以将原有NiTemplate的配置复制一份然后修改type为NiTemplateDecorator,params的第二个参数改为缓存的DBResource即可，其实现逻辑是首先在Ni节点的配置中查找命令.Clear命令，然后查找命令.Cache,如果找到命令并且返回可用的数据那么就直接返回，不再进行真实的数据查找，如果没有找到缓存那么执行真实的数据查找然后寻找命令.Set命令进行缓存设置以备下次使用,同样的其构造方法可以设置缓存的过期时间 {timeout:{interval:'s',number:50}} 其类型参见VJ.base中定义的Date.prototype.add
+ * VJ.ni.NiLazyTemplateDecorator 懒加载缓存类，其构造参数与使用方式与NiTemplateDecorator相同，但是其实现逻辑与NiTemplateDecorator不一致的是获取缓存后继续请求真实数据然后再次设置缓存，主要用于无线设备访问离线数据后再次刷新数据的情况，在这里一次请求的回调函数可能被调用两次，请尽量保证回调函数按照res.get(命令)的方式进行处理即可。请特别注意构造函数最后一个默认配置参数 需要添加**lazyExp**函数，以说明是否可以读取缓存
+ * VJ.ni.NiMultiTemplateDecorator 多媒介装饰器,其构造参数与Template相比第三个参数为{self:true}，第四个为Middler中定义template的appName(一般为Ni），其访问逻辑是如果在Ni配置节点中找到的命令定义了template属性，那么使用这个属性定义的template处理该命令，否则调用自身定义的默认DBResource执行DB操作。
+ 
 ###VJ.viewmodel框架
+ * VJ.viewmodel 对应 VESH.view.viewmodel实现了对逻辑控件（就是```{data:{},on事件名:function(data,self){}}```就可以定义一个纯粹的逻辑上的控件）的实现与VESH.view.view层控件的绑定，提供SessionDataManager对象屏蔽了***ookie/JS对象/localStorage/sessionStorage/ajax/jsonp***等多种存取渠道与***加解密存取方式的无缝会话管理。提供Page实现了VESH.view.control的事件处理与初始化绑定，提供VJ.viewmodel.Control作为用户逻辑代码的处理基类。
+ * 其页面处理逻辑是 首先用户代码继承VJ.viewmodel.Page 然后 Page构造函数绑定 VJ.view.Page 并交由VJ.view.Page 调用Document.ready事件，当页面OnReady事件发生后，VJ.view.Page 将Html上属性有"_"的自定义控件按照middler在VESH.view的控件库中进行创建、替换、初始化设置和相同ID的逻辑控件进行绑定，并确认逻辑控件中如果存在没有绑定的控件且type不为空那么自动创建一个新的控件加在页面后，等待全部操作完成后再触发Page.onStart事件调用业务代码。
+ * 其要求定义VJ.viewmodel中默认的```Middler.AppName```为'VESH.viewmodel'，定义其调用的NiTemplate对象所在的Middler.AppName为'Ni',定义VJ.view默认搜索控件库的Middler.AppName为'VESH.view'
+    * 例如:
+    * 
+````
+       VJ.viewmodel = {APP:'VESH.viewmodel',NIAPP:'Ni'};VJ.view = {APP:'VESH.view'};```
+        
+* 逻辑控件基类，默认会定义属性data说明全部的数据信息,属性v说明对应的view层控件，一般是不使用的；一个默认方法update({data json})交由view层控件按照属性定义更新逻辑控件的data属性，同时重新更新view层控件 而业务调用这个类一般是在继承VJ.viewmodel.Page的时候 作为构造参数之一中按照ID对应的逻辑控件，特别地逻辑控件事件会有两个默认的事件onReady（大小写不敏感）和onLoad是分别在控件的标签内容在替换前和替换后触发的一般在onLoad中处理业务逻辑代码。提供get([key])方法用于获取该逻辑控件刷新后的data属性，如果输入参数则更新后返回该参数的对应值否则为null，如果没有输入参数，那么会返回整个data属性
+
+    VJ.viewmodel.Control = function(){//data属性的定义 on事件的处理 update方法的主动更新 get方法的主动获取}；```
+ * VJ.view.Control定义 其负责html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 所有的控件均支持先创建、init、然后bind绑定、再调用onLoad和render事件 如果需要扩展或者创建一个新的自定义控件需要重载onLoad方法,fill方法，render方法，事件触发顺序是Constructor>init>onLoad>render>fill>on***>render的顺序执行的。
+ * 请开发者切记，如果控件的某个属性的处理会导致控件内Html子节点的变化而不仅仅是html属性值的变化，譬如select\radiolist\checklist的values属性会导致options\input\checkbox的数量的变化，那么在处理fill方法时需要判断当前节点是否不为空，否则不要修改values属性的值，在处理render方法时需要在处理values和value两个属性时都要添加对value属性的处理，否则子节点的属性就是有残缺的。
+ * 推荐使用VJ.forC异步处理对{}的处理，使用VJ.each异步处理对[]的处理，使用VJ.whileC异步处理对更复杂表达式的处理，尤其是在UI渲染时，否则容易导致页面长时间不响应，也防止百页的出现，虽然我们可以通过在方法的第四个参数上设置为true改为同步处理模式，但是如上优点也会丧失。
+ * 事件中返回的json自动调用方法更新vm的data属性，然后根据事件调用时返回的参数更新自身和vm.data，逻辑控件也可调用update(更新{})方法完成数据在view层的填充,同时将属性更新
+ * VJ.view.Control定义有
+     * path string (控件html路径或者代码段)
+     * vm object（逻辑控件对象),
+     * config
+     * middler
+     * session
+     * ni
+     * events {} (所有逻辑控件on开头的function 事件判断上大小写不敏感)
+     * params {} 构造参数默认值
+     * page object 所在页面 一般可以通过this.page.middler/config/session/ni获取到当前页面的公共资源或者在逻辑控件中
+     * init function(path,node,params) VJ.view.Page的实例，对应控件标签的原始对象，控件标签'_'属性的属性值
+     * call function(name,params) 调用viewmodel对应的事件，同时更新vm.data属性，如果事件未被监听则不调用
+     * fill function() 返回一个json以更新vm.data属性，一般在调用call之时被调用
+     * bind function(vm) 完成控件标签替换，并一次性顺序调用onLoad方法，fill方法与render方法完成控件的渲染
+     * 其中一般在onLoad方法中先绑定用户的处理事件，再调用父类的onLoad事件(必须调用) ，
+     * 一般提供bindEvent(node,k,v)方法供扩展时进行默认事件绑定。这里一般会绑定用户定义的jquery事件。请注意不要调用this.node以为此时的node是尚替换的，而应该使用输入的参数node是替换后的jquery对象，而且传入的node参数本身具有原标签的所有属性
+     * 一般在fill方法中获取当前对象的约定真实值，不用调用父类
+     * 一般在render方法中完成控件的属性处理和判断,这里要先调用父类的render事件 保证完成真正的控件标签替换后再进行特殊属性的绘制，譬如data.products属性的处理。一般父类已经实现了attr属性,visible属性,enable属性,addClass属性,removeClass属性的处理
+     * replaceNode function(node) 默认完成控件替换的核心方法，如果path说明是页面地址会自动将path获取到本地然后加载，如果不是那么会主动创建节点.然后复制标签属性，替换innerHTML为原节点的innerHTML完成bind操作
+ * VJ.viewmodel.Page 要求两个输入参数一个是ConfigManager需要的json代码段，一个是models定义
+    * 例如: ```VJ.inherit.apply(this,[VJ.viewmodel.Page,[window.top.configs,{page:{onStart:function(){}}}]]);```
+    * 这是一切业务代码的开始，这里允许
+    * VJ.merge(window.top.configs,{Middler:{'VESH.view':{},'VESH.viewmodel':{},Ni:{}}})来扩展控件库，公共会话对象与公共数据访问对象，保证私有控件的使用。具有：
+    * models {} 按照ID管理的所有控件
+    * page VJ.view.Page 其所绑定的页面对象
+    * this.middler object 
+    * this.config object
+    * this.ni object
+    * this.session object
+    * this.update function 
+    * this.getModels([id]) function
+    * this.setModels(id,object) function
+ * 同时它又继承了VJ.viewmodel.Control对象拥有data/v属性和update方法并提供```this.middler,this.config,this.ni,this.session对象``` 并提供给getModels，setModels方法供绑定的VJ.view.Page调用设置models属性
+ *  VJ.view.Page要求一个输入参数 一般情况是空的仅仅做div替换 继承自VJ.view.Control对象具有:
+     * vm object VJ.viewmodel.Page
+     *  views {} 页面上定义的全部的控件
+     * controls [] 页面上定义的全部的控件
+     * fill function() 更新vm.data
+     * bind function(node) 重写了bind方法，并查看内部的自定义控件对象完成控件初始化与绑定操作
+     * ready function(callback) 特有方法，一般在document.ready时调用 如果调用多次，会导致控件初始化多次
+     * bindControl function(node) 特有方法，一般用于查看内部的自定义控件并完成控件初始化与绑定操作
+     * addControl function(node,v) 特有方法，用于向指定位置自增自定义的控件。
+
+####这里使用SessionDataManager完成会话管理工作 
+
+ * VJ.viewmodel.SessionDataManager 构造参数需要传入SessionDataAdapter,
+    * get function('会话名') 获取对应的会话字典信息
+    * updateAll function() 更新全部的会话信息 一般在页面退出时自动调用
+    * update function('会话名',{会话改变值}) 更新具体的会话信息其会话具体媒介和相关逻辑由SessionDataAdapter决定
+    * clear function('会话名') 删除对应的会话信息，其具体的会话信息有SessionDataAdapter决定
+ * VJ.viewmodel.SessionDataAdapter 构造参数需要说明默认的会话数据源
+    * setResource function(name,SessionDataResource) 设定指定会话使用的SessionDataResource否则使用默认数据源
+    * getResource function(name)获取指定数据源如果没有指定会话数据源会返回默认数据源
+    * fill function(name)获取自定数据源的数据更新SessionDataManager
+ * VJ.viewmodel.SessionDataResource SessionData数据源基类
+    * load function(name) 用于获取指定的会话信息
+    * save function(name,data) 用户设置指定的会话信息
+    * clear function(name) 用于清理指定的会话信息
+ * VJ.viewmodel.CookieDataResource 定义时必须说明cookie.js的位置 允许输入的参数作为cookie会话的默认值譬如过期时间 domain等等值实现基类的load/save/clear方法
+ * VJ.viewmodel.StorageDataResource 定义时需要设置会话对象或者timeout 属性参见VJ.base中定义的Date.prototype.add方法属性 处理localStorage与sessionStorage 与 全局对象object 实现基类的load/save/clear方法并设定缓存时间
 
 ###VJ.view框架
+ * VJ.view 对应 VESH.view.view 实现对逻辑控件的实现和扩展控件基类VJ.view.Control，提供了统一的Control加载处理，提供了自定义控件标签解析与统一事件触发机制管理机制。VJ2.0默认实现里如下类型的控件
+ * 因为VJ.view.控件都继承自VJ.view.Control所以天然可以设置如下参数
+    * attr 按照键值对设置attr
+    * enable 设置控件是否可用
+    * visible 设置控件是否可视
+    * addClass 设置控件添加样式
+    * removeClass 设置控件删除样式
+    
+            VJ.view.TextBox 设置一个支持标题和text输入框的对象，绑定jQuery的对应事件，其属性有
+             * text 输入框的内容
+             * name 输入框的name
+             * key 输入框的标题
+             * size 输入框的大小限制
+             * onHover 将jQuery hover事件改为onHover事件
+             * 例如 ```<textbox id="" _></textbox>```
+ * VJ.view.RadioBox 继承自TextBox 并新增
+     * checked 设置/获取节点是否已经设置为checked
+     * 例如 ```<radiobox name="ra1" id="" _><radiobox>```
+ * VJ.view.CheckBox 继承自RadioBox
+     * 例如 ```<checkbox name="ch1" id="" _><checkbox>```
+ * VJ.view.Select 设置一个支持标题和text输入框的对象，绑定jQuery的对应事件，其属性有
+     * value 获取/设置select的值
+     * values 选择框的options json定义
+     * name 输入框的name
+     * key 输入框的标题 
+ * VJ.view.Hidden 设置一个hidden输入框的对象除基础方法后再设置属性
+     * value 获取/设置值
+ * VJ.view.PasswordBox 继承自TextBox设置一个带说明的密码输入框的对象，新增一个属性
+     * alt、passchar 都可设置密码的字符
+ * VJ.view.Button 定义的一个带标签的Button，需要设置的内容
+     * text/value 输入框的内容
+     * name 输入框的name
+     * key 输入框的标题
+  * VJ.view.Submit 继承在Button 完成submit操作
+  * VJ.view.Reset 继承在Button 完成reset操作
+  * VJ.view.Form 继承和实现了Form属性的控制管理。
+     * method 设置发送的方法 进而研究人们的购买力
+     * action 请求的路径
+     * target 请求是否重新打开新的页面
+     * name 设置form的name属性
+     * enctype 设置的语言类型eak;                
+ * VJ.view.Box 测试神器，一般用于测算位置和固定大小需要设置的属性有
+    * width
+    * height
+    * key 说明
+  * VJ.view.RadioList 通过设置list属性，自动生成一串对象
+     * values json 获取并生成RadioList
+     * value 获取radiolist的value
+ * VJ.view.CheckList 通过设置list属性，自动生成一串对象
+     * values json 获取并生成CheckList
+     * value 获取或者设置Checklist的value
+ * VJ.view.SwiperPanel 通过设置属性，生成兼容PC,手机的触摸式滑动面板，注意请用div+_='type:"SwiperPanel"'方式定义，因为其是容器控件，其内部需要放置同级的div作为滑动面板的内容
+     * direction 'horizontal'/'vertical' 横向，纵向 默认为横向
+     * width,height 请通过css或者class定义
+     * autoplay 3000/0/true/false 请设置每帧自动播放的等待时间，默认为false 不自动播放
+     * loop bool 设置到达头尾部后是否为循环切换 默认false
+     * scrollbar bool 设置是否允许滚动条 默认false
+     * effect cube/coverflow/true/false 设置切换样式是否为立体，滑片，淡入淡出，否等特殊样式
+     * buttons bool 设置是否允许出现翻页键 默认false
+     * pagination bool 设置是否允许出现底部导航点 默认false
+     * touch bool 设置是否允许识别鼠标、手势 滑动 默认false
+     * value index 设置从0开始的当前页面
+
+####2.1 todo panel 容器类对象的控件信息重新绑定，validate框架设置，move类对象动画设置 逻辑控件的data标准定义基本上确定可以有width,height,values,value
+ 
 
 ##附录A VESH架构简介
+![VESH 架构图](https://raw.githubusercontent.com/baibing0004/VJ/master/chm/img/VESH.jpeg)

@@ -489,7 +489,7 @@ var classname = function(构造参数){
      * VJ.middler 提供了一个支持**构造函数/Bean(无参构造+get/set属性名方式)/静态方法/构造+Bean方式/静态方法+Bean方式** 5种构造方法与 **Instance/Static/Pool**3种对象保持方式，**本地/远程懒加载**两种加载方式，**getObjectByAppName/getTypeByAppName** 两种对象访问方式的JS对象IOC反射容器框架，并依托config框架为ni框架和view,viewmodel层提供可继承的链式配置文件访问结构
      * VJ.ni 对应**VESH.view.storage**层次提供了一个可配置化的支持**localStorage/sessionStorage/JS对象/function/ajax/jsonp/webdb/websocket**等多种访问媒介，**直接读取/缓存再读取/缓存同步懒读取**等多种读取逻辑，**顺序与随机**两种读取方式，**js数组/json/tjson**三种dbtype数据类型的统一数据访问方法的dbstorage框架
      * VJ.viewmodel 对应 **VESH.view.viewmodel** 实现了对逻辑控件（就是``{data:{},on事件名:function(data,self){self.update({});}}``就可以定义一个纯粹的逻辑上的控件）定义与VESH.view.view层控件的绑定方式交互方法，提供SessionDataManager对象屏蔽了**Cookie/JS对象/localStorage/sessionStorage/ajax/jsonp**等多种存取渠道与**加解密存取方式**的无缝会话管理。提供VJ.viewmodel.Page实现了VESH.view.control的方法与导航管理，提供VJ.viewmodel.Control作为用户逻辑代码的处理基类。
-     * VJ.view 对应 **VESH.view.view** 实现对逻辑控件的实现和扩展控件基类``VJ.view.Control``，提供了统一的Control加载处理，提供了自定义控件标签解析与统一事件触发机制管理机制``_.call``与``_.render``方法
+     * VJ.view 对应 **VESH.view.view** 实现对逻辑控件的实现和扩展控件基类``VJ.view.Control``，提供了统一的Control加载处理，提供了自定义控件标签解析与统一事件触发机制管理机制``_.render``与``_.call``方法
  
 
 ##字典
@@ -539,15 +539,15 @@ var classname = function(构造参数){
  * inherit 使得当前子类继承父类的对象同时链接prototype原型链条，并调用父类的构造函数。尽可能使得JS的继承类似高级语言，但是请慎用对prototype继承的类采用此方法，经测试对非prototype类方法的继承和父类构造函数调用多级别或者多父类的继承都正常，但是对于prototype类型的连续继承超过2次以上就导致较底层次的prototype方法丢失。
     * 例子: ```VJ.inherit.apply(this,[parent,[……args]])```
  * create 使用类继承方法新建一个JS类的实例，适用于动态生成对象实例场景，有可能打断prototype类型的继承。
-	 * 例子: var obj = VJ.create(Page,[para1,para2]);
+	 * 例子: ```var obj = VJ.create(Page,[para1,para2]);```
  * create2 使用eval原生命令方法新建一个JS类的实例，适用于动态生成对象实例的场景，不会打断prototype类型的继承，完全JS原生方法解释执行，但是类名要求使用string声明，而且eval的执行效率上理论较第一种较慢一些 
-	 * 例子: var obj = VJ.create2('Page',[para1,para2]);
+	 * 例子: ```var obj = VJ.create2('Page',[para1,para2]);```
  * merge 用于数组/json对象的递归合并功能，一般地jQuery的merge功能只能合并对象的一级属性，而这个方法可以用于递归合并各级属性或者数组，并支持多个对象进行合并，且用后者合并前者。moveIndex属性用于设定移动至的数组位置，mergeIndex只用于合并数组中的第几个对象
      * 例子：
     ```
-        var ret = V.merge({a:22,c:23},{a:34,b:33},{d:"2334",f:true,g:function(){alert("hahaha");}},{h:[1,2,3,4]});
-        var ret = V.merge({a:[{a:2},{b:3}]},{a:[{moveIndex:3,j:3},{k:4}],b:25});
-        var ret = V.merge({a:[{a:2},{b:3}]},{a:[{mergeIndex:3,j:3},{k:4}],b:25});
+        var ret = VJ.merge({a:22,c:23},{a:34,b:33},{d:"2334",f:true,g:function(){alert("hahaha");}},{h:[1,2,3,4]});
+        var ret = VJ.merge({a:[{a:2},{b:3}]},{a:[{moveIndex:3,j:3},{k:4}],b:25});
+        var ret = VJ.merge({a:[{a:2},{b:3}]},{a:[{mergeIndex:3,j:3},{k:4}],b:25});
     ```
  * userAgent 自动判断获取当前userAgent状态 分为ie/firefox/chrome/safari/opera等多种浏览器类型 userAgent.name说明当前浏览器类型
    *  例如：```VJ.userAgent.name```
@@ -700,7 +700,8 @@ var classname = function(构造参数){
  * VJ.config.ProxyConfig ConfigManager专用代理类 返回getConfig结果，将其getValue方法转换为getConfigValue方法
  * VJ.config.ConfigAdapter Config适配器类，用于调用ConfigManger的resource将ConfigManaager的内容与resource之间进行相互调用 提供fill/update方法 并提供prototype.getInstance方法实现单例调用
  * VJ.config.getConfigManagerFromObj 通过JS对象生成ConfigManager并提供匿名Resource类将JS对象单向转换为ConfigManager 例如 VJ.config.getConfigManagerFromObj(parent,{});
- * VJ.config.getConfigManagerFromJS 通过JS文件获取JS对象生成ConfigManager,并提供匿名Resource类将JS对象单向转换为ConfigManager 例如 VJ.config.getConfigManagerFromJS(parent,name,path);这里允许path是路径数组，且引用对象首先通过merge方法进行自我扩展。
+ * VJ.config.getConfigManagerFromJS 通过JS文件获取JS对象生成ConfigManager,并提供匿名Resource类将JS对象单向转换为ConfigManager
+	 * 例如 ```VJ.config.getConfigManagerFromJS(parent,name,path);//这里允许path是路径数组，且引用对象首先通过merge方法进行自我扩展。```
  * VJ.config.getBaseConfigManager 通过直接使用VJ.config.Configs 生成基本节点ConfigManager
  * VJ.config.getApplicationConfigManagerFromJS 将上一个方法的BaseConfigManger作为根节点按照JS文件方式向下创建配置树 例子 var conf = VJ.config.getApplicationConfigManagerFromJS('classname',[path/[path1,path2,p3,p4]])
  * VJ.config.getApplicationConfigManagerFromObj 将上一个方法的BaseConfigManger作为根节点按照Json方式向下创建配置树 
@@ -726,7 +727,6 @@ var classname = function(构造参数){
  ```
  * VJ.middler.Middler 中介者管理容器，其提供3个方法供外部获取配置文件定义的对象```get/setObjectByAppName(appName,name),getTypeByAppName(appName,name)```
     * 例子:
-    * 
 ```
  var test = function(){};
  var mid = new VJ.middler.Middler(VJ.config.getApplicationConfigManagerFromObj({
@@ -776,8 +776,10 @@ var classname = function(构造参数){
         invoke invoke(cmd,func(data)) 调用cmd的配置信息，配合cmd完成真实的数据查询然后调用func回传数据
     ```
  * Ni框架DataCommand基类，会被传入connection DB连接,command 命令文本或者函数 ,params 命令参数
- * 提供excute(result,func)主方法，一般是调用connection.invoke(this,func(data))方法，处理数据格式化等等情况，一般不需要重载
-###特别需要注意的是如果要创建新的DBFactory以访问各种新的DB资源类型，那么就需要重写DBConnection，甚至DBCommand类型。如下为Ni框架中已经实现的DBFactory
+	* 提供excute(result,func)主方法，一般是调用connection.invoke(this,func(data))方法，处理数据格式化等等情况，一般不需要重载
+	
+###特别需要注意的是如果要创建新的DBFactory以访问各种新的DB资源类型，那么就需要重写DBConnection，甚至DBCommand类型。如下为Ni框架中已经实现的DBFactory:
+
  * VJ.ni.NiAjaxDataFactory 实现ajax jsonp/getScript方式获取数据的DBFactory 其DBResource的参数可作为jQuery.ajax的默认参数并新增host(../|http://www.abc.con)与dbtype(json/tjson)两个属性。
  * VJ.ni.NiObjectDataFactory 实现对JS对象,localStorage sessionStorage json等等资源获取数据的DBFacotry 其DBResource的参数需要设置resource参数指定JS数据源或者是JS数据源的名字，其Ni命令要求是function(resource,params){return data/function(callback){callback(data)};} 或者是resource对象上的方法名，其定义的结构同上
  * VJ.ni.NiSocketDataFactory 实现对WebSocket方式的持续通讯，DBResource的参数要求设置url参数，其Ni文件中的命令要求是命令字符串，参数的jsonstring为其对应值，服务端必须实现对niid字段的支持以实现命令与回调的对应
@@ -792,13 +794,15 @@ var classname = function(构造参数){
  * 其页面处理逻辑是 首先用户代码继承VJ.viewmodel.Page 然后 Page构造函数绑定 VJ.view.Page 并交由VJ.view.Page 调用Document.ready事件，当页面OnReady事件发生后，VJ.view.Page 将Html上属性有"_"的自定义控件按照middler在VESH.view的控件库中进行创建、替换、初始化设置和相同ID的逻辑控件进行绑定，并确认逻辑控件中如果存在没有绑定的控件且type不为空那么自动创建一个新的控件加在页面后，等待全部操作完成后再触发Page.onStart事件调用业务代码。
  * 其要求定义VJ.viewmodel中默认的```Middler.AppName```为'VESH.viewmodel'，定义其调用的NiTemplate对象所在的Middler.AppName为'Ni',定义VJ.view默认搜索控件库的Middler.AppName为'VESH.view'
     * 例如:
-    * 
-````
-       VJ.viewmodel = {APP:'VESH.viewmodel',NIAPP:'Ni'};VJ.view = {APP:'VESH.view'};```
+	
+	```
+       VJ.viewmodel = {APP:'VESH.viewmodel',NIAPP:'Ni'};VJ.view = {APP:'VESH.view'};
+	```
         
-* 逻辑控件基类，默认会定义属性data说明全部的数据信息,属性v说明对应的view层控件，一般是不使用的；一个默认方法update({data json})交由view层控件按照属性定义更新逻辑控件的data属性，同时重新更新view层控件 而业务调用这个类一般是在继承VJ.viewmodel.Page的时候 作为构造参数之一中按照ID对应的逻辑控件，特别地逻辑控件事件会有两个默认的事件onReady（大小写不敏感）和onLoad是分别在控件的标签内容在替换前和替换后触发的一般在onLoad中处理业务逻辑代码。提供get([key])方法用于获取该逻辑控件刷新后的data属性，如果输入参数则更新后返回该参数的对应值否则为null，如果没有输入参数，那么会返回整个data属性
-
-    VJ.viewmodel.Control = function(){//data属性的定义 on事件的处理 update方法的主动更新 get方法的主动获取}；```
+ * 逻辑控件基类，默认会定义属性data说明全部的数据信息,属性v说明对应的view层控件，一般是不使用的；一个默认方法update({data json})交由view层控件按照属性定义更新逻辑控件的data属性，同时重新更新view层控件 而业务调用这个类一般是在继承VJ.viewmodel.Page的时候 作为构造参数之一中按照ID对应的逻辑控件，特别地逻辑控件事件会有两个默认的事件onReady（大小写不敏感）和onLoad是分别在控件的标签内容在替换前和替换后触发的一般在onLoad中处理业务逻辑代码。提供get([key])方法用于获取该逻辑控件刷新后的data属性，如果输入参数则更新后返回该参数的对应值否则为null，如果没有输入参数，那么会返回整个data属性 
+ 
+   ``` VJ.viewmodel.Control = function(){//data属性的定义 on事件的处理 update方法的主动更新 get方法的主动获取}；```
+   
  * VJ.view.Control定义 其负责html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 所有的控件均支持先创建、init、然后bind绑定、再调用onLoad和render事件 如果需要扩展或者创建一个新的自定义控件需要重载onLoad方法,fill方法，render方法，事件触发顺序是Constructor>init>onLoad>render>fill>on***>render的顺序执行的。
  * 请开发者切记，如果控件的某个属性的处理会导致控件内Html子节点的变化而不仅仅是html属性值的变化，譬如select\radiolist\checklist的values属性会导致options\input\checkbox的数量的变化，那么在处理fill方法时需要判断当前节点是否不为空，否则不要修改values属性的值，在处理render方法时需要在处理values和value两个属性时都要添加对value属性的处理，否则子节点的属性就是有残缺的。
  * 推荐使用VJ.forC异步处理对{}的处理，使用VJ.each异步处理对[]的处理，使用VJ.whileC异步处理对更复杂表达式的处理，尤其是在UI渲染时，否则容易导致页面长时间不响应，也防止百页的出现，虽然我们可以通过在方法的第四个参数上设置为true改为同步处理模式，但是如上优点也会丧失。

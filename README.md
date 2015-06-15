@@ -265,7 +265,7 @@ var classname = function(构造参数){
                                         });
                                         //获取一个新的SessionDataManager对象 这里没有放回，一般在对象使用完成后需要调用_.middler.setObjectByAppName('APP名','对象名',对象实例) 才能实现对Middler框架中的对象保持机制的完整调用（一般适用于池方式,另外及时销毁也是一个对象使用的好习惯）
                                         console.log(_.middler.getObjectByAppName(M.APP,'SessionDataManager'));
-                                        //session对象是SessionDataManager的实例 提供 _.session.data('会话名')+_.session.updateAll/ _.session.update()或者直接调用_.session.update('会话名',{会话改变值}) 两种方式都会更新会话信息其会话具体媒介和相关逻辑由传入Page构造函数时的第三个参数定义的Middler配置设置。
+                                        //session对象是SessionDataManager的实例 提供 _.session.get('会话名')+_.session.updateAll/ _.session.update()或者直接调用_.session.update('会话名',{会话改变值}) 两种方式都会更新会话信息其会话具体媒介和相关逻辑由传入Page构造函数时的第三个参数定义的Middler配置设置。
                                         _.session.update('ssss',{aaaa:22});                          
                                     },
                                     onDispose:function(){
@@ -349,7 +349,7 @@ var classname = function(构造参数){
     
     var middler = VJ.middler.getMiddlerFromObj(window.top.config);
     var session = middler.getObjectByAppName('VESH.viewmodel','SessionDataManager');
-    session.data('key')
+    session.get('key')
     session.update('key',{k:1,b:2});
 ```
      * 真实config.js

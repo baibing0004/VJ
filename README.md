@@ -29,7 +29,7 @@
      * 为了完成业务逻辑会话和数据交互是必不可少的，VJ将逻辑代码中与会话和数据操作有关的部分再次分离，完成了五花八门的业务处理与乱七八糟的数据访问分离的任务。这就是独立json配置代码段或者json配置文件一般是根目录下的***ni.js*** 配合`VJ.viewmodel.Page`完成了这个工作。 
 
             那为毛不用$.cookie,$.ajax非要换成`this.session`,`this.ni`去调用呢?  
-    		因为基于统一的Middler容器，VJ框架才可以:  
+            因为基于统一的Middler容器，VJ框架才可以:  
             * 在不改动用户代码的情况下仅修改config.js便可以更换用户标签对应的UI控件、组件、模块  
             * 在不改动用户代码的情况下仅修改config.js更改某个会话是存放cookie还是sessionStorage,是明文还是加密，  
             * 在不改动用户代码的情况下仅修改ni.js配置某个数据请求是否需要缓存，是json还是jsonp，是ajax还是webdb甚至是WebSocket。  
@@ -452,14 +452,6 @@ var classname = function(构造参数){
             1. Ni节点下的对象名为NiTemplate的excute命令中的第一个参数 其参数类型有command 即其对应的template的执行命令譬如针对使用ajax数据源的默认为ajax地址，dbtype为其返回的数据类型有json与tjson两种，params为其需要的参数默认值，template属性类型仅在用户使用NiMultiTemplateDecorator类型时有效指明其真正的template对象
             2. 特别注意命令.Cache/.Clear/.Set一般情况下是不需要写明command参数的缓存默认识别js对象/localStorage/sessionStorage的存取方式，如果需要覆盖则command需要为一个function,传入参数为用户调用template传入参数与命令默认参数和cacheKey,cacheValue的递归合并结果，返回一个满足dbType类型定义的数组对象
             3. 一般地Ni框架要求返回的对象尽可能满足如下格式 json类型的数据格式：([[{},{}],[{},{}]]) 第一级大括号为多表库，第二级大括号为具体的表，第三级json对象对应每行，当然也允许用户返回其特定的数据格式，但是尽可能是json格式,而tjson类型则是json格式进一步精简格式为([[[键名,键名],[键值,键值],[键值,键值]],[[],[],[]]]) 其中第一第二级与json格式相同，第三级将json中的键值对的键名抽取出来作为独立的一行，然后剩下的行则是各个json对象的值，其顺序与键名顺序对应，在Ni框架中会自动转换成与json类型相同的数据格式供用户访问。 json格式与VESH.Net中的*.json/*.jsonp的返回值对应，tjson格式与VESH.Net中的*.tjson/*.tjsonp的返回值相对应，一般情况下tjson只能处理多表数据，其传输大小会比传统json少1/3到1/2
-     * 调用方式如下：
-```   
-   //接上文 
-    var ni = middler.getObjectByAppName("Ni",'template');
-    ni.excute('template','ajaxtest1',{SONumber:10001103386854},function(res){
-        res.each('ajaxtest1',function(v){V.each(v,function(v){console.log(v);});});
-	})
-```
 ```
     window.top.ni = {
         Ni:{
@@ -473,17 +465,189 @@ var classname = function(构造参数){
     	}
     };
 ```
+     * 调用方式如下：
+```   
+   //接上文 
+    var ni = middler.getObjectByAppName("Ni",'template');
+    ni.excute('template','ajaxtest1',{SONumber:10001103386854},function(res){
+        res.each('ajaxtest1',function(v){V.each(v,function(v){console.log(v);});});
+	})
+```
+
 ##有问题反馈
 
-在使用中有任何问题，欢迎反馈给我，可以用以下联系方式跟我交流  
+ * 在使用中有任何问题，欢迎反馈给我，可以用以下联系方式跟我交流  
  * 邮件：[@白冰](baibing0004@sohu.com)   
  * QQ: 26342049 群：3793554  
 
 ##VJ的构成
 
+ * VJ中对应V2CES的5层划分,从下到上分别实现了如下层次:
+     * VJ.base 提供对常用方法的封装，提供诸如对象继承、创建与递归合并的OO方法，提供同步+缓存的js/css加载功能，提供统一异常管理，提供异步的被动/主动方式循环处理对象与数组的方法，提供异步的循环处理方法，提供异步注册调用的统一事件处理机制，提供对Date对象与String的常用方法扩展，提供异步控件加载方法。是VJ其它框架的基础
+     * VJ.config 作为基础框架为VJ的上层框架提供可继承的链式配置文件访问方式，保证由叶子到根部的配置节点方式，提供基础类库为上层框架配置对象解析支持。
+     * VJ.collection 作为基础框架为VJ.middler框架提供Pool池方式的对象保持机制，提供对象池的自动增长，最大容量，自动缩减等等功能
+     * VJ.middler 提供了一个支持**构造函数/Bean(无参构造+get/set属性名方式)/静态方法/构造+Bean方式/静态方法+Bean方式** 5种构造方法与 **Instance/Static/Pool**3种对象保持方式，**本地/远程懒加载**两种加载方式，**getObjectByAppName/getTypeByAppName** 两种对象访问方式的JS对象IOC反射容器框架，并依托config框架为ni框架和view,viewmodel层提供可继承的链式配置文件访问结构
+     * VJ.ni 对应**VESH.view.storage**层次提供了一个可配置化的支持**localStorage/sessionStorage/JS对象/function/ajax/jsonp/webdb/websocket**等多种访问媒介，**直接读取/缓存再读取/缓存同步懒读取**等多种读取逻辑，**顺序与随机**两种读取方式，**js数组/json/tjson**三种dbtype数据类型的统一数据访问方法的dbstorage框架
+     * VJ.viewmodel 对应 **VESH.view.viewmodel** 实现了对逻辑控件（就是``{data:{},on事件名:function(data,self){self.update({});}}``就可以定义一个纯粹的逻辑上的控件）定义与VESH.view.view层控件的绑定方式交互方法，提供SessionDataManager对象屏蔽了**Cookie/JS对象/localStorage/sessionStorage/ajax/jsonp**等多种存取渠道与**加解密存取方式**的无缝会话管理。提供VJ.viewmodel.Page实现了VESH.view.control的方法与导航管理，提供VJ.viewmodel.Control作为用户逻辑代码的处理基类。
+     * VJ.view 对应 **VESH.view.view** 实现对逻辑控件的实现和扩展控件基类``VJ.view.Control``，提供了统一的Control加载处理，提供了自定义控件标签解析与统一事件触发机制管理机制``_.call``与``_.render``方法
+ 
+
 ##字典
 
 ###VJ.base
+####VJ基础类
+
+ * isValid:判断对象是否为undefined,null,"",false返回false
+    * 例子：```VJ.isValid('') == false```
+ * getValue:如果对象满足isValid那么返回对象，否则返回默认值
+    * 例子 ```VJ.getValue('','未定义')```
+ * format:格式化字符串，根据字符串中<%=key%>或者{key}的值将后续对象中的key值替换指定值，否则将格式化字符串的值替换为空
+     * 例子：``` VJ.format('这是一个<%=key%>,{key}',{key:'测试'})```
+ * sb:用于返回一个类StringBuilder实例，其方法有:
+ > append function(data) 用于在最后添加一段文本  
+ > appendFormat function(format,data) 用于按照格式化的方式添加一段文本  
+ > insert function(start,data) 用于按照字符串的位置一段文本  
+ > insertFormat function(start,format,data) 用于按照格式化的方法在指定位置插入一段文本  
+ > remove function(start,length) 用于在指定的位置删除插入一段指定长度的文本  
+ > toString function() 返回内部存储的字符串  
+ > clear function() 清理内部存储的字符串 并一次性返回string结果，清理完成后实例仍然可以继续使用  
+ > length function() 返回字符串的长度  
+
+    * 例子
+    ```
+    var sb = VJ.sb();  
+    var str = sb.append('{').appendFormat("{x}=={y}",obj).append('}').clear();
+    ```
+    
+####VJ数组处理
+ * isArray:判断对象是否是数组
+    * 例子 ```VJ.isArray([1,2,3]) == true```
+ * each:异步循环数组处理方法，其内部抛出的错误信息已经被VJ.tryC方法捕获 会在VJ.isDebug为真时，打印日志到Console上。
+    * 例子 ```VJ.each([1,2,3],function(v){},[function(){处理完成时的方法},是否同步处理]) ```
+ * once:一次性异步方法调用，如果该方法在等待时间内被多次调用那么会以最后一次执行时间为准，保证仅执行一次，且错误信息已经被捕获
+    * 例子:```VJ.once(function(){},[随机时长 一般为1毫秒]);```
+ * forC：异步对象属性循环处理方法，且错误信息已经被捕获
+    * 例子：```VJ.forC(function(k,v){}[,function(){最终执行方法},是否同步执行]);```
+ * forC2:异步对象属性循环处理方法，与forC不同的是next方法需要由单步处理函数调用，如果不调用不会自动向下执行，用于自由度更大的循环控制。且错误信息已经被捕获 
+    * 例子:```VJ.forC2(function(k,v,next){next();}[,function(){最终执行方法},是否同步执行]); whileC:异步条件循环处理方法 四个参数 exp 给出需要处理的值，func进行处理，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的保证前后两次调用是顺序的 第四个参数如果为真那么就是同步执行 且错误信息已经被捕获 例子 VJ.whileC(function(){return array.shift();},function(v){}[,function(){最终执行方法},是否同步执行]);```
+ * whileC2:异步条件循环处理方法 与whileC不同的是next方法需要由单步处理函数调用，如果不调用不会自动向下执行，用于自由度更大的循环控制。 且错误信息已经被捕获
+    * 例子:```VJ.whileC2(function(){return array.shift();},function(v,next){next()}[,function(){最终执行方法},是否同步执行]);```
+
+####VJ类处理
+ * getType:获取JS对象的真实父类类型 一般是通过prototype方式实现的继承模式 同时也返回各种基础对象类型 譬如 string,function,object,number,Array,ukObject,父类名等等 
+    * 例子:```VJ.getType({})```
+ * inherit 使得当前子类继承父类的对象同时链接prototype原型链条，并调用父类的构造函数。尽可能使得JS的继承类似高级语言，但是请慎用对prototype继承的类采用此方法，经测试对非prototype类方法的继承和父类构造函数调用多级别或者多父类的继承都正常，但是对于prototype类型的连续继承超过2次以上就导致较底层次的prototype方法丢失。 例子 VJ.inherit.apply(this,[parent,[……args]])
+ * create 使用类继承方法新建一个JS类的实例，适用于动态生成对象实例场景，有可能打断prototype类型的继承。
+	 * 例子: var obj = VJ.create(Page,[para1,para2]);
+ * create2 使用eval原生命令方法新建一个JS类的实例，适用于动态生成对象实例的场景，不会打断prototype类型的继承，完全JS原生方法解释执行，但是类名要求使用string声明，而且eval的执行效率上理论较第一种较慢一些 
+	 * 例子: var obj = VJ.create2('Page',[para1,para2]);
+ * merge 用于数组/json对象的递归合并功能，一般地jQuery的merge功能只能合并对象的一级属性，而这个方法可以用于递归合并各级属性或者数组，并支持多个对象进行合并，且用后者合并前者。moveIndex属性用于设定移动至的数组位置，mergeIndex只用于合并数组中的第几个对象
+     * 例子：
+    ```
+        var ret = V.merge({a:22,c:23},{a:34,b:33},{d:"2334",f:true,g:function(){alert("hahaha");}},{h:[1,2,3,4]});
+        var ret = V.merge({a:[{a:2},{b:3}]},{a:[{moveIndex:3,j:3},{k:4}],b:25});
+        var ret = V.merge({a:[{a:2},{b:3}]},{a:[{mergeIndex:3,j:3},{k:4}],b:25});
+    ```
+ * userAgent 自动判断获取当前userAgent状态 分为ie/firefox/chrome/safari/opera等多种浏览器类型 userAgent.name说明当前浏览器类型
+   *  例如：```VJ.userAgent.name```
+   
+####VJ的Bug处理
+ * isDebug 设置或者获取VJ的Debug状态默认为false，当其为真时，VJ.showException 会打印错误信息 否则不会打印 
+	 * 例子:```VJ.isDebug = true;VJ.showException　//当VJ.isDebug为真是自动打印日志到console ```
+	 * 例子:``` VJ.showException("这是测试:",new Error('错误信息'))```
+     * 例子:``` VJ.tryC(function(){业务内容});//tryC 执行作为参数注入的function同时对抛出的异常按照调用showException进行处理 ```
+
+####DOM处理
+ * newEl 生成新元素单并不注入body中 参数：tag 标签/样式class/标签内内容 
+	 * 例子:```VJ.newEl("div","divClass","我的div");```
+ * encHtml 只转换标点符号并不太大扩大输入串的转换值 
+	 * 例子：```VJ.encHtml('<input/>');```
+ * decHtml 将转码后的脚本进行解码 
+	 * 例子:``` VJ.decHtml('<input%2F>')```
+ * setChecked 用于将checked对象在不同浏览器中都设置成需要的值
+    * 例如:```VJ.setChecked($node,true);```
+ * maxlength 用于所有的textarea通过JS方法绑定maxlength属性 保证当大于一定值时自动截取
+ * fill 用于使用数据填充带有'\_\_'属性的控件，默认自动处理input/textarea/select/img/div/span等等类型节点，当标签属性\_\_定义了field时会寻找data中的对应数据value进行填充，如果\_\_属性中定义了formatter属性那么会调用其进行数据格式化 
+	 * 例子:
+    ```$node = '<input __="field:a"/>;';VJ.fill($node,{a:1,b:2});```
+ * fillTo 用于使用数据根据模块控件的定义不断创建子控件填充指定对象,sor指定填充的模板控件，data填充的数据，aim填充到的目标节点，func返回新创建的子空间。特别地sor控件一般和aim是一个对象，也可以是不同对象，但是是display:none;的用于有关字段的节点都使用\_\_标示，而且\_\_的属性值可以有field,cssClass,click函数等等属性 
+	 * 例子: ```VJ.fillTo($sor,[{},{}],$aim,function(){return VJ.newEl('li');});```
+ * getClipBoardText 兼容IE与FireFox用于获取剪贴板的内容 
+	 * 例子: ```VJ.getClipBoardText([e]);//jQuery copy事件中的e```
+ * setClipBoardText 兼容IE与FireFox用于设置剪贴板的内容 
+	 * 例子: ```VJ.setClipBoardText([e],text)```
+
+####VJ配置注册管理
+ * getSettings 按照key值获取VJ管理的配置信息否则设置并返回第二个值作为默认值 
+	 * 例子: ```VJ.getSettings('ajax',{jsonp:true});```
+ * extendSettings 按照key值扩展VJ管理的配置信息 
+	 * 例子: ```VJ.extendSettings('ajax',{jsonp:false});```
+
+####VJ ajax方法
+ * evalTJson 将tjson数组转换为json数组 TJson格式 一般是：```[库[表[列,行,行]]]```
+    * 例如 ```[['Rindex','ID'],['1','6e014f804b8f46e1b129faa4b923af2d'],['2','6e014f804b8f46e1b129faa4b923a23d']]```
+    * 转换为 传统Json数组格式：```[库[表[{行},{行},{行}]]]```
+    * 例如：```VJ.evalTJson([[['Rindex','ID'],['1','6e014f804b8f46e1b129faa4b923af2d'],['2','6e014f804b8f46e1b129faa4b923a23d']]]);```
+    * 特别地evalTjson支持多层，递归转换，无论多少层都可以转换完成
+ * ajax VJ的ajax命令支持json与jsonp属性设置即可访问json或者jsonp方法 默认属性有
+        async: false,
+        type: "POST",
+        dataType: "text", 
+        cache: false,
+        filtData:function(data){return VJ.evalTJson(data);},
+        bindData:function(data){},
+        noData:function(){}
+    * 一般filtData会完成tjson或者json方式的解析，
+    * bindData用于异步获取最终的json数据,
+    * noData用于判断访问错误或者确实没有数据时的情况
+    * 例如:
+        ```VJ.ajax{url:'',data:{},bindData:function(){}}```
+ * getRemoteJSON VJ的jsonp命令 用于根据url获取js对象的访问一般地在参数中可以设置```VJ.extendSettings('getRemote',{filtURI:function(data){用于将json或者tjson住换成一致的json对象}})```
+    * 例子：
+        ```VJ.getRemoteJSON(url)```  
+ * include VJ的js与css资源文件加载命令一般地如果url曾经使用include加载过就不再加载。 
+    * 例如:```VJ.include('http://url');```
+ * part VJ的控件加载命令，用于将指定url的html内容按照iframe/jsonp方法获取 其参数提供(url,放入的节点node, mode(iframe/), callback) 
+    * 例子:```VJ.part(url,node,null,function(){init})```
+    
+####VJ异步触发事件处理 一般用于part未完成时，尚未定义方法与事件就已经被调用了这种情况，现在也被用于模块间通讯，一般用于未定义先调用的事件或者命令处理
+ * registCommand 事件注册命令与事件调用命令用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。 例如 VJ.registCommand('showXXList',getData);这样保证事件通知与处理可以无缝的异步进行。
+callCommand用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。例如 VJ.callCommand('showXXList',[{id:1}]) 一般情况下代码都是不需要等待下载完成
+hasCommand用于判断是否已经定义该方法或者调用该方法 例如 if (!V.hasCommand('editor.open')) V.part("/FileServer/layout/editor/editor.htm");
+clearCommand 仅限iframe方式调用时，先取消原页面添加的方法 一定要在part前 例如 V.cleanCommand('editor.open');
+ V.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){}); 仅限iframe方式调用时，先取消原页面添加的方法
+registEvent VJ用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。 
+	 * 例子: V.registEvent('showXXList',getData)
+callEvent VJ用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。 
+	 * 例子:V.callEvent('showXXList',[{id:1}])
+ haseEvent VJ用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false; 
+	 * 例子: if (!V.hasEvent('editor.open')) V.part("/FileServer/layout/editor/editor.htm");
+ clearEvent VJ仅限iframe方式调用时，先取消原页面添加的方法，业务逻辑深度交叉，iframe落后的控件连接方式时使用一定要在part前 
+	 * 例子: V.cleanEvent('editor.open'); V.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){});
+ 
+ V.cleanEvent(事件名)
+getTarget 通过事件对象获取发生事件的真实标签 例如 function(bean)
+cancel 通过事件对象取消事件 例如 VJ.cancel(事件实体)
+stopProp = 阻止事件向上冒泡 例如 VJ.stopProp(事件实体)
+ VJ业务优化
+formatPrice 价格输出的格式化方式 
+	 * 例子: VJ.formatPrice(2,2232.2,'.','`')
+qs 当前页面的QueryString参数对象支持get与contain方法 例如 VJ.qs.get('abc'),VJ.qs.contain('abc')
+Date.add 为Date对象添加add方法 支持如下字段的加法运算 'y':'FullYear', 'q':'Month', 'm':'Month', 'w':'Date', 'd':'Date', 'h':'Hours', 'n':'Minutes', 's':'Seconds', 'ms':'MilliSeconds' 例如 new Date().add('h',1)
+Date.diff 为计算两日期相差的日期年月日等前比后面的数值高caiwei new Date().diff('h',new Date().add('d',1));
+Date.sub计算两日期相差的日期年月日等 new Date().sub('h',new Date().add('d',1));
+Date.toString 可以根据样式定义譬如 yyyy/MM/dd HH:mm:ss' 例如new Date().toString('yyyy-MM-dd');
+VJ处理永不重复的随机数
+random 保证随机生成在单页面运行期间不会相同，值规则是时间+次数的一个整数 
+	 * 例子: VJ.random()
+hash 获取字符串的hash散列值，第二个参数为是否忽略大小写 例如VJ.hash('test',false){
+ string.startWith与string.ed
+ //添加string.endWith与startWith方法 
+	 * 例子: "abc".startWith('a') "abc".endWith('C');
+ json2 将json2对象全部引入VJ.base框架
+toJsonString 该方法调用json2的功能将任意类格式化 例如 VJ.toJsonString({a:1,b:2});
+json 该方法调用json2的功能将字符串反格式化 例如 VJ.json('{a:1,b:2}');
+
 
 ###VJ.config框架
 

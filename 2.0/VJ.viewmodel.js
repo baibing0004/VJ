@@ -71,7 +71,11 @@
 				_.params = V.getValue(params,{});
 			}
 			_.init = function(page,node,params){				
-				_.page = page;		
+				_.page = page;
+				_.config = _.page.config;
+				_.middler = _.page.middler;
+				_.ni = _.page.ni;
+				_.session = _.page.session;
 				_.node = node;
 				_.params = V.merge(_.params,V.getValue(params,{}));
 			};

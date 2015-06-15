@@ -411,14 +411,15 @@
 				__.ada = ada;
 				__.data = {};
 				if(!__.ada){throw new Error('SessionDataManager 需要设置SessionDataAdapter');}
-			}
-			_.data = function(name){
+			}			
+			_.get = function(name){
 				if(!__.data[name]){
 					__.data[name] = {};
 					__.data[name] = __.ada.fill(name);
 				}
 				return __.data[name];
 			};
+			_.data = _.get;
 			//支持 session.update('会话key',[data]);
 			_.update = function(name,data){
 				__.data[name] = V.merge(_.data(name),V.getValue(data,{}));

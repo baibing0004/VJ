@@ -101,6 +101,8 @@
 					_.vm = vm;
 					//完成配置合并
 					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
+					//用于获取绑定对象的数据
+					_.get = function(){return _.vm.data;}
 					//完成类型名注入
 					_.vm.nodeName = _.nodeName;
 					//完成方法注入

@@ -365,6 +365,15 @@ VJ = window.top.VJ;
 				return func();
 			} catch (e) { V.showException('', e); }
 		};
+		var start = null;
+		V.watch = function(restart){
+			if(!start || restart){
+				start = new Date();
+				console.log('VJ.watch开始'+start);
+			} else {
+				console.log('VJ.watch 持续了:'+start.diff('ms',new Date()));
+			}			
+		};
 	}
 	//DOM处理
 	{
@@ -868,7 +877,7 @@ VJ = window.top.VJ;
 			var comms = V.getSettings('comms',[]);
 			var func = comms[name];
 			if (V.isValid(func) && typeof (func) == 'function') {
-				func.apply(null, data);
+				V.once(function(){func.apply(null, data);});
 			} else {
 				comms[name] = data;
 			}
@@ -921,7 +930,7 @@ VJ = window.top.VJ;
 			var events = V.getSettings('events',[]);
 			var funs = events[name];
 			if (V.isValid(funs) && V.isArray(funs)) {
-				$(funs).each(function (i, func) {
+				V.each(funs,function (func) {
 					//报错不下火线
 					V.tryC(function () {
 						func.apply(null, data);

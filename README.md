@@ -944,9 +944,10 @@ var classname = function(构造参数){
      * VJ.js:对应VESH架构中的View层
      * PublicClass.Project.VESH 对应VESH架构中的Entity层
      * 其使用PublicClass类库为基础构建了
-            以PublicClass.Bean.Middler为核心IOC容器
-            以PublicClass.IO.Config为配置文件管理基础框架
-            以PublicClass.DB.Ni为ECMI层次中的Interface层屏蔽Entity层对下层SS服务层访问的架构层次。
+	 
+			以PublicClass.Bean.Middler为核心IOC容器
+			以PublicClass.IO.Config为配置文件管理基础框架
+			以PublicClass.DB.Ni为ECMI层次中的Interface层屏蔽Entity层对下层SS服务层访问的架构层次。
          * 并提供了SessionDataManager对象这种可配置化的统一接口方式访问与管理***Cookie/DB/NoSQL***等多种会话存储媒介与***登陆用户信息/登录用户的权限信息/加密安全会话/多语言版本***等多种会话信息内容，与***Status/DBResult***等等有关会话控制的应答级的临时会话属性以实现MVC方式控制
     > 怎么样是不是和VJ有点像，其实VJ的语法和类划分就是参照VESH的框架实现设计的，配置文件都很像，实现了只要学习了VJ就会用VESH了
          * 提供web.pcf文件为IOC反射类容器配置文件
@@ -957,7 +958,9 @@ var classname = function(构造参数){
          * 提供APart为即可拖拽aspx页面使用，也可通过*.part(静态html)/*.jnp(静态JS)JS引入方式使用的ascx自定义控件的公共基类
          * 提供*.json/*.jsonp/*.tjson/*.tjsonp/*.string/*.void/*.x/*.part/*.jnp/*.page等多种访问后缀给前台JS自由访问
          * 提供_a=1与_n=pcf中的ni/模板名为js提供动态访问Action与Ni对象还是不动态访问仅仅返回aspx页面或者数据的开关
+		 
 #### VESH 架构思想与技术分层图谱
+
 ![VESH 技术谱系图](https://raw.githubusercontent.com/baibing0004/VJ/master/chm/img/VESH分类.jpg)
 
 ## 附录B 自动链接与压缩命令

@@ -146,7 +146,7 @@
 							V.forC(value,function(key2,value2){_.node.attr(key2,value2);},function(){});
 							break;
 						case 'enable':
-							if(value){_.node.removeAttr('disabled');}else{_node.attr('disabled','disabled');}
+							if(value){_.node.removeAttr('disabled');}else{_.node.attr('disabled','disabled');}
 							break;
 						case 'visible':
 							if(value){_.node.show();} else {_.node.hide();}

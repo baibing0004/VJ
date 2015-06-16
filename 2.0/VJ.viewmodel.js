@@ -81,10 +81,10 @@
 			};
 			_.call = function(name,param){
 				//所有的事件调用全部采用异步调用方式 V.once
+				_.vm.data = V.merge(_.vm.data,_.fill());
 				if(param){
 					_.vm.data = V.merge(_.vm.data,param);
 				}
-				_.vm.data = V.merge(_.vm.data,_.fill());
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){

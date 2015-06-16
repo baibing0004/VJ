@@ -873,11 +873,13 @@ VJ = window.top.VJ;
 		--案例
 		V.callCommand('showXXList',[{id:1}])
 		*/
-		V.callCommand = function (name, data) {		
+		V.callCommand = function (name, data) {
+			var caller = arguments.caller;
 			var comms = V.getSettings('comms',[]);
 			var func = comms[name];
+			data = V.isArray(data)?data:[data];
 			if (V.isValid(func) && typeof (func) == 'function') {
-				V.once(function(){func.apply(null, data);});
+				V.once(function(){func.apply(caller, data);});
 			} else {
 				comms[name] = data;
 			}
@@ -927,13 +929,15 @@ VJ = window.top.VJ;
 		V.callEvent('showXXList',[{id:1}])
 		*/
 		V.callEvent = function (name, data) {
+			var caller = arguments.caller;
 			var events = V.getSettings('events',[]);
 			var funs = events[name];
+			data = V.isArray(data)?data:[data];
 			if (V.isValid(funs) && V.isArray(funs)) {
 				V.each(funs,function (func) {
 					//报错不下火线
 					V.tryC(function () {
-						func.apply(null, data);
+						func.apply(caller,data);
 					});
 				});
 			}

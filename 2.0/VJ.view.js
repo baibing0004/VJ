@@ -542,7 +542,6 @@
 							_.swiper = null;
 						}
 						if(!Swiper) {throw new Error('请更新config.js中SwiperPanel节点对Swiper.js引用');}
-						console.log(_.params);
 						_.swiper = new Swiper(_.node[0],V.merge({},_.params));
 					}					
 				});

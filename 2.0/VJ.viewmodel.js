@@ -335,9 +335,9 @@
 					v = $(v1);
 					var id = v.attr('id');
 					var json = eval("({"+v.attr('_')+"})");
-					var type = json.type?json.type:(id && _.page.getModels(id) && _.page.getModels(id).type)?_.page.getModels(id).type.toLowerCase():null;
+					var type = json.type?json.type:(id && _.page.getModels(id) && _.page.getModels(id).type)?_.page.getModels(id).type:null;
 					//对于容器类对象的处理方式
-					var nodeName = type?type:v[0].nodeName.toLowerCase();
+					var nodeName = type?type.toLowerCase():v[0].nodeName.toLowerCase();
 					var obj = _.middler.getObjectByAppName(W.APP,nodeName);
 					if(!obj) V.showException('配置文件中没有找到对象类型定义:'+nodeName);
 					obj.init(_,v,V.isValid(v.attr('_'))?json:null);

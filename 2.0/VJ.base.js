@@ -587,12 +587,17 @@ VJ = window.top.VJ;
 								data = data.replace(/[\r\n]+/g,'');
 								break;
 							case "object":
-								$(eval(data)).each(function (i, v) {
-									hasFalse = (hasFalse || v == 'False' || v == 'false');
-								});
-								break;
+								if(data){
+									$(data).each(function (i, v) {
+										v=v+'';
+										hasFalse = (hasFalse || v == 'False' || v == 'false');
+									});
+								} else hasFalse = true;
+								break;							
+							case 'undefined':
 							default:
 								V.showException('V.Query success方法 name:typeof错误 type:' + typeof (data));
+								hasFalse = true;
 								break;
 						}            
 						if (!hasFalse) {

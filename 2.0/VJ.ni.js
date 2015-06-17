@@ -261,7 +261,7 @@
 									if (data.replace(/^(\[+\]+)/g, '').length === 0) {
 										hasFalse = true;
 									} else {
-										hasFalse = (data.indexOf('False') >= 0 || data.indexOf('false') >= 0)
+										hasFalse = (data.indexOf('[False]') >= 0 || data.indexOf('[false]') >= 0)
 									} 
 									if(!hasFalse){										
 										//如何判断tjson
@@ -270,10 +270,15 @@
 										}catch(e){console.log(data);}
 									}
 									break;
-								case 'undefined':
 								case "object":
-									hasFalse = !data;
-									break;
+										if(data){
+											$(data).each(function (i, v) {
+												v=v+'';
+												hasFalse = (hasFalse || v == 'False' || v == 'false');
+											});
+										} else hasFalse = true;
+										break;							
+								case 'undefined':
 								default:
 									V.showException('V.NiDataCommand success方法 name:typeof错误 type:'+data);
 									hasFalse = true;
@@ -519,20 +524,26 @@
 											if (data.replace(/^(\[+\]+)/g, '').length === 0) {
 												hasFalse = true;
 											} else {
-												hasFalse = (data.indexOf('False') >= 0 || data.indexOf('false') >= 0)
+												hasFalse = (data.indexOf('[False]') >= 0 || data.indexOf('[false]') >= 0)
 											} 
 											if(!hasFalse){
 												//如何判断tjson
 												data = eval('('+data.replace(/[\r\n]+/g,'')+')');	
 											}
-											break;										
-									case 'undefined':
+											break;		
 									case "object":
-										hasFalse = !data;
-										default:
-											V.showException('V.NiSocketDataCommand success方法 name:typeof错误 type:' + (data));
-											hasFalse = true;
-											break;
+										if(data){
+											$(data).each(function (i, v) {
+												v=v+'';
+												hasFalse = (hasFalse || v == 'False' || v == 'false');
+											});
+										} else hasFalse = true;
+										break;							
+									case 'undefined':
+									default:
+										V.showException('V.NiSocketDataCommand success方法 name:typeof错误 type:' + (data));
+										hasFalse = true;
+										break;
 									}            
 									if(hasFalse){
 										data = false;

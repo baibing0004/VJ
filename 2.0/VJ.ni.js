@@ -742,7 +742,7 @@
 											});
 										}
 									});
-									if(data){
+									if(data && data.length>0 && !(data.length==1 && data[0].length==0)){
 										//新增缓存
 										var _nicmd = cm.getConfigValue(_.KEY,v.key+'.Set');
 										if(_nicmd){
@@ -840,8 +840,8 @@
 												_func(_.result);
 											});
 										}
-									});
-									if(data && __.lazyExp(v.params)){
+									});									
+									if(data && data.length>0 && !(data.length==1 && data[0].length==0) && __.lazyExp(v.params)){
 										//新增缓存
 										var _nicmd = cm.getConfigValue(_.KEY,v.key+'.Set');
 										if(_nicmd){

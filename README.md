@@ -1,4 +1,4 @@
-#VJ
+#![VJ](https://raw.githubusercontent.com/baibing0004/VJ/master/chm/img/VJ.png)
 ##VJ是什么，能干什么？
 * VJ本身提供的不是一个瑰丽的UI框架，甚至特别绚丽的单一界面功能,而是更加方便的提供给你方便地在不改动原有代码的情况下应用各种炫控件和新逻辑的可能：
     * 它首先改变的是 **你对JS的看法**；

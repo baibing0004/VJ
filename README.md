@@ -950,7 +950,7 @@ var classname = function(构造参数){
 			以PublicClass.IO.Config为配置文件管理基础框架
 			以PublicClass.DB.Ni为ECMI层次中的Interface层屏蔽Entity层对下层SS服务层访问的架构层次。
          * 并提供了SessionDataManager对象这种可配置化的统一接口方式访问与管理***Cookie/DB/NoSQL***等多种会话存储媒介与***登陆用户信息/登录用户的权限信息/加密安全会话/多语言版本***等多种会话信息内容，与***Status/DBResult***等等有关会话控制的应答级的临时会话属性以实现MVC方式控制
-    > 怎么样是不是和VJ有点像，其实VJ的语法和类划分就是参照VESH的框架实现设计的，配置文件都很像，实现了只要学习了VJ就会用VESH了
+	> 怎么样是不是和VJ有点像，其实VJ的语法和类划分就是参照VESH的框架实现设计的，配置文件都很像，实现了只要学习了VJ就会用VESH了
          * 提供web.pcf文件为IOC反射类容器配置文件
          * 提供Ni/*.ni文件为DB层访问配置文件
          * 提供IAction作为Model基础接口为不同文件夹下的页面与对应Ni文件中的SQL与类SQL命令提供Model层Action类的入口
@@ -968,4 +968,4 @@ var classname = function(构造参数){
  * 请先安装Java，并在windows的path变量中设置java/bin的访问路径
  * 请执行2.0/bulid.bat
  * 复制VJ.min.js或者VJ.js使用
- > 当然也可以修改2.0/build.bat 将VJ.view.js排除在外或者换个实现的类 一键替换线上控件 呵呵
+	> 当然也可以修改2.0/build.bat 将VJ.view.js排除在外或者换个实现的类 一键替换线上控件 呵呵

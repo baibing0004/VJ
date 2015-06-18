@@ -1163,6 +1163,10 @@ VJ = window.top.VJ;
 				return false;
 			return true;
 		};
+		String.prototype.eq = function(str,isOri){			
+			str = str+'';			
+			return isOri?(this == str):(this.toLowerCase() == str);
+		};
 	}	
 	//json2
 	{		

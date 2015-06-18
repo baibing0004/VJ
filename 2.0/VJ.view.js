@@ -523,8 +523,10 @@
 							needRB = true;
 							if('true'==(v+'').toLowerCase()){								
 								_.params.simulateTouch=true;
+								_.params.onlyExternal = false;
 							} else {															
 								_.params.simulateTouch=false;
+								_.params.onlyExternal = true;
 							}		
 							break;
 						case 'value':

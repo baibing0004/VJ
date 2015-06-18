@@ -148,6 +148,13 @@
 						case 'enable':
 							if(value){_.node.removeAttr('disabled');}else{_.node.attr('disabled','disabled');}
 							break;
+						case 'invisible':
+							if('true'.eq(value)){
+								_.node.children().show();
+							} else {
+								_.node.children().hide();
+							}
+							break;
 						case 'visible':
 							if(value){_.node.show();} else {_.node.hide();}
 							break;

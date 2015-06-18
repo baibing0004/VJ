@@ -618,7 +618,8 @@
 		};
 		//todo 加解密DataResource
 		{
-			//首先ValidateManager对象负责处理与验证有关的事情 提供view层对象validate方法 并调用view层对象的onError,onClearError,onSuccess(一般仅对应一次check 但是基本不靠谱因为无法进行联合的验证次数判断)和事件触发 清理异常这种事建议由各个控件自己负责 建议是input的onfoucs就清理 其次view.control对象在onLoad中过滤onError事件，在render中提供check方法支持就是调用被注入的validate(text)方法，调用ValidateManager的validate方法时需要设置node与input对象，由具体的reg决定是否跟随输入测试还是等待调用才测试。
+			//todo action 对象组 reg对象组
+			//首先ValidateManager对象负责处理与验证有关的事情 提供view层对象validate方法 并调用view层对象的onError,onClearError,onSuccess(一般仅对应一次check 但是基本不靠谱因为无法进行联合的验证次数判断)和事件触发 清理异常这种事建议由各个控件自己负责 建议是input的onfoucs就清理 其次view.control对象在onLoad中过滤onError事件，在render中提供valide方法支持就是调用被注入的validate(text)方法，调用ValidateManager的validate方法时需要设置node与input对象，由具体的reg决定是否跟随输入测试还是等待调用才测试。
 			//针对reg子类允许其异步查询和调用onError事件 一般就是check(func)方法，一般地 允许返回func(true/false)来进行异步判断 false就是报错
 			//针对reg子类允许remote验证 提交对应的方法和提示语 或者true false
 			//允许 data:{valldate:{IsRequired:'请输入默认的提示语',IsNumber:'',IsFloat:'',Regular:{exp:'',error:''},Remote:{exp:function(){},error:''}}}
@@ -630,8 +631,25 @@
 				}
 				_.validate = function(control,input){
 					var middler = control.middler;
-					control.validate = function(text){};
-					control
+					var datas = control.get();
+					if(datas.validate){
+						var regs = [];
+						V.forC(datas.validate,function(k,v){
+							var reg = middler.getObjectByAppName(W.APP,k);
+							if(!reg) throw new Error('没找到对应的reg处理对象'+k);
+							if(input) reg.init(input);
+							regs.push([reg,v]);
+						},function(){
+							control.validate = function(text){
+								var success = true;
+								var data = V.merge([],regs);
+								//todo 
+								V.whileC2(function(){return data.shift();},function(reg,next){
+									reg.validate(text,function(suc){success&=suc;if(successif(next) {next();}},function(){})
+								});
+							};
+						});						
+					}
 				};
 			};
 		}

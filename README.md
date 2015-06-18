@@ -664,9 +664,9 @@ var classname = function(构造参数){
 	 * 例子: ```VJ.random()```
  * hash 获取字符串的hash散列值，第二个参数为是否忽略大小写
     * 例如 ```VJ.hash('test',false)```
- * string.startWith与string.endwith
+ * string.startWith与string.endwith,string.eq说明是否不忽略大小写匹配字符串
     //添加string.endWith与startWith方法 
-	 * 例子: ```"abc".startWith('a') "abc".endWith('C');```
+	 * 例子: ```"abc".startWith('a') "abc".endWith('C'); "true".eq(value[,true/false])```
  * json2 将json2对象全部引入VJ.base框架
     * toJsonString 该方法调用json2的功能将任意类格式化
     * 例如 ```VJ.toJsonString({a:1,b:2});```
@@ -825,7 +825,7 @@ var classname = function(构造参数){
      * 其中一般在onLoad方法中先绑定用户的处理事件，再调用父类的onLoad事件(必须调用) ，
      * 一般提供bindEvent(node,k,v)方法供扩展时进行默认事件绑定。这里一般会绑定用户定义的jquery事件。请注意不要调用this.node以为此时的node是尚替换的，而应该使用输入的参数node是替换后的jquery对象，而且传入的node参数本身具有原标签的所有属性
      * 一般在fill方法中获取当前对象的约定真实值，不用调用父类
-     * 一般在render方法中完成控件的属性处理和判断,这里要先调用父类的render事件 保证完成真正的控件标签替换后再进行特殊属性的绘制，譬如data.products属性的处理。一般父类已经实现了attr属性,visible属性,enable属性,addClass属性,removeClass属性的处理
+     * 一般在render方法中完成控件的属性处理和判断,这里要先调用父类的render事件 保证完成真正的控件标签替换后再进行特殊属性的绘制，譬如data.products属性的处理。一般父类已经实现了attr属性,visible属性,enable属性,addClass属性,removeClass属性,invisible属性(与visible不同仅显示或者隐藏子节点)的处理
      * replaceNode function(node) 默认完成控件替换的核心方法，如果path说明是页面地址会自动将path获取到本地然后加载，如果不是那么会主动创建节点.然后复制标签属性，替换innerHTML为原节点的innerHTML完成bind操作
  * VJ.viewmodel.Page 要求两个输入参数一个是ConfigManager需要的json代码段，一个是models定义
     * 例如: ```VJ.inherit.apply(this,[VJ.viewmodel.Page,[window.top.configs,{page:{onStart:function(){}}}]]);```
@@ -912,10 +912,10 @@ var classname = function(构造参数){
      * name 设置form的name属性
      * enctype 设置的语言类型eak;                
  * VJ.view.Box 测试神器，一般用于测算位置和固定大小需要设置的属性有
-    * width
-    * height
-    * key 说明
-  * VJ.view.RadioList 通过设置list属性，自动生成一串对象
+     * width
+     * height
+     * key 说明
+ * VJ.view.RadioList 通过设置list属性，自动生成一串对象
      * values json 获取并生成RadioList
      * value 获取radiolist的value
  * VJ.view.CheckList 通过设置list属性，自动生成一串对象

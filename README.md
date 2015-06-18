@@ -912,10 +912,10 @@ var classname = function(构造参数){
      * name 设置form的name属性
      * enctype 设置的语言类型eak;                
  * VJ.view.Box 测试神器，一般用于测算位置和固定大小需要设置的属性有
-    * width
-    * height
-    * key 说明
-  * VJ.view.RadioList 通过设置list属性，自动生成一串对象
+     * width
+     * height
+     * key 说明
+ * VJ.view.RadioList 通过设置list属性，自动生成一串对象
      * values json 获取并生成RadioList
      * value 获取radiolist的value
  * VJ.view.CheckList 通过设置list属性，自动生成一串对象

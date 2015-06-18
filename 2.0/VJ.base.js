@@ -1164,8 +1164,8 @@ VJ = window.top.VJ;
 			return true;
 		};
 		String.prototype.eq = function(str,isOri){			
-			str = str+'';			
-			return isOri?(this == str):(this.toLowerCase() == str);
+			str = str+'';
+			return isOri?(this == str):(this.toLowerCase() == str.toLowerCase());
 		};
 	}	
 	//json2

@@ -803,11 +803,16 @@ var classname = function(构造参数){
  * 逻辑控件基类，默认会定义属性data说明全部的数据信息,属性v说明对应的view层控件，一般是不使用的；一个默认方法update({data json})交由view层控件按照属性定义更新逻辑控件的data属性，同时重新更新view层控件 而业务调用这个类一般是在继承VJ.viewmodel.Page的时候 作为构造参数之一中按照ID对应的逻辑控件，特别地逻辑控件事件会有两个默认的事件onReady（大小写不敏感）和onLoad是分别在控件的标签内容在替换前和替换后触发的一般在onLoad中处理业务逻辑代码。提供get([key])方法用于获取该逻辑控件刷新后的data属性，如果输入参数则更新后返回该参数的对应值否则为null，如果没有输入参数，那么会返回整个data属性 
  
    ``` VJ.viewmodel.Control = function(){//data属性的定义 on事件的处理 update方法的主动更新 get方法的主动获取}；```
-   
+ * VJ.view.Action定义有
+ 
+	 * ```go function(node,params,callback)```
+	 * 该方法会对control传入的节点和参数进行指定的动画操作，完成动画后调用callback回调。将逻辑上的动画操作与真实的用户控件分离，完成统一格式的动画定义
+	 
  * VJ.view.Control定义 其负责html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 所有的控件均支持先创建、init、然后bind绑定、再调用onLoad和render事件 如果需要扩展或者创建一个新的自定义控件需要重载onLoad方法,fill方法，render方法，事件触发顺序是Constructor>init>onLoad>render>fill>on***>render的顺序执行的。
  * 请开发者切记，如果控件的某个属性的处理会导致控件内Html子节点的变化而不仅仅是html属性值的变化，譬如select\radiolist\checklist的values属性会导致options\input\checkbox的数量的变化，那么在处理fill方法时需要判断当前节点是否不为空，否则不要修改values属性的值，在处理render方法时需要在处理values和value两个属性时都要添加对value属性的处理，否则子节点的属性就是有残缺的。
- * 推荐使用VJ.forC异步处理对{}的处理，使用VJ.each异步处理对[]的处理，使用VJ.whileC异步处理对更复杂表达式的处理，尤其是在UI渲染时，否则容易导致页面长时间不响应，也防止百页的出现，虽然我们可以通过在方法的第四个参数上设置为true改为同步处理模式，但是如上优点也会丧失。
+ * 推荐使用VJ.forC异步处理对{}的处理，使用VJ.each异步处理对[]的处理，使用VJ.whileC异步处理对更复杂表达式的处理，尤其是在UI渲染时，否则容易导致页面长时间不响应，也防止白页的出现，虽然我们可以通过在方法的第四个参数上设置为true改为同步处理模式，但是如上优点也会丧失。
  * 事件中返回的json自动调用方法更新vm的data属性，然后根据事件调用时返回的参数更新自身和vm.data，逻辑控件也可调用update(更新{})方法完成数据在view层的填充,同时将属性更新
+
  * VJ.view.Control定义有
      * path string (控件html路径或者代码段)
      * vm object（逻辑控件对象),
@@ -823,6 +828,7 @@ var classname = function(构造参数){
      * fill function() 返回一个json以更新vm.data属性，一般在调用call之时被调用
      * bind function(vm) 完成控件标签替换，并一次性顺序调用onLoad方法，fill方法与render方法完成控件的渲染
      * 其中一般在onLoad方法中先绑定用户的处理事件，再调用父类的onLoad事件(必须调用) ，
+	 * animate function(name,node,params,callback) 按照name在middler中VESH.view下寻找对应的动画对象（继承自VJ.view.Action(go(node,params,callback)))定义，然后调用指定对象完成动画生成，再调用回调函数，目前不支持多个连续动画，需要开发者手动完成。
      * 一般提供bindEvent(node,k,v)方法供扩展时进行默认事件绑定。这里一般会绑定用户定义的jquery事件。请注意不要调用this.node以为此时的node是尚替换的，而应该使用输入的参数node是替换后的jquery对象，而且传入的node参数本身具有原标签的所有属性
      * 一般在fill方法中获取当前对象的约定真实值，不用调用父类
      * 一般在render方法中完成控件的属性处理和判断,这里要先调用父类的render事件 保证完成真正的控件标签替换后再进行特殊属性的绘制，譬如data.products属性的处理。一般父类已经实现了attr属性,visible属性,enable属性,addClass属性,removeClass属性,invisible属性(与visible不同仅显示或者隐藏子节点)的处理

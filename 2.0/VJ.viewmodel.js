@@ -61,6 +61,10 @@
 			}			
 			WTemplates[path].addCallback(func);			
 		};
+		//动画基类，用于提供默认的方法定义 供真实的动画进行处理 譬如抖动 移动 翻转 等等
+		W.Action = function(){
+			this.go = function(node,params,func){if(func){func(node,params);}};
+		};
 		//html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 控件均支持先创建 再init 然后bind绑定的过程 再调用onLoad和render事件
 		W.Control = function(path,params){
 			var _ = this,__ = {};
@@ -132,6 +136,14 @@
 			_.fill = function(){
 				return {};	
 			};
+			//动画方法 用于将middler获取到的动画对象进行动画设置并返回设置函数 而动画对象本身应该仅仅具有业务意义 譬如active hide append等等
+			_.animate = function(name,node,params,func){
+				name = name.toLowerCase();
+				var action = _.middler.getObjectByAppName(W.APP,name);
+				if(action){
+					action.go(node,params,func);
+				}
+			};
 			//可以将数据更新到标签上
 			_.render = function(data){
 				if(data){
@@ -164,6 +176,20 @@
 						case 'removeClass':
 							_.node.removeClass(value);
 							break;
+						case 'animate':
+							//仅处理简单类型的动画 譬如一次性调用的动画名或者一个动画名带一个回调函数，可支持多个
+							if(typeof(v) == 'string'){
+								_.animate(v,_.node,{});
+							} else {							
+								V.forC(v,function(k2,v2){
+									if(typeof(v2) == 'function'){
+										_.animate(k2,_.node,{},v2);
+									}
+								});
+							}
+							
+							break;
+							
 					}
 				});
 				return data;

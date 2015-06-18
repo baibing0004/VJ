@@ -590,6 +590,17 @@
 			//针对reg子类允许remote验证 提交对应的方法和提示语 或者true false
 			//允许 data:{valldate:{IsRequired:'请输入默认的提示语',IsNumber:'',IsFloat:'',Regular:{exp:'',error:''},Remote:{exp:function(){},error:''}}}
 			//允许针对form提供统一的判断
+			W.ValidateManager = function(){
+				var _ = this,__ = {};
+				{
+					
+				}
+				_.validate = function(control,input){
+					var middler = control.middler;
+					control.validate = function(text){};
+					control
+				};
+			};
 		}
 	}
 })(VJ,jQuery);

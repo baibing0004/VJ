@@ -645,7 +645,7 @@
 								var data = V.merge([],regs);
 								//todo 
 								V.whileC2(function(){return data.shift();},function(reg,next){
-									reg.validate(text,function(suc){success&=suc;if(successif(next) {next();}},function(){})
+									//reg.validate(text,function(suc){success&=suc;if(successif(next) {next();}},function(){})
 								});
 							};
 						});						

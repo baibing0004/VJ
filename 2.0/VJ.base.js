@@ -213,11 +213,11 @@ VJ = window.top.VJ;
 			if(!this.prototype){			
 				//这里确认是实例
 				//确定是打断了原型链 使得this的原型为Object		
-				parent.apply(this,args);		
+				parent.apply(this,args);				
 				//从新接驳原型链 使得原型链上的prototype都设置到最早的类的prototype上了
-				if(!this.__proto__.isF){
+				if(this.__proto__ && !this.__proto__.isF){
 					this.__proto__.constructor.prototype = _temp.__proto__.constructor.prototype;
-				}	
+				}
 				//son.prototype = _temp; //这里可以分层 但是会使得prototype实例变了又变 废弃
 				this.__proto__ = _temp;
 				//父类方法只能找到静态方法
@@ -774,6 +774,15 @@ VJ = window.top.VJ;
 		*-- 案例：V.include("script/jquery1.3/ui.core.js");
 		todo 跨域同步
 		*/
+		var getHost = function(url){
+			var ret = (url+'').match(/http:\/\/[^\/]+/g)+'';										
+			if(ret && ret.length>0) {return ret.substr(7);}
+			else {return '';}
+		};
+		V.isCrossdomain = function(url){
+			var host = getHost(url);
+			return !(host.eq('') || host.eq(getHost(window.location.href)+''));
+		};
 		V.include = function (url, tag, callback) {
 			//如果已经使用本方法加载过 就不再加载。
 			if (V.getSettings("include")[url]) return;
@@ -793,13 +802,26 @@ VJ = window.top.VJ;
 				//			callback();
 				//		}
 				//	});
-				//}else 同步				
-				var thisJsDom = new _V_();
-				thisJsDom.create(url, "get", null, false, function (data) {
-					_V_AppendScript(data, callback)
-				});
-				if(callback){
-					callback();
+				//异步if 
+				if(V.isCrossdomain(url) && typeof(XDomainRequest) != 'undefined'){
+					V.showException('跨域同步加载仅支持Chrome40以上，IE10以上版本，而且js跨域加载的IIS返回头部添加Access-Control-Allow-Origin: * 版本，如果仍然不可用请在config.js中将可能跨域请求path路径上的js的转入头部，或者在页面onStart时先获取原需要异步获取的对象!');
+					var request = new XDomainRequest();
+					request.open("GET",url);
+					request.timeout = 5000;
+					request.send();
+					console.log('xdomainrequest');
+					_V_AppendScript(request.responseText, callback)
+					if(callback){
+						callback();
+					}
+				}else{
+					var thisJsDom = new _V_();
+					thisJsDom.create(url, "get", null, false, function (data) {
+						_V_AppendScript(data, callback)
+					});
+					if(callback){
+						callback();
+					}
 				}
 			}
 			if (styleTag == "css") {

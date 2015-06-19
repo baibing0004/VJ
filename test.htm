@@ -461,6 +461,13 @@
 									});*/
 									//console.log(_.middler.getObjectByAppName(M.APP,'SessionDataManager'));
 									_.session.update('ssss',{aaaa:22});
+									//跨域同步请求要求 IIS支持添加Html返回头 Access-Control-Allow-Origin: * 或者具体的域名
+									//setTimeout(function(){
+									//console.log(V.userAgent);
+									//	VJ.include('http://10.32.11.166:800/kd/js/s_code.js');
+									//	console.log(s_account);
+									//},100);
+									//setTimeout(function(){console.log(s_account);},1);
 								},
 								onDispose:function(){
 									console.log('dispose');

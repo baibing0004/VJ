@@ -63,8 +63,20 @@
 		};
 		//动画基类，用于提供默认的方法定义 供真实的动画进行处理 譬如抖动 移动 翻转 等等
 		W.Action = function(){
-			this.go = function(node,params,func){if(func){func(node,params);}};
+			this.go = function(node,func){if(func){func();}};
 		};
+		//css专用的属性动画设置 默认可使用animate.min.css 进行动画设置
+		W.CssAction = function(css){
+			var __ = {};
+			__.go = this.go;
+			__.css = V.getValue(css,'');
+			this.go = function(node,func){
+				if(V.isValid(__.css)){
+					$(node).css('-webkit-animation',css).css('-moz-animation',css).css('-o-animation',css);					
+				}
+				__.go(node,func);
+			};
+		}
 		//html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 控件均支持先创建 再init 然后bind绑定的过程 再调用onLoad和render事件
 		W.Control = function(path,params){
 			var _ = this,__ = {};
@@ -82,6 +94,12 @@
 				_.session = _.page.session;
 				_.node = node;
 				_.params = V.merge(_.params,V.getValue(params,{}));
+			};
+			_.validate = function(input){
+				if(_.middler){
+					var obj = _.middler.getObjectByAppName(W.APP,'ValidateManager');
+					if(obj){obj.validate(_,input);}
+				}
 			};
 			_.call = function(name,param){
 				//所有的事件调用全部采用异步调用方式 V.once
@@ -137,11 +155,11 @@
 				return {};	
 			};
 			//动画方法 用于将middler获取到的动画对象进行动画设置并返回设置函数 而动画对象本身应该仅仅具有业务意义 譬如active hide append等等
-			_.animate = function(name,node,params,func){
+			_.animate = function(name,node,func){
 				name = name.toLowerCase();
 				var action = _.middler.getObjectByAppName(W.APP,name);
 				if(action){
-					action.go(node,params,func);
+					action.go(node?node:_.node,func);
 				}
 			};
 			//可以将数据更新到标签上
@@ -186,14 +204,23 @@
 										_.animate(k2,_.node,{},v2);
 									}
 								});
-							}
-							
+							}							
 							break;
-							
+						case 'valid':
+							if(_.valid){_.valid(_.get().value);}
+							break;
 					}
 				});
 				return data;
 			};
+			//用于说明错误提示
+			_.onError = function(text){
+				_.call('error',{error:text});
+			};
+			//用于清理错误提示
+			_.onClearError = function(){_.call('clearerror');};
+			//用于说明正确信息
+			_.onSuccess = function(){_.call('success')};
 			//处理控件下载完成后的操作
 			_.onLoad = function(node){
 				_.call('load');
@@ -618,17 +645,17 @@
 		};
 		//todo 加解密DataResource
 		{
-			//todo action 对象组 reg对象组
-			//首先ValidateManager对象负责处理与验证有关的事情 提供view层对象validate方法 并调用view层对象的onError,onClearError,onSuccess(一般仅对应一次check 但是基本不靠谱因为无法进行联合的验证次数判断)和事件触发 清理异常这种事建议由各个控件自己负责 建议是input的onfoucs就清理 其次view.control对象在onLoad中过滤onError事件，在render中提供valide方法支持就是调用被注入的validate(text)方法，调用ValidateManager的validate方法时需要设置node与input对象，由具体的reg决定是否跟随输入测试还是等待调用才测试。
+			//todo action 对象组
+			//ValidateManager对象负责完成view.view控件对于data.validate的属性处理与默认值绑定工作。
+			//将data.validate对象按照middler定义转换成真实的判断对象，并由控件主动调用绑定其特有的input对象, 提供render中默认的valid方法只针对value进行验证
+			//注入view层对象valid方法 和三种onError,onClearError,onSuccess(因为无法进行联合的验证次数判断)和事件触发 清理异常这种事建议由各个控件自己负责,目前统一处理为下一次验证开始时就调用onClearError方法 其次view.control对象在onLoad中过滤onError事件，在render中提供valide方法支持就是调用被注入的validate(text)方法，调用ValidateManager的validate方法时需要设置node与input对象，由具体的reg决定是否跟随输入测试还是等待调用才测试。
 			//针对reg子类允许其异步查询和调用onError事件 一般就是check(func)方法，一般地 允许返回func(true/false)来进行异步判断 false就是报错
 			//针对reg子类允许remote验证 提交对应的方法和提示语 或者true false
 			//允许 data:{valldate:{IsRequired:'请输入默认的提示语',IsNumber:'',IsFloat:'',Regular:{exp:'',error:''},Remote:{exp:function(){},error:''}}}
 			//允许针对form提供统一的判断
 			W.ValidateManager = function(){
 				var _ = this,__ = {};
-				{
-					
-				}
+				{}
 				_.validate = function(control,input){
 					var middler = control.middler;
 					var datas = control.get();
@@ -637,19 +664,48 @@
 						V.forC(datas.validate,function(k,v){
 							var reg = middler.getObjectByAppName(W.APP,k);
 							if(!reg) throw new Error('没找到对应的reg处理对象'+k);
-							if(input) reg.init(input);
-							regs.push([reg,v]);
+							if(typeof(v) == 'string'){
+								v = {reg:'',error:v};
+							} else v = V.merge({reg:'',error:''},v);
+							reg.init(control,v.reg,v.error,input);
+							regs.push(reg);
 						},function(){
-							control.validate = function(text){
+							control.valid = function(text){
+								if(control.isError){
+									control.onClearError();
+								}
 								var success = true;
 								var data = V.merge([],regs);
-								//todo 
 								V.whileC2(function(){return data.shift();},function(reg,next){
-									//reg.validate(text,function(suc){success&=suc;if(successif(next) {next();}},function(){})
+									reg.validate(text,function(suc){
+										success &= suc;
+										if (success) {next();} else {
+											//警报
+											control.isError = true;
+											control.onError(reg.error);
+										}
+									},function(){if(success){control.onSuccess();}});
 								});
 							};
 						});						
 					}
+				};
+			};
+			W.Regex = function(reg,error){
+				var _ = this, __ = {};
+				{
+					__.reg = V.getValue(reg,'');
+					__.error = V.getValue(error,'');
+				}
+				_.init = function(control,reg,error,input){
+					_.cont = control;
+					_.reg = V.getValue(__.reg,reg);
+					_.error = V.getValue(error,__.error);
+					if(!V.isValid(_.reg)) throw new Error('Regex默认使用reg属性完成判断reg属性不能为空!');
+					else if(typeof(_.reg) == 'string'){_.reg = eval(_.reg);};
+				};
+				_.validate = function(text,func){
+					func((text+'').match(_.reg));
 				};
 			};
 		}

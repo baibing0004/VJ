@@ -9,7 +9,7 @@
 			}
 			_.onLoad = function(node){
 				_.txt = node.find('span:first');
-				_.input = node.find('input:first');
+				_.input = node.find('input:first');				
 				V.forC(_.events,function(k,v){
 					switch(k){
 						case 'hover':
@@ -18,6 +18,11 @@
 							},function(){
 								_.call('Hover',{hover:false});
 							});
+							break;
+						case 'error':
+							if(_.get().validate){
+								_.validate(_,_.input);
+							}
 							break;
 						default:
 							_.bindEvent(_.input,k,v);
@@ -97,6 +102,9 @@
 				V.forC(_.events,function(k,v){
 					_.bindEvent(_.sel,k,v);
 				},null,true);
+				if(_.events.error && _.get().validate){
+					_.validate(_,_.input);
+				}				
 				__.onLoad(node);
 			};
 			_.fill = function(){
@@ -140,8 +148,18 @@
 				__.render = _.render;
 				__.onLoad = _.onLoad;
 			}
-			_.onLoad = function(node){
-				V.forC(_.events,function(k,v){_.bindEvent(node,k,v);},null,true);
+			_.onLoad = function(node){				
+				V.forC(_.events,function(k,v){
+					switch(k.toLowerCase()){
+						case 'error':
+							if(_.get().validate){
+								_.validate(_,_.node);
+							}
+							break;
+						default:
+							_.bindEvent(node,k,v);},null,true);		
+							break;
+					}
 				__.onLoad(node);
 			};
 			_.fill = function(){
@@ -218,6 +236,7 @@
 				V.inherit.apply(_,[W.Button,[path || '<span><span style="display:none;"></span><input type="reset"></input></span>']]);
 			}
 		};
+		//todo 获取其validata对象与方法 进行同步验证
 		W.Form = function(path){
 			var _ = this,__ = {};
 			{
@@ -549,7 +568,7 @@
 				});
 			};
 		};
-		//todo panel 容器类对象的controls对象设置 bind方法设置 与 validate框架设置 move类对象动画设置
+		//todo panel 容器类对象的controls对象设置 bind方法设置
 		//todo file
 	}
 })(VJ,jQuery,VJ.view,VJ.viewmodel);

@@ -157,9 +157,10 @@
 							}
 							break;
 						default:
-							_.bindEvent(node,k,v);},null,true);		
+							_.bindEvent(node,k,v);
 							break;
 					}
+				},null,true);
 				__.onLoad(node);
 			};
 			_.fill = function(){

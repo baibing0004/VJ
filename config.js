@@ -1,4 +1,4 @@
-window.top.config = {
+Ôªøwindow.top.config = {
 	Middler:{
 		'VESH.view':{
 			pack:'VJ.view',
@@ -21,22 +21,22 @@ window.top.config = {
 			checklist:{type:'.CheckList'},
 			swiperpanel:{type:'.SwiperPanel',path:'swiper3.07.min.css;animate.min.css;swiper3.07.jquery.min.js;swiper.animate1.0.2.min.js'},
 			
-			//∂Øª≠			
-			bounce:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['bounce .4s linear']},
-			flash:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['flash .4s linear']},
-			rubberBand:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['rubberBand .4s linear']},
-			shake:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['shake .4s linear']},
-			swing:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['swing .4s linear']},
-			tada:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['tada .4s linear']},
-			wobble:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['wobble .4s linear']},
-			bounceIn:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['bounceIn .4s linear']},
-			bounceInDown:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['bounceInDown .4s linear']},
-			bounceInLeft:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['bounceInLeft .4s linear']},
-			bounceInRight:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['bounceInRight .4s linear']},
-			bounceInUp:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['bounceInUp .4s linear']},
-			bounceOut:{type:'VJ.view.CSSAction',mode:'static',path="animate.min.css;",params['bounceOut .4s linear']},
+			//Âä®Áîª			
+			bounce:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['bounce .4s linear']},
+			flash:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['flash .4s linear']},
+			rubberBand:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['rubberBand .4s linear']},
+			shake:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['shake .4s linear']},
+			swing:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['swing .4s linear']},
+			tada:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['tada .4s linear']},
+			wobble:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['wobble .4s linear']},
+			bounceIn:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['bounceIn .4s linear']},
+			bounceInDown:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['bounceInDown .4s linear']},
+			bounceInLeft:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['bounceInLeft .4s linear']},
+			bounceInRight:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['bounceInRight .4s linear']},
+			bounceInUp:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['bounceInUp .4s linear']},
+			bounceOut:{type:'VJ.view.CSSAction',mode:'static',path:"animate.min.css;",params:['bounceOut .4s linear']},
 			
-			//—È÷§
+			//È™åËØÅ
 			ValidateManager:{type:'VJ.view.ValidateManager',mode:'static'},
 			Regex:{type:'VJ.view.Regex'},
 			isNumber:{type:'VJ.view.Regex',params:['/^[0-9]+\.{0,1}[0-9]{0,2}$/g']},
@@ -48,7 +48,7 @@ window.top.config = {
 			isEmail:{type:'VJ.view.Regex',params:['/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/g']},
 			isUrl:{type:'VJ.view.Regex',params:['/^http://([\w-]+\.)+[\w-]+(/[\w-./?%&=]*)?$/g']},
 			isPhone:{type:'VJ.view.Regex',params:['/^(\d{3}-\d{8}|\d{4}-\d{7})$/g']},
-			isMoble:{type:'VJ.view.Regex',params:['/^1\d{10}$/g']}
+			isMoble:{type:'VJ.view.Regex',params:['/^1\d{10}$/g']},
 			isCard:{type:'VJ.view.Regex',params:['/^(\d{14}|\d{17})(\d|[a-zA-Z])$/g']},
 			isQQ:{type:'VJ.view.Regex',params:['/^[1-9]\d{4,12}$/g']},
 			isZipCode:{type:'VJ.view.Regex',params:['/^[1-9]\d{5}(?!\d)$/g']},

@@ -32,7 +32,7 @@
 				__.onLoad(node);
 			};
 			_.fill = function(){
-				return {text:_.input.val()};
+				return {text:_.input.val(),value:_.input.val()};
 			};
 			_.render = function(data){
 				data = __.render(data);
@@ -58,7 +58,10 @@
 					}
 				});
 				return data;
-			};			
+			};
+			_.animate = function(name,func){
+				_._animate(name,_.input,func);
+			};
 		};
 		W.RadioBox = function(path){
 			var _ = this,__ = {};
@@ -139,6 +142,9 @@
 					}
 				});
 				return data;
+			};			
+			_.animate = function(name,func){
+				_._animate(name,_.sel,func);
 			};
 		};
 		W.Hidden = function(path){
@@ -348,6 +354,9 @@
 							break;
 					}
 				});
+			};						
+			_.animate = function(name,func){
+				_._animate(name,_.ul,func);
 			};
 		};
 		W.CheckList = function(path,content){
@@ -404,6 +413,9 @@
 							break;
 					}
 				});
+			};			
+			_.animate = function(name,func){
+				_._animate(name,_.sel,func);
 			};
 		};
 		//构建时需要swiper.js
@@ -413,7 +425,7 @@
 				V.inherit.apply(_,[W.Control,[path || '<div class="swiper-container"></div>']]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
-				_.params = {direction:'horizontal',loop:false,simulateTouch:true};
+				_.params = {direction:'horizontal',loop:false,simulateTouch:true};				
 			}
 			_.onLoad = function(node){				
 				V.forC(_.events,function(k,v){

@@ -375,15 +375,25 @@
 					{
 						V.isDebug = true;
 						V.inherit.apply(_,[M.Page,[cm,{
+							txt3:{
+								data:{},
+								onError:function(data,self){
+									//todo 验证信息没过来
+									console.log(data.error);
+								}
+							},
 							txt:{
 								type:'textbox',
-								data:{text:'hello world',visible:false},
+								data:{text:'hello world',visible:false,validate:{isNumber:'请输入数字'}},
 								onReady:function(data,self){
 									console.log('');
 									setTimeout(function(){self.update({visible:true});},2000);
 								},
 								onClick:function(data){
 										
+								},
+								onError:function(data,self){
+									console.log(data.error);
 								},
 								onHover:function(data){
 									console.log(data);
@@ -398,7 +408,7 @@
 								}
 							},
 							but:{
-								onClick:function(data,cons){console.log(cons);cons.txt.update({text:'点击收到!'});}
+								onClick:function(data,cons){console.log(cons);cons.txt.update({text:'点击收到!',valid:true});}
 							},
 							chk:{
 								data:{checked:true},onHover:function(data){
@@ -411,10 +421,11 @@
 							but:{
 								onClick:function(data,self){
 									var _ = this;
-									this.txt.update({text:_.rl.get().value});
-									console.log(_.cl.get().value);
+									this.txt.update({text:_.rl.get().value,animate:'tada'});
+									this.sub.update({animate:'tada'});
 									this.txt2.update({text:_.cl.get().value});
-									this.txt3.update({text:_.sel.get().value});
+									//this.txt3.update({text:_.sel.get().value});
+									this.txt3.update({valid:true});
 								}
 							},
 							rl:{

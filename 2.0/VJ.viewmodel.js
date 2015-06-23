@@ -68,15 +68,35 @@
 		//css专用的属性动画设置 默认可使用animate.min.css 进行动画设置
 		W.CssAction = function(css){
 			var __ = {};
+			V.inherit.apply(this,[W.Action,[]]);
 			__.go = this.go;
 			__.css = V.getValue(css,'');
 			this.go = function(node,func){
 				if(V.isValid(__.css)){
-					$(node).css('-webkit-animation',css).css('-moz-animation',css).css('-o-animation',css);					
+					node = $(node);
+					node.css('-webkit-animation','none').css('-moz-animation','none').css('-o-animation','none');
+					//实在不明白为啥直接写不行
+					setTimeout(function(){node.css('-webkit-animation',css).css('-moz-animation',css).css('-o-animation',css);},20);
+					if(func){
+						node.one('webkitAnimationEnd',function(){
+							func();
+						});
+						node.one('mozAnimationEnd',function(){
+							func();
+						});
+						node.one('MSAnimationEnd',function(){
+							func();
+						});
+						node.one('oanimationend',function(){
+							func();
+						});
+						node.one('animationend',function(){
+							func();
+						});
+					}
 				}
-				__.go(node,func);
 			};
-		}
+		};
 		//html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 控件均支持先创建 再init 然后bind绑定的过程 再调用onLoad和render事件
 		W.Control = function(path,params){
 			var _ = this,__ = {};
@@ -154,12 +174,16 @@
 			_.fill = function(){
 				return {};	
 			};
+			//这里提供子类用于覆盖同名函数，修改动画对象。
+			_.animate = function(name,func){
+				_._animate(name,null,func);
+			};
 			//动画方法 用于将middler获取到的动画对象进行动画设置并返回设置函数 而动画对象本身应该仅仅具有业务意义 譬如active hide append等等
-			_.animate = function(name,node,func){
-				name = name.toLowerCase();
+			_._animate = function(name,node,func){
+				name = name || '';
 				var action = _.middler.getObjectByAppName(W.APP,name);
 				if(action){
-					action.go(node?node:_.node,func);
+					action.go(node?node:_.node,func || null);
 				}
 			};
 			//可以将数据更新到标签上
@@ -196,18 +220,31 @@
 							break;
 						case 'animate':
 							//仅处理简单类型的动画 譬如一次性调用的动画名或者一个动画名带一个回调函数，可支持多个
-							if(typeof(v) == 'string'){
-								_.animate(v,_.node,{});
-							} else {							
-								V.forC(v,function(k2,v2){
-									if(typeof(v2) == 'function'){
-										_.animate(k2,_.node,{},v2);
-									}
+							if(typeof(value) == 'string'){
+								_.animate(value);
+							} else {						
+								var ret = [];
+								V.forC(value,function(k2,v2){
+									ret.push([k2,v2]);
+								},function(){
+									var i = 0;
+									//异步处理
+									var _f = function(){
+										var v2 = ret[i];
+										i++;
+										_.animate(v2[0],function(){
+											if(typeof(v2[1]) == 'function')
+												V.tryC(function(){v2[1]();});
+											if(i<ret.length){_f();}
+										});
+									};
+									_f();
 								});
 							}							
 							break;
 						case 'valid':
-							if(_.valid){_.valid(_.get().value);}
+							var text = data.value || _.get().value;
+							if(_.valid){_.valid(text);}
 							break;
 					}
 				});
@@ -675,10 +712,11 @@
 									control.onClearError();
 								}
 								var success = true;
-								var data = V.merge([],regs);
+								var data = Array.prototype.slice.call(regs,0);
 								V.whileC2(function(){return data.shift();},function(reg,next){
 									reg.validate(text,function(suc){
-										success &= suc;
+										success = success && V.isValid(suc);
+										//todo first 是空
 										if (success) {next();} else {
 											//警报
 											control.isError = true;

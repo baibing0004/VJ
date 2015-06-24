@@ -828,8 +828,14 @@ var classname = function(构造参数){
      * fill function() 返回一个json以更新vm.data属性，一般在调用call之时被调用
      * bind function(vm) 完成控件标签替换，并一次性顺序调用onLoad方法，fill方法与render方法完成控件的渲染
      * 其中一般在onLoad方法中先绑定用户的处理事件，再调用父类的onLoad事件(必须调用) ，
-	 * animate function(name,node,params,callback) 按照name在middler中VESH.view下寻找对应的动画对象（继承自VJ.view.Action(go(node,params,callback)))定义，然后调用指定对象完成动画生成，再调用回调函数，目前不支持多个连续动画，需要开发者手动完成。
-     * 一般提供bindEvent(node,k,v)方法供扩展时进行默认事件绑定。这里一般会绑定用户定义的jquery事件。请注意不要调用this.node以为此时的node是尚替换的，而应该使用输入的参数node是替换后的jquery对象，而且传入的node参数本身具有原标签的所有属性
+	 * animate function(name,callback) 基类中默认调用_animate方法对_.node执行动画方法
+	 * _animate function(name,node,callback) 按照name在middler中VESH.view下寻找对应的动画对象（继承自VJ.view.Action/CssAction(go(node,callback)))定义，然后调用指定对象完成动画生成，再调用回调函数，目前不支持多个连续动画，需要开发者手动完成。
+	 * valid function() 由ValidateManager注入的方法，会自动绑定逻辑控件中的data.validate属性根据其键值查找config.js中对应的验证判断 譬如data:{validate:{isRequired:'必须输入值',isNumber:'请输入数字!'}}等等
+     * onSuccess function() 一般会触发success事件
+	 * onError function() 一般会触发error事件，逻辑事件可以通过data.error属性获取到错误信息提示 并采取对应的处理，一般地控件可以覆盖这个方法进行错误处理，但是必须调用其父类方法以触发逻辑控件的onError事件
+	 * onClearError function() 一般会触发clearerror事件
+	 
+	 * 一般提供bindEvent(node,k,v)方法供扩展时进行默认事件绑定。这里一般会绑定用户定义的jquery事件。请注意不要调用this.node以为此时的node是尚替换的，而应该使用输入的参数node是替换后的jquery对象，而且传入的node参数本身具有原标签的所有属性
      * 一般在fill方法中获取当前对象的约定真实值，不用调用父类
      * 一般在render方法中完成控件的属性处理和判断,这里要先调用父类的render事件 保证完成真正的控件标签替换后再进行特殊属性的绘制，譬如data.products属性的处理。一般父类已经实现了attr属性,visible属性,enable属性,addClass属性,removeClass属性,invisible属性(与visible不同仅显示或者隐藏子节点)的处理
      * replaceNode function(node) 默认完成控件替换的核心方法，如果path说明是页面地址会自动将path获取到本地然后加载，如果不是那么会主动创建节点.然后复制标签属性，替换innerHTML为原节点的innerHTML完成bind操作

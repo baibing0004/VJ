@@ -252,12 +252,13 @@
 			};
 			//用于说明错误提示
 			_.onError = function(text){
+				_.get().isError = true;
 				_.call('error',{error:text});
 			};
 			//用于清理错误提示
 			_.onClearError = function(){_.call('clearerror');};
 			//用于说明正确信息
-			_.onSuccess = function(){_.call('success')};
+			_.onSuccess = function(){delete _.get().isError;_.call('success')};
 			//处理控件下载完成后的操作
 			_.onLoad = function(node){
 				_.call('load');
@@ -715,14 +716,15 @@
 								var data = Array.prototype.slice.call(regs,0);
 								V.whileC2(function(){return data.shift();},function(reg,next){
 									reg.validate(text,function(suc){
-										success = success && V.isValid(suc);
-										//todo first 是空
-										if (success) {next();} else {
+										success = success && (suc && suc.length>0);										
+										if (success) {
+											next();
+										} else {
 											//警报
 											control.isError = true;
 											control.onError(reg.error);
 										}
-									},function(){if(success){control.onSuccess();}});
+									},function(){if(success){control.isError = false;control.onSuccess();}});
 								});
 							};
 						});						

@@ -578,13 +578,19 @@ VJ = window.top.VJ;
 						var hasFalse = false;
 						switch (typeof (data)) {
 							case "string":
+								data = data.replace(/[\r\n]+/g,'');
 								if (data.replace(/^(\[+\]+)/g, '').length === 0) {
-									_this.noData();
 									hasFalse = true;
 								} else {
-									hasFalse = (data.indexOf('[False]') >= 0 || data.indexOf('[false]') >= 0)
+									hasFalse = (data.toLowerCase().indexOf('[false') >= 0?
+													(data.toLowerCase().indexOf('[false:') >= 0?(function(){
+														var _data = data.toLowerCase().match(/\[false:[^\]]+\]/g);
+														if(_data && _data.length>0){
+															return _data[0].substr(7,_data[0].length-8);
+														} else return true;
+													})():true):
+													false);
 								}
-								data = data.replace(/[\r\n]+/g,'');
 								break;
 							case "object":
 								if(data){
@@ -602,7 +608,9 @@ VJ = window.top.VJ;
 						}            
 						if (!hasFalse) {
 							setTimeout(function () { V.tryC(function () {_this.bindData.apply(_this, [_this.filtData(eval(data))]); }); }, 1);
-						}            
+						} else {
+							setTimeout(function () { V.tryC(function () {_this.noData(hasFalse);});}, 1);									
+						}     
 					} catch (e) {
 						V.showException('V._ajaxOption success方法', e);
 					}

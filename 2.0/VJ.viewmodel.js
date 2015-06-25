@@ -652,9 +652,10 @@
 								delete __.storage[name];
 								return null;
 							}
+							return val.data;
 						}
 					}
-					return val.data;
+					return null;
 				};
 				_.save = function(name,str){
 					str = V.getValue(str,'');
@@ -669,12 +670,12 @@
 					if(__.storage.setItem){
 						__.storage.setItem(name,V.toJsonString({
 							data:str,
-							date:(timeout?new Date().add(timeout.interval,timeout.number).getTime():false)
+							date:(__.timeout?new Date().add(__.timeout.interval,__.timeout.number).getTime():false)
 						}));
 					} else {
 						__.storage[name]={
 							data:str,
-							date:(timeout?new Date().add(timeout.interval,timeout.number).getTime():false)
+							date:(__.timeout?new Date().add(__.timeout.interval,__.timeout.number).getTime():false)
 						};
 					}
 				};

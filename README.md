@@ -529,8 +529,9 @@ var classname = function(构造参数){
  * forC：异步对象属性循环处理方法，且错误信息已经被捕获
     * 例子：```VJ.forC(function(k,v){}[,function(){最终执行方法},是否同步执行]);```
  * forC2:异步对象属性循环处理方法，与forC不同的是next方法需要由单步处理函数调用，如果不调用不会自动向下执行，用于自由度更大的循环控制。且错误信息已经被捕获 
-    * 例子:```VJ.forC2(function(k,v,next){next();}[,function(){最终执行方法},是否同步执行]); 
- * whileC:异步条件循环处理方法 四个参数 exp 给出需要处理的值，func进行处理，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的保证前后两次调用是顺序的 第四个参数如果为真那么就是同步执行 且错误信息已经被捕获 例子 VJ.whileC(function(){return array.shift();},function(v){}[,function(){最终执行方法},是否同步执行]);```
+    * 例子:```VJ.forC2(function(k,v,next){next();}[,function(){最终执行方法},是否同步执行]); ```
+ * whileC:异步条件循环处理方法 四个参数 exp 给出需要处理的值，func进行处理，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的保证前后两次调用是顺序的 第四个参数如果为真那么就是同步执行 且错误信息已经被捕获  
+	* 例子:```VJ.whileC(function(){return array.shift();},function(v){}[,function(){最终执行方法},是否同步执行]);```
  * whileC2:异步条件循环处理方法 与whileC不同的是next方法需要由单步处理函数调用，如果不调用不会自动向下执行，用于自由度更大的循环控制。 且错误信息已经被捕获
     * 例子:```VJ.whileC2(function(){return array.shift();},function(v,next){next()}[,function(){最终执行方法},是否同步执行]);```
 

@@ -475,6 +475,21 @@
 									});*/
 									//console.log(_.middler.getObjectByAppName(M.APP,'SessionDataManager'));
 									_.session.update('ssss',{aaaa:22});
+									console.log(_.session.data('kd2.0'));
+									_.session.update('kd2.0',{casting:'223232222222223332222333232',mobile:'133520493404'});
+									var test = function(data){
+										console.log(data.toLowerCase().indexOf('[false') >= 0?
+													(data.toLowerCase().indexOf('[false:') >= 0?(function(){
+														var _data = data.toLowerCase().match(/\[false:[^\]]+\]/g);
+														if(_data && _data.length>0){
+															return _data[0].substr(7,_data[0].length-8);
+														} else return true;
+													})():true):
+													false);
+									};
+									test('{"SUCCESS":"[False]"}');
+									test('{"SUCCESS":"[False:message]"}');
+									test('{"SUCCESS":"[False:message]"}');
 									//跨域同步请求要求 IIS支持添加Html返回头 Access-Control-Allow-Origin: * 或者具体的域名
 									//setTimeout(function(){
 									//console.log(V.userAgent);

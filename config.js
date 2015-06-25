@@ -126,9 +126,11 @@
 			]},
 			SessionDataAdapter:{type:'.SessionDataAdapter',method:'constructorbean',mode:'static',constructorparalength:1,params:[
 				{ref:'CookieDataResource'},
-				{params:'Resource','abc':{ref:'CookieDataResource'}}
+				{params:'Resource','abc':{ref:'CookieDataResource'}},
+				{params:'Resource','kd2.0':{ref:'LocalDataResource'}}
 			]},
-			CookieDataResource:{type:'.CookieDataResource',path:'2.0/jquery.cookie.js',mode:'static',params:[]}			
+			CookieDataResource:{type:'.CookieDataResource',path:'2.0/jquery.cookie.js',mode:'static',params:[]},	
+			LocalDataResource:{type:'.StorageDataResource',mode:'static',params:[window.top.localStorage]}
 		},
 		Ni:{
 			pack:'VJ.ni',

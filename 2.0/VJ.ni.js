@@ -258,10 +258,18 @@
 							var hasFalse = false;
 							switch (typeof (data)) {
 								case "string":
+									data = data.replace(/[\r\n]+/g,'');
 									if (data.replace(/^(\[+\]+)/g, '').length === 0) {
 										hasFalse = true;
 									} else {
-										hasFalse = (data.indexOf('[False]') >= 0 || data.indexOf('[false]') >= 0)
+										hasFalse = (data.toLowerCase().indexOf('[false') >= 0?
+													(data.toLowerCase().indexOf('[false:') >= 0?(function(){
+														var _data = data.toLowerCase().match(/\[false:[^\]]+\]/g);
+														if(_data && _data.length>0){
+															return _data[0].substr(7,_data[0].length-8);
+														} else return true;
+													})():true):
+													false);
 									} 
 									if(!hasFalse){										
 										//如何判断tjson
@@ -285,15 +293,16 @@
 									break;
 							}            
 							if(hasFalse){
-								data = false;
-							}
-							switch(_.connection.params.dbtype){
-								default:
-								case 'json':
-									break;
-								case 'tjson':
-									data = V.evalTJson(data);
-									break;
+								data = (hasFalse == false?false:hasFalse);
+							} else {
+								switch(_.connection.params.dbtype){
+									default:
+									case 'json':
+										break;
+									case 'tjson':
+										data = V.evalTJson(data);
+										break;
+								}
 							}
 							if(func){func(data);}
 						} catch (e) {
@@ -521,10 +530,18 @@
 									var hasFalse = false;
 									switch (typeof (data)) {
 										case "string":
+											data = data.replace(/[\r\n]+/g,'');
 											if (data.replace(/^(\[+\]+)/g, '').length === 0) {
 												hasFalse = true;
 											} else {
-												hasFalse = (data.indexOf('[False]') >= 0 || data.indexOf('[false]') >= 0)
+												hasFalse = (data.toLowerCase().indexOf('[false') >= 0?
+													(data.toLowerCase().indexOf('[false:') >= 0?(function(){
+														var _data = data.toLowerCase().match(/\[false:[^\]]+\]/g);
+														if(_data && _data.length>0){
+															return _data[0].substr(7,_data[0].length-8);
+														} else return true;
+													})():true):
+													false);
 											} 
 											if(!hasFalse){
 												//如何判断tjson
@@ -547,14 +564,15 @@
 									}            
 									if(hasFalse){
 										data = false;
-									}
-									switch(_.connection.params.dbtype){
-										default:
-										case 'json':
-											break;
-										case 'tjson':
-											data = V.evalTJson(data);
-											break;
+									} else {
+										switch(_.connection.params.dbtype){
+											default:
+											case 'json':
+												break;
+											case 'tjson':
+												data = V.evalTJson(data);
+												break;
+										}
 									}
 									//特别地当回{close:true}时，关闭websocket
 									if(func){if(func(data).close) {__.conn.close();}}

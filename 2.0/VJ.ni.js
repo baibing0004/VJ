@@ -293,7 +293,7 @@
 									break;
 							}            
 							if(hasFalse){
-								data = (hasFalse == false?false:hasFalse);
+								data = (hasFalse == true?false:hasFalse);
 							} else {
 								switch(_.connection.params.dbtype){
 									default:

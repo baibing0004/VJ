@@ -376,6 +376,7 @@
 					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
+					_.vm.add = function(){_.addControl.apply(_,arguments);};
 					V.forC(vm,function(key,value){
 						key = key.toLowerCase();
 						if(key.indexOf('on')==0){

@@ -118,7 +118,7 @@ VJ = window.top.VJ;
 			for(var i in data){
 				ret.push({key:i,value:data[i]});
 			}
-			V.whileC(function(){return ret.shift();},function(v,next){if(func){V.tryC(function(){func(v.key,v.value,next);});}},finalf,isSync);
+			V.whileC2(function(){return ret.shift();},function(v,next){if(func){V.tryC(function(){func(v.key,v.value,next);});}},finalf,isSync);
 		};
 		//whileC 方法要求 四个参数 exp 给出需要处理的值，func进行处理，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的但是不保证前后两次调用是顺序的只能保证是异步的 第四个参数如果为真那么就是同步执行
 		V.whileC = function(exp,func,finalf,isSync){

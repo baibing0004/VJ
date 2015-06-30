@@ -458,6 +458,12 @@
 									console.log(data);
 								}
 							},
+							fill:{
+								data:{value:{abc:'abc',text:'FillControl首秀!'}},
+								onLoad:function(data,self){
+									V.once(function(){self.update({value:{abc:'abc2',text:'FillControl首秀2!'}});},2000);
+								}
+							},
 							page:{
 								data:{
 									title:'测试页面aa'
@@ -713,6 +719,9 @@
 		<p>
 		<div id="panel" style="width:200px;height:200px;"_="type:'swiperpanel'"><div>1</div><div>2</div><div>3</div></div>
 		</p>
+		<div id='fill' _="type:'fill'">
+			<input type="text" value="{abc}"></input>{text}
+		</div>
 		<!--ytsearchbox class="p_searchbox" id="aaa" _></ytsearchbox-->
 	</form>
 </body>

@@ -945,7 +945,8 @@ var classname = function(构造参数){
      * pagination bool 设置是否允许出现底部导航点 默认false
      * touch bool 设置是否允许识别鼠标、手势 滑动 默认false
      * value index 设置从0开始的当前页面
-
+ * VJ.view.FillControl 通过设置value属性，将value属性对应的json对象值填充到界面上，界面按照控件内的html内容根据VJ.format定义的<%=key%>或者{key}格式进行替换  
+	 * value {} 对象内容 后期将根据实际需求进行增强 添加譬如循环 条件等判断 特别地这里不做格式转换 转换工作请在逻辑控件中完成
 ####2.1 todo panel 容器类对象的控件信息重新绑定，validate框架设置，move类对象动画设置 逻辑控件的data标准定义基本上确定可以有width,height,values,value
  
 

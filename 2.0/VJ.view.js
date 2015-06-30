@@ -307,6 +307,7 @@
 							break;
 					}
 				});
+				return data;
 			};
 		};
 		W.RadioList = function(path,content){
@@ -354,6 +355,7 @@
 							break;
 					}
 				});
+				return data;
 			};						
 			_.animate = function(name,func){
 				_._animate(name,_.ul,func);
@@ -413,6 +415,7 @@
 							break;
 					}
 				});
+				return data;
 			};			
 			_.animate = function(name,func){
 				_._animate(name,_.sel,func);
@@ -579,9 +582,42 @@
 						_.swiper = new Swiper(_.node[0],V.merge({},_.params));
 					}					
 				});
+				return data;
 			};
 		};
 		//todo panel 容器类对象的controls对象设置 bind方法设置
 		//todo file
+		W.FillControl = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.Control,[path || '<div></div>']]);
+				__.onLoad = _.onLoad;
+				__.render = _.render;
+				__.replaceNode = _.replaceNode
+			}
+			__.onLoad = function(node){
+				V.forC(_.events,function(k,v){
+					_.bindEvent(_.node,k,v);					
+				},null,true);
+				__.onLoad(node);
+			};
+			_.replaceNode = function(){
+				//必须覆盖这个方法否则_.node就是替换后的了
+				__.content = _.node.html();
+				__.replaceNode.apply(_,arguments);
+				_.node.html(__.content);
+			};
+			_.render = function(data){
+				data = __.render(data);
+				V.forC(data,function(k,v){
+					switch(k.toLowerCase()){
+						case 'value':							
+							_.node.html(V.format(__.content,v));
+							break;
+					}
+				});
+				return data;
+			};
+		};
 	}
 })(VJ,jQuery,VJ.view,VJ.viewmodel);

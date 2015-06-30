@@ -289,7 +289,7 @@
 							n.attr(v.key,((V.isValid(n.attr(v.key)) && n.attr(v.key) != v.val)?n.attr(v.key)+" ":"")+v.val);
 						}
 					},function(){},true);
-				}		
+				}
 				node.append(_.node.children());
 				if(_.node[0].nodeName.toLowerCase() == 'body'){					
 					_.node.empty().append(node);

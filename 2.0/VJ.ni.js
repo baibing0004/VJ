@@ -741,7 +741,7 @@
 							_.lstCmd2[index] = {
 								name:command,
 								key:name,
-								params:V.merge(cmd.params,{cacheKey:V.hash(name+'.Set.'+V.toJsonString(_.lstCmd[_.lstCmd.length-1].params))})
+								params:V.merge(_.lstCmd[_.lstCmd.length-1].params,{cacheKey:V.hash(name+'.Set.'+V.toJsonString(_.lstCmd[_.lstCmd.length-1].params))})
 							}
 						}
 					}
@@ -779,7 +779,7 @@
 											var _cmd = cacheres.getDBCommand();
 											_cmd.connection = _conn;
 											_cmd.command = V.getValue(_nicmd.command,_.setCommand);
-											_cmd.params = V.merge(_nicmd.params,{
+											_cmd.params = V.merge(cmd.params,{
 													cacheKey:V.hash(v.key+'.Set.'+V.toJsonString(cmd.params)),
 													cacheValue:data
 												});
@@ -878,7 +878,7 @@
 											var _cmd = cacheres.getDBCommand();
 											_cmd.connection = _conn;
 											_cmd.command = V.getValue(_nicmd.command,_.setCommand);
-											_cmd.params = V.merge(_nicmd.params,{
+											_cmd.params = V.merge(cmd.params,{
 													cacheKey:V.hash(v.key+'.Set.'+V.toJsonString(cmd.params)),
 													cacheValue:data
 												});

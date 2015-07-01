@@ -649,7 +649,7 @@ VJ = window.top.VJ;
 		*/
 		V.getRemoteJSON = function (url) {
 			var data = {filtURI: function (url) { return url; }};
-			if ($.browser.msie) {
+			if (V.userAgent.ie) {
 				//解决IE界面线程停滞，无法显示动画的问题
 				window.setTimeout(function () {
 					$.getScript(V.getSettings("getRemote",data).filtURI(url), function () { });

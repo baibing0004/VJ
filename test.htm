@@ -459,9 +459,10 @@
 								}
 							},
 							fill:{
-								data:{value:{abc:'abc',text:'FillControl首秀!'}},
+								data:{value:{text:navigator.userAgent.toLowerCase(),ver:V.toJsonString(V.userAgent),web:V.userAgent.pad?'本':(V.userAgent.mobile?'手机':'电脑')}},
 								onLoad:function(data,self){
-									V.once(function(){self.update({value:{abc:'abc2',text:'FillControl首秀2!'}});},2000);
+									console.log(V.userAgent);
+									//V.once(function(){self.update({value:{abc:'abc2',text:'FillControl首秀2!'}});},2000);
 								}
 							},
 							page:{
@@ -720,7 +721,9 @@
 		<div id="panel" style="width:200px;height:200px;"_="type:'swiperpanel'"><div>1</div><div>2</div><div>3</div></div>
 		</p>
 		<div id='fill' _="type:'fill'">
-			<input type="text" value="{abc}"></input>{text}
+			version:{text}<br/>
+			ver:{ver}<br/>
+			web:{web}
 		</div>
 		<!--ytsearchbox class="p_searchbox" id="aaa" _></ytsearchbox-->
 	</form>

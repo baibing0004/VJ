@@ -551,8 +551,10 @@ var classname = function(构造参数){
         var ret = VJ.merge({a:[{a:2},{b:3}]},{a:[{moveIndex:3,j:3},{k:4}],b:25});
         var ret = VJ.merge({a:[{a:2},{b:3}]},{a:[{mergeIndex:3,j:3},{k:4}],b:25});
     ```
- * userAgent 自动判断获取当前userAgent状态 分为ie/firefox/chrome/safari/opera等多种浏览器类型 userAgent.name说明当前浏览器类型
+ * userAgent 自动判断获取当前userAgent状态 分为ie/firefox/chrome/safari/opera/mobile/pad/pc等多种浏览器类型 userAgent.name说明当前浏览器类型
    *  例如：```VJ.userAgent.name```
+   *  例如：```var isDrag = false;$node.on('touchmove',function(){isDrag=true;})  
+   $node.on(VJ.userAgent.pc?'click':'touchend',function(){if(!isDrag){**真实点击事件**}isDrag=false;})```
    
 ####VJ的Bug处理
  * isDebug 设置或者获取VJ的Debug状态默认为false，当其为真时，VJ.showException 会打印错误信息 否则不会打印 

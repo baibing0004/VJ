@@ -803,7 +803,7 @@
 									var _cmd = cacheres.getDBCommand();
 									_cmd.connection = _conn;
 									_cmd.command = _nicmd.name;
-									_cmd.params = _nicmd.params;
+									_cmd.params = V.merge(_nicmd.params,v.params);
 									_cmd.excute(_.result,function(data){
 										V.tryC(function(){
 											try{cacheres.backDBConnection(_conn);}catch(e){}
@@ -900,7 +900,7 @@
 									var _cmd = cacheres.getDBCommand();
 									_cmd.connection = _conn;
 									_cmd.command = _nicmd.name;
-									_cmd.params = _nicmd.params;
+									_cmd.params = V.merge(_nicmd.params,v.params);
 									_cmd.excute(_.result,function(data){
 										V.tryC(function(){
 											try{cacheres.backDBConnection(_conn);}catch(e){}

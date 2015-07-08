@@ -779,7 +779,7 @@
 											var _cmd = cacheres.getDBCommand();
 											_cmd.connection = _conn;
 											_cmd.command = V.getValue(_nicmd.command,_.setCommand);
-											_cmd.params = V.merge(cmd.params,{
+											_cmd.params = V.merge(_nicmd.params,cmd.params,{
 													cacheKey:V.hash(v.key+'.Set.'+V.toJsonString(cmd.params)),
 													cacheValue:data
 												});
@@ -878,7 +878,7 @@
 											var _cmd = cacheres.getDBCommand();
 											_cmd.connection = _conn;
 											_cmd.command = V.getValue(_nicmd.command,_.setCommand);
-											_cmd.params = V.merge(cmd.params,{
+											_cmd.params = V.merge(_nicmd.params,cmd.params,{
 													cacheKey:V.hash(v.key+'.Set.'+V.toJsonString(cmd.params)),
 													cacheValue:data
 												});

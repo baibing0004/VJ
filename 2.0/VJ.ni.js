@@ -682,17 +682,17 @@
 					//缓存专用默认方法
 					_.setCommand = function(res,params){						
 						params = V.merge(__.params,params);
-						if(res.setItem){
+						/*if(res.setItem){
 							res.setItem(params.cacheKey,V.toJsonString({
 								data:params.cacheValue,
 								date:(params.timeout?new Date().add(params.timeout.interval,params.timeout.number).getTime():false)
 							}));
-						} else {
-							res[params.cacheKey]={
+						} else {*/
+							res[params.cacheKey] = V.toJsonString({
 								data:params.cacheValue,
 								date:(params.timeout?new Date().add(params.timeout.interval,params.timeout.number).getTime():false)
-							};
-						}
+							});
+						//}
 						return null;
 					};
 					//可以根据业务逻辑改为根据某个公共字段进行删除
@@ -706,12 +706,11 @@
 					};
 					_.cacheCommand = function(res,params){						
 						var val = null;
-						if(res.getItem){
+						/*if(res.getItem){
 							val = V.json(res.getItem(params.cacheKey));
-						} else {
-							val = res[params.cacheKey];
-						}
-						
+						} else {*/
+							val = V.json(res[params.cacheKey]);
+						//}						
 						if(val){
 							if(val.date){
 								if(parseFloat(val.date) < new Date().getTime()){

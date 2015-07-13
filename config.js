@@ -4,7 +4,7 @@
 			pack:'VJ.view',
 			method:'constructor',
 			mode:'instance',
-			host:'../../VJ/2.0/ref',
+			host:'../../VJ/2.0/ref/',
 			page:{type:'.Page'},
 			//控件
 			textbox:{type:'.TextBox'},

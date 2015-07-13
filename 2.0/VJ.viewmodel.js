@@ -573,7 +573,7 @@
 			{
 				V.inherit.apply(_,[M.SessionDataResource,[]]);
 				if(!$.cookie){
-					V.include('jquery.cookie.js');
+					V.include('ref/jquery.cookie.js');
 				}
 				if(!$.cookie){
 					V.showException('下载不到jquery.cookie.js')

@@ -4,7 +4,7 @@
 			pack:'VJ.view',
 			method:'constructor',
 			mode:'instance',
-			host:'../../VJ/2.0/',
+			host:'../../VJ/2.0/ref',
 			page:{type:'.Page'},
 			//控件
 			textbox:{type:'.TextBox'},
@@ -130,7 +130,7 @@
 				{params:'Resource','abc':{ref:'CookieDataResource'}},
 				{params:'Resource','kd2.0':{ref:'LocalDataResource'}}
 			]},
-			CookieDataResource:{type:'.CookieDataResource',path:'2.0/jquery.cookie.js',mode:'static',params:[]},	
+			CookieDataResource:{type:'.CookieDataResource',path:'../../VJ/2.0/ref/jquery.cookie.js',mode:'static',params:[]},	
 			LocalDataResource:{type:'.StorageDataResource',mode:'static',params:[window.top.localStorage]}
 		},
 		Ni:{

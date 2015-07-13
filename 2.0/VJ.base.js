@@ -953,7 +953,7 @@ VJ = window.top.VJ;
 		--案例
 		V.registEvent('showXXList',getData)
 		*/
-		V.registEvent = function (name, func) {		
+		V.registEvent = function (name,func,isTop) {		
 			var events = V.getSettings('events',[]);
 			var funs = events[name];
 			if (!V.isValid(funs)) {
@@ -961,8 +961,15 @@ VJ = window.top.VJ;
 				events[name] = funs;
 			}
 			if (typeof (func) == 'function') {
-				funs.push(func);
+				if(isTop && !funs.top){
+					funs.top = func;
+					funs.unshift(func);
+				} else {
+					if(isTop && funs.top){V.showException('V.registEvent:'+name+' 事件已经有订阅者被置顶!');}
+					funs.push(func);
+				}
 			}
+			
 		};
 		/*
 		V用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。

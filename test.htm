@@ -1,12 +1,18 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="description" content="Add multi-touch gestures to your webpage.">
     <title>VJ test</title>
     <script src="2.0/ref/jquery-1.8.0.min.js" type="text/javascript"></script>
 	<script src="2.0/VJ.js" type="text/javascript"></script>
 	<script src="config.js" type="text/javascript"></script>
 	<script src="ni.js" type="text/javascript"></script>
+	<style type="text/css">
+		.animate1 {transition: all 0.3s;}
+	</style>
 	<script type="text/javascript">
 		/*
 		VJ.ajax({url:'http://www.sohu.com',data:{a:1},bindData:function(){alert(222);}});
@@ -367,24 +373,11 @@
 					alert(222);
 				};
 			};
-			var panel = function(path,content){
-				var _ = this,__ = {};
-				{
-					VJ.inherit.apply(_,[VJ.view.Control,[path || '',content || '']]);
-					__.onLoad = _.onLoad;
-					__.render = _.render;
-				}
-				_.onLoad = function(node){
-					
-					__.onLoad(node);
-				};
-				_.fill = function(){return {};};
-				_.render = function(data){
-					data = __.render(data);
-					return data;
-				};
-			};
-
+			//识别 上下左右滑动及其动画，同时支持滑入滑出，支持点击或者tap，支持加载动画
+			//data:{values:[]}
+			//show left/right/up/down/fade
+			//onUp/onDown/onLeft/onRight/show/hide/click 识别 tap,click/
+			//'<div style="background:blue;width:50px;height:50px;"></div>'
 			
 			(function(V,M,$,cm){
 				new function(){
@@ -463,17 +456,27 @@
 									console.log(data.value);
 								}
 							},
-							panel:{
-								data:{value:0},
-								onLoad:function(data,self){
-									console.log(data);
-									setTimeout(function(){
-										self.update({value:2,pagination:true});
-									},2000);
+							panel2:{
+								data:{value:0,visible:true},
+								onLoad:function(data,self){									
+									self.update({show:'fadeInRight'});
 								},
 								onClick:function(data,self){
 									console.log(data);
-								}
+								},								
+								onLeft1:function(data,self){
+									console.log('left');
+								},
+								onRight1:function(data,self){
+									this.txt.update({text:'rightout'});
+								},
+								onRotate1:function(data,self){
+									console.log(1);
+								},
+								onOut:function(data,self){
+								},
+								onUp:function(){console.log('up');},
+								onDown1:function(){console.log('down');}
 							},
 							fill:{
 								data:{},
@@ -550,7 +553,8 @@
 					},
 					'VESH.view':{
 						textbox2:{type:'textbox',params:[]},
-						page2:{type:'page2',params:[]}
+						page2:{type:'page2',params:[]},
+						panel2:{type:'panel',params:[],path:'hammer.min.js'}
 					}
 				}
 			}));			
@@ -595,133 +599,10 @@
 			});
 		}
 	</script>	
-	<script type="text/javascript">
-	if(false){
-		VJ.isDebug = true;
-		var start = new Date();
-		(function(V,W,$){
-			window.YT = {view:{}};
-			var Y = YT.view;
-			{
-				Y.YTSearchBox = function(path){
-					var _ = this,__ = {};
-					{
-						V.inherit.apply(_,[W.Control,[path || '<div class="shop-top-tip"><form action="" method="get" class="shop-searchForm"><p class="shop-search"><input type="text" placeholder="请输入关键词" autocomplete="off" name="keyword" class="s-searchInput" /><input type="submit" class="s-searchSubmit" value="" /><em></em></p></form></div><div class="com-mask m-hide"></div>']]);
-						__.onLoad = _.onLoad;
-						__.render = _.render;
-					}
-					_.fill = function(){
-						return {text:_.input.val()};
-					};
-					_.onLoad = function(node){
-						console.log(node.html());
-						_.input = node.find(':input.s-searchInput');
-						_.canbutton = node.find('em');
-						_.submit = node.find(':input.s-searchSubmit');
-						_.mask = node.find('div.com-mask');
-						_.vm.data.action = node.attr('action');
-						{
-							node.find('form').submit(function(){return false;});
-							_.input.focus(function(){_.canbutton.show();_.mask.show();});
-							_.canbutton.click(function(){_.canbutton.hide();_.mask.hide();});
-						}
-						V.forC(_.events,function(k,v){
-							switch(k.toLowerCase()){
-								case 'search':
-									_.submit.click(function(){
-										_.call(k);
-									});
-									break;
-								default:
-									_.bindEvent(_.input,k,v);
-									break;
-							}
-						},function(){__.onLoad(node)});
-					};
-					_.render = function(data){				
-						data = __.render(data);
-						V.forC(data,function(k,v){
-							switch(k.toLowerCase()){
-								case 'text':
-									_.input.val(v);
-									break;
-								case 'action':
-									_.node.find('form').attr('action',v);
-									break;
-							}
-						});
-					}
-				};
-			}	
-		})(VJ,VJ.view,jQuery);
-		(function(V,M,$){
-			VJ.isDebug = true;
-			 new function(){
-				 var _ = this,__ = {};
-				{
-					var cm = V.merge(window.top.config,{
-						Middler:{
-							'VESH.view':{
-								ytsearchbox:{type:'YT.view.YTSearchBox'},
-								imagesloopbox:{type:'VJ.view.Box'},
-								imagebutton:{type:'VJ.view.Box'},
-								ytproducttable:{type:"VJ.view.Box"}
-							}
-						}
-					});
-					console.log(cm);
-					var models = {
-						searchbox:{
-							data:{text:''},
-							onSearch:function(data,self){
-								alert(data.text);
-							}
-						},
-						imgPP:{
-							onclick:function(data,self){
-								console.log('品牌');
-							}
-						},
-						imgLM:{
-							onclick:function(data,self){
-								console.log('类目');
-							}
-						},
-						imgZC:{
-							onclick:function(data,self){
-								console.log('专场');
-							}
-						},
-						tabProduct:{
-							onload:function(data,self){
-								console.log('商品列表确定');
-							}
-						},
-						page:{
-							onStart:function(data,self){
-								console.log('页面初始化完成'+(start.diff('ms',new Date())));
-							}
-						}
-					};
-					V.inherit.apply(_,[M.Page,[cm,{
-						page:{
-							onStart:function(data,self){
-								console.log('页面初始化完成'+(start.diff('ms',new Date())));
-							}
-						}
-					}]]);
-					$(function(){console.log('页面Jquery完成'+(start.diff('ms',new Date())));})
-				}
-			 };
-		})(VJ,VJ.viewmodel,jQuery);
-		}
-	</script>
-	<style>
-		.abc {height:300px;}
-	</style>
 </head>
 <body>
 	<form id='frmMain' Action="" _>
+		<span id="animationSandbox" style="display: block;" class="bounce animated"><h1 class="site__title mega">Animate.css</h1></span>
 		<ruby>汉字<rt>han zi</rt><rp>{}</rp></ruby>
 		<p><TextBox id="txt" _="key:'输入框:'"></TextBox></p>
 		<p><textbox2 id="txt4" _></textbox2></p>
@@ -739,7 +620,9 @@
 		<p><radiolist id="rl" _="name:'aaaa'"></radiolist></p>
 		<p><checklist id="cl" _="name:'bbbb'" ></checklist></p>
 		<p>
-		<div id="panel" style="width:200px;height:200px;"_="type:'swiperpanel'"><div>1</div><div>2</div><div>3</div></div>
+		<!--div id="panel" style="width:200px;height:200px;"_="type:'swiperpanel'"><div>1</div><div>2</div><div>3</div></div-->
+		
+		<div id="panel2" style="width:200px;height:200px;"_="type:'panel'"><div>1</div><div>2</div><div>3</div></div>
 		</p>
 		<div id='fill' _="type:'fill'">
 			version:{text}<br/>
@@ -747,6 +630,6 @@
 			web:{web}
 		</div>
 		<!--ytsearchbox class="p_searchbox" id="aaa" _></ytsearchbox-->
-	</form>
+	</form>	
 </body>
 </html>

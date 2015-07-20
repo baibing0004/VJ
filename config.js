@@ -22,6 +22,7 @@
 			checklist:{type:'.CheckList'},
 			swiperpanel:{type:'.SwiperPanel',path:'swiper3.07.min.css;animate.min.css;swiper3.07.jquery.min.js;swiper.animate1.0.2.min.js'},
 			fill:{type:'.FillControl'},
+			panel:{type:'.Panel',path:'hammer.min.js'},
 			
 			//动画			
 			bounce:{type:'VJ.view.CssAction',mode:'static',path:"animate.min.css",params:['bounce .4s linear']},

@@ -949,7 +949,21 @@ var classname = function(构造参数){
      * value index 设置从0开始的当前页面
  * VJ.view.FillControl 通过设置value属性，将value属性对应的json对象值填充到界面上，界面按照控件内的html内容根据VJ.format定义的<%=key%>或者{key}格式进行替换  
 	 * value {} 对象内容 后期将根据实际需求进行增强 添加譬如循环 条件等判断 特别地这里不做格式转换 转换工作请在逻辑控件中完成
-####2.1 todo panel 容器类对象的控件信息重新绑定，validate框架设置，move类对象动画设置 逻辑控件的data标准定义基本上确定可以有width,height,values,value
+ * VJ.view.Panel 通过设置方法，使用hammers.js，生成兼容PC,手机的触摸式自由滑动面板，注意请用div+_='type:"Panel"'方式定义，因为其是容器控件，其内部需要放置同级的div作为滑动面板的内容,使用其请务必设置```<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">```;
+	 * onnUp 支持向上滑动  
+	 * onUpOut 支持向上滑出  
+	 * onDown 支持向下滑动  
+	 * onDownOut 支持向下滑出  
+	 * onLeft 支持向左滑动  
+	 * onLeftOut 支持向左滑出  
+	 * onRight 支持向右滑动  
+	 * onRightOut 支持向右滑出  
+	 * onDblClick 支持双击  
+	 * onScale(data(scale),self) 双指改变大小事件
+	 * onRotate(data(angle),self)双指旋转事件
+	 * show('animatename') 先显示，然后运行动画  
+	 * hide('animatename') 先运行动画 然后隐藏
+####2.1 todo panel 容器类对象的控件信息重新绑定，逻辑控件的data标准定义基本上确定可以有width,height,values,value,visible,invisible,key
  
 
 ##附录A VESH架构简介

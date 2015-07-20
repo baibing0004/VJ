@@ -619,5 +619,244 @@
 				return data;
 			};
 		};
+		//识别 上下左右滑动及其动画，同时支持滑入滑出，支持点击或者tap，支持加载动画
+		//支持onUp向上滑动/onUpOut向上滑出/onDown向下滑动/onDownOut向下滑出/onLeft向左滑动/onLeftOut向左滑出/onRight向右滑动/onRightOut向右滑出/onDblClick双击/onScale(data(scale),self)双指改变大小/onRotate(data(angle),self)双指旋转 show('animatename')显示动画/hide('animatename')动画隐藏
+		W.Panel = function(path){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[V.view.Control,[path || '<div style="background:blue;width:50px;height:50px;"></div>']]);
+				__.onLoad = _.onLoad;
+				__.render = _.render;
+				__.hasRender = false;
+				__.transform = {
+					tx: 0, ty: 0,
+					scale: 1,
+					angle: 0,
+					rx: 0,
+					ry: 0,
+					rz: 0
+				};
+				__.am = function(data,timeout){
+					if(!__.moving) {
+						V.once(function(){
+							__.transform = V.merge(__.transform,data);
+							var value = V.format('translate3d({tx}px,{ty}px,0px) scale({scale},{scale}) rotate3d(0,0,0,{angle}deg)',__.transform);
+							_.node.css('webkitTransform',value).css('mozTransform',value).css('transform',value);
+							__.moving = false;
+						}, timeout || (1000 / 60));
+						__.moving = true;
+					}
+				};
+			}
+			_.onLoad = function(node){
+				V.forC(_.events,function(k,v){
+					switch(k.toLowerCase()){
+						case 'up':
+						case 'down':
+							__.vol = true;
+							break;
+						case 'upout':
+							__.vol = true;
+							__.upout = true;
+							break;
+						case 'downout':
+							__.hor = true;
+							__.downout = true;
+							break;
+						case 'left':
+						case 'right':
+							__.hor = true;
+							break;
+						case 'leftout':
+							__.hor = true;
+							__.leftout = true;
+							break;				
+						case 'rightout':
+							__.hor = true;
+							__.rightout = true;
+							break;
+						case 'scale':
+							__.pinch = true;
+							break;
+						case 'rotate':
+							__.rotate = true;
+							break;
+						case 'dblclick':
+							__.dblclick = true;
+						default:
+							_.bindEvent(node,k,v);
+							break;
+					}
+				},function(){__.onLoad(node);});
+			};
+			_.fill = function(){return {};};
+			_.render = function(data){
+				data = __.render(data);
+				V.forC(data,function(k,v){
+					switch(k.toLowerCase()){
+						case 'show':
+							_.vm.data.visible = true;
+							_.node.show();
+							_.animate(v);
+							break;
+						case 'hide':
+							_.animate(v,function(){_.node.hide();_.vm.data.visible = false;});
+							break;							
+					}
+				},function(){
+					if(!__.hasRender){
+						__.hasRender = true;							
+						__.mc = new Hammer.Manager(_.node[0]);
+						__.mc.add(new Hammer.Pan({ threshold: 0, pointers: 0 }));
+						//__.mc.add(new Hammer.Swipe()).recognizeWith(__.mc.get('pan'));
+						__.mc.add(new Hammer.Rotate({ threshold: 0 })).recognizeWith(__.mc.get('pan'));
+						__.mc.add(new Hammer.Pinch({ threshold: 0 })).recognizeWith([__.mc.get('pan'), __.mc.get('rotate')]);
+						__.mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
+						//__.mc.add(new Hammer.Tap());
+						__.mc.on(V.format("{hor} {vol} {pinorrot} {doubleclick}",{hor:__.hor?'panleft panright':'',vol:__.vol?'panup pandown':'',doubleclick:__.dblclick?'doubletap':'',pinorrot:__.rotate?'rotatestart rotatemove rotateend':(__.pinch?'pinchstart pinchmove pinchend':'')}), function(ev) {
+							switch(ev.type){
+								case 'panright':
+									if(!__.rotating){
+										_.node.removeClass('animate');
+										__.am({tx:ev.deltaX,ty:0});
+										__.lastAction = 'right';
+									}
+									break;
+								case 'panleft':									
+									if(!__.rotating){
+										_.node.removeClass('animate');
+										__.am({tx:ev.deltaX,ty:0});	
+										__.lastAction = 'left';
+									}
+									break;
+								case 'panup':																
+									if(!__.rotating){
+										_.node.removeClass('animate');
+										__.am({ty:ev.deltaY,tx:0});
+										__.lastAction = 'up';
+									}
+									break;
+								case 'pandown':																							
+									if(!__.rotating){
+										_.node.removeClass('animate');
+										__.am({ty:ev.deltaY,tx:0});
+										__.lastAction = 'down';
+									}
+									break;
+								case 'pinchstart':
+									__.rotating = true;
+								case 'pinchmove':
+									_.node.removeClass('animate');
+									__.am({scale:ev.scale});
+									break;
+								case 'pinchin':
+								case 'pinchout':
+									__.lastAction = 'scale';
+									__.scale = ev.scale;
+									break;																										
+									__.lastAction = 'out';
+									__.scale = ev.scale;
+									break;
+								case 'pinchend':									
+									__.rotating = false;
+									break;
+								case 'rotatestart':
+									__.rotating = true;
+								case 'rotatemove':
+									_.node.removeClass('animate');
+									__.am({angle:ev.angle,scale:__.pinch?ev.scale:1});
+									__.lastAction = 'rotate';
+									__.angle = ev.angle;
+									if(__.pinch){__.scale = ev.scale};
+									break;
+								case 'rotateend':										
+									__.rotating = false;
+									break;
+							}
+						});
+						__.mc.on("hammer.input", function(ev) {
+							if(ev.isFinal) {
+								V.once(function(){
+									__.transform = V.merge(__.transform,{tx:0,ty:0,scale:1,angle:0,rx:0,ry:0,rz:0});
+									__.eventname = '';
+									switch(__.lastAction){
+										case 'left':										
+											if(__.leftout){
+												__.transform.tx = screen.width*-1;
+											}
+											break;	
+										case 'right':
+											if(__.rightout){
+												__.transform.tx = screen.width;														
+											}
+											break;										
+										case 'up':										
+											if(__.upout){
+												__.transform.ty = screen.height*-1;
+											}
+											break;										
+										case 'down':										
+											if(__.downout){
+												__.transform.ty = screen.height;
+											}
+											break;
+									}
+									var value = V.format('translate3d({tx}px,{ty}px,0px) scale({scale},{scale}) rotate3d({rx},{ry},{rz},{angle}deg)',__.transform);										
+									_.node.addClass('animate').css('webkitTransform',value).css('mozTransform',value).css('transform',value);
+									switch(__.lastAction){
+										case 'left':		
+											if(__.leftout){
+												_.node.hide();
+												_.call('leftout');
+											}
+											else
+												_.call('left');
+											break;	
+										case 'right':		
+											if(__.rightout){
+												_.node.hide();
+												_.call('rightout');
+											}
+											else
+												_.call('right');
+											break;										
+										case 'up':
+											if(__.upout){
+												_.node.hide();
+												_.call('upout');
+											}
+											else
+												_.call('up');
+											break;										
+										case 'down':		
+											if(__.downout){
+												_.node.hide();
+												_.call('downout');
+											}
+											else
+												_.call('down');
+											break;
+										case 'scale':										
+											_.call('scale',{scale:__.scale});
+											break;							
+										case 'rotate':
+											if(__.pinch){
+												if(__.scale != 1) {_.call('scale',{scale:__.scale});}
+											}
+											_.call('rotate',{angle:__.angle});
+											break;
+									}
+								}, 100);							
+							}
+						});
+						/*
+						__.mc.on("swipe", onSwipe);
+						__.mc.on("tap", onTap);
+						*/
+					}
+				});
+				return data;
+			};
+		};
 	}
 })(VJ,jQuery,VJ.view,VJ.viewmodel);

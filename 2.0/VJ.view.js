@@ -636,7 +636,7 @@
 					ry: 0,
 					rz: 0
 				};
-				__.am = function(data,timeout){
+				_.am = function(data,timeout){
 					if(!__.moving) {
 						V.once(function(){
 							__.transform = V.merge(__.transform,data);
@@ -648,6 +648,13 @@
 					}
 				};
 			}
+			//继承以方便继承类覆盖
+			_.onRight = function(ev){__.am({tx:ev.deltaX,ty:0})};
+			_.onLeft = function(ev){__.am({tx:ev.deltaX,ty:0})};
+			_.onUp = function(ev){_.am({ty:ev.deltaY,tx:0});};
+			_.onDown = function(ev){_.am({ty:ev.deltaY,tx:0});};
+			_.onScale = function(ev){_.am({scale:ev.scale});};
+			_.onRotate = function(ev){_.am({angle:ev.angle,scale:__.pinch?ev.scale:1});};
 			_.onLoad = function(node){
 				V.forC(_.events,function(k,v){
 					switch(k.toLowerCase()){
@@ -718,28 +725,28 @@
 								case 'panright':
 									if(!__.rotating){
 										_.node.removeClass('animate');
-										__.am({tx:ev.deltaX,ty:0});
+										_.onRight(ev);
 										__.lastAction = 'right';
 									}
 									break;
 								case 'panleft':									
 									if(!__.rotating){
 										_.node.removeClass('animate');
-										__.am({tx:ev.deltaX,ty:0});	
+										_.onLeft(ev);
 										__.lastAction = 'left';
 									}
 									break;
 								case 'panup':																
 									if(!__.rotating){
 										_.node.removeClass('animate');
-										__.am({ty:ev.deltaY,tx:0});
+										_.onUp(ev);
 										__.lastAction = 'up';
 									}
 									break;
 								case 'pandown':																							
 									if(!__.rotating){
 										_.node.removeClass('animate');
-										__.am({ty:ev.deltaY,tx:0});
+										_.onDown(ev);
 										__.lastAction = 'down';
 									}
 									break;
@@ -747,7 +754,7 @@
 									__.rotating = true;
 								case 'pinchmove':
 									_.node.removeClass('animate');
-									__.am({scale:ev.scale});
+									_.onScale(ev);
 									break;
 								case 'pinchin':
 								case 'pinchout':
@@ -764,7 +771,7 @@
 									__.rotating = true;
 								case 'rotatemove':
 									_.node.removeClass('animate');
-									__.am({angle:ev.angle,scale:__.pinch?ev.scale:1});
+									_.onRotate(ev);
 									__.lastAction = 'rotate';
 									__.angle = ev.angle;
 									if(__.pinch){__.scale = ev.scale};

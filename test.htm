@@ -349,7 +349,7 @@
 			var textbox = function(){
 				var _ = this,__ = {};
 				{
-					VJ.inherit.apply(_,[VJ.view.Control,['<span type="text" style="display:none;"></span>']]);
+					VJ.inherit.apply(_,[VJ.view.Control,['<span><span style="display:none;"></span><input type="text"></input><panel id="but2" _></panel></span>']]);
 					__.render = _.render;
 				}
 				_.render = function(data){
@@ -552,7 +552,7 @@
 						CookieDataResource:{type:'.CookieDataResource',mode:'static',params:[]}						
 					},
 					'VESH.view':{
-						textbox2:{type:'textbox',params:[]},
+						textbox:{type:'textbox',params:[]},
 						page2:{type:'page2',params:[]},
 						panel2:{type:'panel',params:[],path:'hammer.min.js'}
 					}
@@ -605,7 +605,6 @@
 		<span id="animationSandbox" style="display: block;" class="bounce animated"><h1 class="site__title mega">Animate.css</h1></span>
 		<ruby>汉字<rt>han zi</rt><rp>{}</rp></ruby>
 		<p><TextBox id="txt" _="key:'输入框:'"></TextBox></p>
-		<p><textbox2 id="txt4" _></textbox2></p>
 		<p><textbox id="txt2" _="key:'输入框:'"></textbox></p>
 		<p><textbox id="txt3" _="key:'输入框:'"></textbox></p>
 		<p><radiobox id="radio" _="key:'单选框:'"></radiobox></p>

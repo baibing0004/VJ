@@ -115,28 +115,6 @@
 				_.node = node;
 				_.params = V.merge(_.params,V.getValue(params,{}));
 			};
-			_.validate = function(input){
-				if(_.middler){
-					var obj = _.middler.getObjectByAppName(W.APP,'ValidateManager');
-					if(obj){obj.validate(_,input);}
-				}
-			};
-			_.call = function(name,param){
-				//所有的事件调用全部采用异步调用方式 V.once
-				if(param){
-					_.vm.data = V.merge(_.vm.data,param);
-				}
-				_.vm.data = V.merge(_.vm.data,_.fill(),V.getValue(param,{}));
-				name = name.toLowerCase();
-				if(_.events[name]){
-					V.once(function(){
-						var val = _.events[name].apply(_.page.page.models,[_.vm.data,_.vm]);
-						if(val && val != {}){
-							_.render(val);
-						}
-					});
-				}
-			};
 			//初始化viewmodel操作
 			_.bind = function(vm){
 				if(vm){			
@@ -162,7 +140,7 @@
 				}
 				if(_.path){
 					W.getTemplate(_.path,function(node){
-						_.replaceNode(node);
+						_.replaceNode(node);						
 						_.onLoad(node);
 					});
 				} else {
@@ -170,21 +148,14 @@
 					_.onLoad(_.node);
 				}
 			};
+			//处理控件下载完成后的操作
+			_.onLoad = function(node){
+				_.call('load');
+				_.render();
+			};
 			//在更新_.vm.data
 			_.fill = function(){
 				return {};	
-			};
-			//这里提供子类用于覆盖同名函数，修改动画对象。
-			_.animate = function(name,func){
-				_._animate(name,null,func);
-			};
-			//动画方法 用于将middler获取到的动画对象进行动画设置并返回设置函数 而动画对象本身应该仅仅具有业务意义 譬如active hide append等等
-			_._animate = function(name,node,func){
-				name = name || '';
-				var action = _.middler.getObjectByAppName(W.APP,name);
-				if(action){
-					action.go(node?node:_.node,func || null);
-				}
 			};
 			//可以将数据更新到标签上
 			_.render = function(data){
@@ -249,21 +220,7 @@
 					}
 				});
 				return data;
-			};
-			//用于说明错误提示
-			_.onError = function(text){
-				_.get().isError = true;
-				_.call('error',{error:text});
-			};
-			//用于清理错误提示
-			_.onClearError = function(){_.call('clearerror');};
-			//用于说明正确信息
-			_.onSuccess = function(){delete _.get().isError;_.call('success')};
-			//处理控件下载完成后的操作
-			_.onLoad = function(node){
-				_.call('load');
-				_.render();
-			};
+			};			
 			//用于扩展给主要对象绑定事件使用 一般用于bind事件的默认值
 			_.bindEvent = function(node,k,v){
 				node = $(node);
@@ -271,6 +228,55 @@
 					node[k](function(e){
 						_.call(k,{e:e});
 					});
+				}
+			};
+			_.initControls = function(vm,node){				
+				//此处进行内部控件生成需要判定controls属性
+				if(vm.controls || node.find('[_]').length>0){
+					var cons = V.getValue(vm.controls,{});
+					_.controls = [];
+					_.views = {};
+					_.page = {model:cons};
+					var p = node.find('[_]').toArray();				
+					V.each(p,function(v1){
+						v = $(v1);
+						var id = v.attr('id');
+						var json = eval("({"+v.attr('_')+"})");
+						var type = json.type?json.type:(id && cons[id] && cons[id].type)?cons[id].type:null;
+						//对于容器类对象的处理方式
+						var nodeName = type?type.toLowerCase():v[0].nodeName.toLowerCase();
+						var obj = _.middler.getObjectByAppName(W.APP,nodeName);
+						if(!obj) V.showException('配置文件中没有找到对象类型定义:'+nodeName);
+						obj.init(_,v,V.isValid(v.attr('_'))?json:null);
+						_.controls.push(obj);
+						if(!id) {
+							id = nodeName+V.random();
+						}
+						obj.nodeName = nodeName;
+						if(!cons[id]){
+							cons[id] = {data:{}};
+						}
+						_.views[v.attr['id']] = obj;
+						V.inherit.apply(cons[id],[M.Control,[]]);
+						obj.bind(cons[id]);		
+					},function(){
+						//实现通过type属性完成数据初始化的功能
+						V.forC(cons,function(key,v){
+							if(v.type && !v.v){
+								var obj = _.middler.getObjectByAppName(W.APP,v.type);
+								if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
+								var node2 = V.newEl('div');
+								node.append(node2);
+								obj.init(_,node2,null);
+								_.controls.push(obj);
+								_.views[key] = obj;
+								V.inherit.apply(v,[M.Control,[]]);
+								obj.bind(v);
+							}
+						},function(){
+							//彻底初始化完成
+						});
+					},true);
 				}
 			};
 			_.replaceNode = function(node){
@@ -290,6 +296,7 @@
 						}
 					},function(){},true);
 				}
+				_.initControls(_.vm,node);
 				node.append(_.node.children());
 				if(_.node[0].nodeName.toLowerCase() == 'body'){					
 					_.node.empty().append(node);
@@ -298,6 +305,49 @@
 				}
 				_.node = node;
 			};
+			_.validate = function(input){
+				if(_.middler){
+					var obj = _.middler.getObjectByAppName(W.APP,'ValidateManager');
+					if(obj){obj.validate(_,input);}
+				}
+			};
+			_.call = function(name,param){
+				//所有的事件调用全部采用异步调用方式 V.once
+				if(param){
+					_.vm.data = V.merge(_.vm.data,param);
+				}
+				_.vm.data = V.merge(_.vm.data,_.fill(),V.getValue(param,{}));
+				name = name.toLowerCase();
+				if(_.events[name]){
+					V.once(function(){
+						var val = _.events[name].apply(_.page.page.models,[_.vm.data,_.vm]);
+						if(val && val != {}){
+							_.render(val);
+						}
+					});
+				}
+			};
+			//这里提供子类用于覆盖同名函数，修改动画对象。
+			_.animate = function(name,func){
+				_._animate(name,null,func);
+			};
+			//动画方法 用于将middler获取到的动画对象进行动画设置并返回设置函数 而动画对象本身应该仅仅具有业务意义 譬如active hide append等等
+			_._animate = function(name,node,func){
+				name = name || '';
+				var action = _.middler.getObjectByAppName(W.APP,name);
+				if(action){
+					action.go(node?node:_.node,func || null);
+				}
+			};
+			//用于说明错误提示
+			_.onError = function(text){
+				_.get().isError = true;
+				_.call('error',{error:text});
+			};
+			//用于清理错误提示
+			_.onClearError = function(){_.call('clearerror');};
+			//用于说明正确信息
+			_.onSuccess = function(){delete _.get().isError;_.call('success')};
 			_.dispose = function(){};
 		};
 	}
@@ -447,7 +497,6 @@
 					obj.nodeName = nodeName;
 					if(!_.page.getModels(id)){
 						_.page.setModels(id,{data:{}});
-						_.controls.push(_.page.getModels(id));
 					}
 					_.views[v.attr['id']] = obj;
 					V.inherit.apply(_.page.getModels(id),[M.Control,[]]);

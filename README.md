@@ -317,7 +317,7 @@ var classname = function(构造参数){
             //constructorparalength属性仅在method为constructorbean/factorybean时生效，以区分构造函数或者工厂方法需要的参数个数，其后的参数使用bean方式进行设置
             //params 属性定义js对象的构造参数数组，其内部类型可以定义为一个AppName下的json对象定义，另一个AppName下的json对象定义，一个bean方式赋值使用的json对象，使用setItem方式赋值使用的json对象，原始的js类型（数字，字符串，js对象）等等，{self：true}对象会导致middler对象将当前的完整Config链实例作为参数。
             ObjectName:{type:'',path:'',method:'',mode:'',constractparalength:'',params:[
-                //一个新的JS对象定义 其各个属性值都可以使用父对象的属性值作为默认值 当然其params属性还可以类似的进一步定义下去。这个js对象因为没有ObjectName所以无法被外部通过middler.getObjectByAppName方式访问，但是会被随机命名后放置在当前Middler的config空间中保存。
+                //一个新的JS对象定义 其各个属性值都可以使用父对象的属性值作为默认值 当然其params属性还可以类似的进一步定义下去。这个js对象因为没有ObjectName所以无法被外部通过middler.getObjectByAppName方式访问，但是会被随机命名后放置在当前Middler的config空间中保存。从而实现CMD模型。
                 {type:'',path:'',method:'',mode:'',constractparalength:''},
                 //一个已有的JS对象引用，ref的定义格式使用'appName/objectName'方式定义路径，如果没有appName则默认是当前AppName下的对象
                 {ref:''},，
@@ -334,7 +334,9 @@ var classname = function(构造参数){
                 //传统的js数据,不能作为bean方式下调用的数据
                 1,
                 //middler对象将当前的完整Config链实例作为参数传入仅能在constructor或者factory下使用或者作为bean方法模式下的一个子值
-                {self:"true"}
+                {self:"true"},
+				//middler对象允许通过这种方式获取定义对象的类作为参数，从而供这个类对象的构造函数获取到父类实现AMD功能
+				{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'}				
             ]},
             //middler框架中对象数组的定义方式（不定义type属性，而且其各个属性值作为参数中的默认值向下传递，返回的数组对象为其params中定义的值
             ObjectsName:{path:'',method:'',mode:'',constractparalength:'',params:[
@@ -817,14 +819,25 @@ var classname = function(构造参数){
  * 事件中返回的json自动调用方法更新vm的data属性，然后根据事件调用时返回的参数更新自身和vm.data，逻辑控件也可调用update(更新{})方法完成数据在view层的填充,同时将属性更新
 
  * VJ.view.Control定义有
+	 * constructor (path,vm) 构造函数 允许传入html模板与逻辑控件默认值，一般地当传入逻辑控件默认值时允许构造成含有页面和逻辑的独立模块控件其结构为
+			```{  
+				子控件id:{data:{},  
+					onLoad:function(data,self){
+						//特别地这里的this对象指向的是该控件的子控件字典,而不是整个页面的控件字典，data,self与普通控件事件方法指向相同，调用方式相同。一般子控件与页面内控件的交互方式建议以V.callCommand/Event或者V.registCommand/Event方式进行。
+					}
+				}  
+			}
+			```。
      * path string (控件html路径或者代码段)
      * vm object（逻辑控件对象),
-     * config
-     * middler
-     * session
-     * ni
+     * config configManager对象，是其它configConvert子类的父类实例和基础。
+     * middler 中介者对象，用于获取或者新建其它对象的实例和类，可用于AMD与CMD模式
+     * session 会话对象，根据config.js配置当前会话的存储路径和加解密逻辑
+     * ni 数据对象，根据config.js+ni.js+ni的name执行数据操作，兼容各种数据渠道。
      * events {} (所有逻辑控件on开头的function 事件判断上大小写不敏感)
-     * params {} 构造参数默认值
+     * params {} 逻辑控件默认值
+	 * parent object 父对象，一般可以通过this.parent.middler/config/session/ni获取到当前页面的公共资源或者在逻辑控件中,页面内的控件该属性与page属性的结果相同
+	 * controls object 子控件（特指本控件模板中定义的子控件，页面上定义控件时放置在控件内的VJ控件不是子控件而是页面控件）的逻辑控件对象(id与页面相同ID不会冲突)
      * page object 所在页面 一般可以通过this.page.middler/config/session/ni获取到当前页面的公共资源或者在逻辑控件中
      * init function(path,node,params) VJ.view.Page的实例，对应控件标签的原始对象，控件标签'_'属性的属性值
      * call function(name,params) 调用viewmodel对应的事件，同时更新vm.data属性，如果事件未被监听则不调用
@@ -837,6 +850,7 @@ var classname = function(构造参数){
      * onSuccess function() 一般会触发success事件
 	 * onError function() 一般会触发error事件，逻辑事件可以通过data.error属性获取到错误信息提示 并采取对应的处理，一般地控件可以覆盖这个方法进行错误处理，但是必须调用其父类方法以触发逻辑控件的onError事件
 	 * onClearError function() 一般会触发clearerror事件
+	 * addControl function(node,{type:'',data:{},id:'',onLoad:function}) 允许动态添加VJ控件到指定的控件内,并与该控件的子控件同级,id为可选项可以与父级的id重复，但是不可与控件内的子控件id重复
 	 
 	 * 一般提供bindEvent(node,k,v)方法供扩展时进行默认事件绑定。这里一般会绑定用户定义的jquery事件。请注意不要调用this.node以为此时的node是尚替换的，而应该使用输入的参数node是替换后的jquery对象，而且传入的node参数本身具有原标签的所有属性
      * 一般在fill方法中获取当前对象的约定真实值，不用调用父类

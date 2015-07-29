@@ -357,6 +357,27 @@
 			//用于说明正确信息
 			_.onSuccess = function(){delete _.get().isError;_.call('success')};
 			_.dispose = function(){};
+			_.addControl = function(node,v){
+				if(!_.controls){
+					_.controls = [];
+					_.views = {};
+					_.models = {};
+				}
+				var obj = _.middler.getObjectByAppName(W.APP,v.type);
+				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
+				node = node?node:V.newEl('div');
+				_.node.append(node);
+				obj.init(_,node,null);
+				obj.page = _.page;
+				_.controls.push(obj);
+				var key = V.getValue(v.id,V.random());
+				if(_.views[key]){V.showException('控件id为'+id+'的子控件已经存在，请更换id名');return;}
+				_.views[key] = obj;
+				V.inherit.apply(v,[M.Control,[]]);
+				_.models[key]=v;
+				obj.bind(v);
+				return v;
+			};
 		};
 	}
 	{
@@ -541,11 +562,12 @@
 				_.node.append(node);
 				obj.init(_,node,null);
 				obj.page = _;
-				_.controls.push(obj);
-				var key = V.random();
+				_.controls.push(obj);				
+				var key = V.getValue(v.id,V.random());
+				if(_.views[key]){V.showException('控件id为'+id+'的控件已经存在，请更换id名');return;}
 				_.views[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
-				_.vm.models = V.merge(_.vm.models,{key:v});
+				_.vm.models[key]=v;
 				obj.bind(v);
 				return v;
 			};

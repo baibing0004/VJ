@@ -1,9 +1,9 @@
 (function(V,$,W,M){
 	{
-		W.TextBox = function(path){
+		W.TextBox = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<span><span style="display:none;"></span><input type="text"></input></span>']]);
+				V.inherit.apply(_,[W.Control,[path || '<span><span style="display:none;"></span><input type="text"></input></span>',vm || {}]]);
 				__.render = _.render;
 				__.onLoad = _.onLoad;
 			}
@@ -63,10 +63,10 @@
 				_._animate(name,_.input,func);
 			};
 		};
-		W.RadioBox = function(path){
+		W.RadioBox = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.TextBox,[path || '<span><span style="display:none;"></span><input type="radio"></input></span>']]);
+				V.inherit.apply(_,[W.TextBox,[path || '<span><span style="display:none;"></span><input type="radio"></input></span>',vm]]);
 				__.render = _.render;
 				__.onLoad = _.onLoad;
 			}
@@ -86,16 +86,16 @@
 				return data;
 			};
 		};
-		W.CheckBox = function(path){
+		W.CheckBox = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.RadioBox,[path || '<span><span style="display:none;"></span><input type="checkbox"></input></span>']]);
+				V.inherit.apply(_,[W.RadioBox,[path || '<span><span style="display:none;"></span><input type="checkbox"></input></span>',vm]]);
 			}
 		};
-		W.Select = function(path){
+		W.Select = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<span><span style="display:none;"></span><select></select></span>']]);
+				V.inherit.apply(_,[W.Control,[path || '<span><span style="display:none;"></span><select></select></span>',vm]]);
 				__.render = _.render;
 				__.onLoad = _.onLoad;
 			}
@@ -147,10 +147,10 @@
 				_._animate(name,_.sel,func);
 			};
 		};
-		W.Hidden = function(path){
+		W.Hidden = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<input type="hidden"></input>']]);
+				V.inherit.apply(_,[W.Control,[path || '<input type="hidden"></input>',vm]]);
 				__.render = _.render;
 				__.onLoad = _.onLoad;
 			}
@@ -187,10 +187,10 @@
 				return data;
 			};
 		};		
-		W.PasswordBox = function(path){
+		W.PasswordBox = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.TextBox,[path || '<span><span style="display:none;"></span><input type="password"></input></span>']]);
+				V.inherit.apply(_,[W.TextBox,[path || '<span><span style="display:none;"></span><input type="password"></input></span>',vm]]);
 				__.render = _.render;
 			}
 			_.render = function(data){
@@ -206,10 +206,10 @@
 				return data;
 			};
 		};		
-		W.Button = function(path){
+		W.Button = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.TextBox,[path || '<span><span style="display:none;"></span><input type="button"></input></span>']]);
+				V.inherit.apply(_,[W.TextBox,[path || '<span><span style="display:none;"></span><input type="button"></input></span>',vm]]);
 				__.render = _.render;
 			}
 			_.fill = function(){return {};};
@@ -231,23 +231,23 @@
 				return data;
 			};
 		};
-		W.Submit = function(path){
+		W.Submit = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Button,[path || '<span><span style="display:none;"></span><input type="submit"></input></span>']]);
+				V.inherit.apply(_,[W.Button,[path || '<span><span style="display:none;"></span><input type="submit"></input></span>',vm]]);
 			}
 		};
-		W.Reset = function(path){
+		W.Reset = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Button,[path || '<span><span style="display:none;"></span><input type="reset"></input></span>']]);
+				V.inherit.apply(_,[W.Button,[path || '<span><span style="display:none;"></span><input type="reset"></input></span>',vm]]);
 			}
 		};
 		//todo 获取其validata对象与方法 进行同步验证
-		W.Form = function(path){
+		W.Form = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<form method="get" action=""></form>',{enctype:'multipart/form-data'}]]);
+				V.inherit.apply(_,[W.Control,[path || '<form method="get" action=""></form>',vm || {data:{enctype:'multipart/form-data'}}]]);
 				__.render = _.render;
 				__.onLoad = _.onLoad;
 			}
@@ -285,10 +285,10 @@
 				return data;
 			};
 		};
-		W.Box = function(path){
+		W.Box = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<div></div>']]);
+				V.inherit.apply(_,[W.Control,[path || '<div></div>',vm || {}]]);
 				__.render = _.render;
 				__.onLoad = _.onLoad;
 			}			
@@ -310,10 +310,10 @@
 				return data;
 			};
 		};
-		W.RadioList = function(path,content){
+		W.RadioList = function(path,content,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<div class="p_RadioList"><ul></ul></div>']]);
+				V.inherit.apply(_,[W.Control,[path || '<div class="p_RadioList"><ul></ul></div>',vm || {}]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
 				_.content = V.getValue(content,'<li><span>{key}:</span><span class="p_RadioList_li"><input name="{name}" type="radio" value="{value}"/></span></li>');
@@ -361,10 +361,10 @@
 				_._animate(name,_.ul,func);
 			};
 		};
-		W.CheckList = function(path,content){
+		W.CheckList = function(path,content,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<div class="p_CheckList"><ul></ul></div>']]);
+				V.inherit.apply(_,[W.Control,[path || '<div class="p_CheckList"><ul></ul></div>',vm || {}]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
 				_.content = V.getValue(content,'<li><span>{key}:</span><span class="p_CheckList_li"><input name="{name}" type="checkbox" value="{value}"/></span></li>');
@@ -422,10 +422,10 @@
 			};
 		};
 		//构建时需要swiper.js
-		W.SwiperPanel = function(path){
+		W.SwiperPanel = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<div class="swiper-container"></div>']]);
+				V.inherit.apply(_,[W.Control,[path || '<div class="swiper-container"></div>',vm || {}]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
 				_.params = {direction:'horizontal',loop:false,simulateTouch:true};				
@@ -587,10 +587,10 @@
 		};
 		//todo panel 容器类对象的controls对象设置 bind方法设置
 		//todo file
-		W.FillControl = function(path){
+		W.FillControl = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<div></div>']]);
+				V.inherit.apply(_,[W.Control,[path || '<div></div>',vm || {}]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
 				__.replaceNode = _.replaceNode
@@ -621,10 +621,10 @@
 		};
 		//识别 上下左右滑动及其动画，同时支持滑入滑出，支持点击或者tap，支持加载动画
 		//支持onUp向上滑动/onUpOut向上滑出/onDown向下滑动/onDownOut向下滑出/onLeft向左滑动/onLeftOut向左滑出/onRight向右滑动/onRightOut向右滑出/onDblClick双击/onScale(data(scale),self)双指改变大小/onRotate(data(angle),self)双指旋转 show('animatename')显示动画/hide('animatename')动画隐藏
-		W.Panel = function(path){
+		W.Panel = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[V.view.Control,[path || '<div style="background:blue;width:50px;height:50px;"></div>']]);
+				V.inherit.apply(_,[W.Control,[path || '<div style="background:blue;width:50px;height:50px;"></div>',vm || {}]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
 				__.hasRender = false;

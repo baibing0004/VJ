@@ -2,8 +2,7 @@
 	V.viewmodel = {APP:'VESH.viewmodel',NIAPP:'Ni'};
 	var M = V.viewmodel;
 	V.view = {APP:'VESH.view'};
-	var W = V.view;
-	
+	var W = V.view;	
 	//定义业务逻辑层的两个基本对象页面与控件
 	//首先页面实例化M.Page 然后 页面绑定 W.Page 然后W.Page 调用Document.ready 将界面根据middler进行设置，并针对_对象进行初始化设置并进行binding binding完成后直接发布document.ready事件
 	//一般的viewmodel层通过type定义其Middler中的控件类型实现与前端的绑定
@@ -106,21 +105,36 @@
 				_.events = {};
 				_.params = V.getValue(params,{});
 			}
-			_.init = function(page,node,params){				
-				_.page = page;
-				_.config = _.page.config;
-				_.middler = _.page.middler;
-				_.ni = _.page.ni;
-				_.session = _.page.session;
+			_.init = function(parent,node,params){				
+				_.parent = parent;
+				_.config = _.parent.config;
+				_.middler = _.parent.middler;
+				_.ni = _.parent.ni;
+				_.session = _.parent.session;
 				_.node = node;
-				_.params = V.merge(_.params,V.getValue(params,{}));
+				_.params = V.merge(_.params,{data:V.getValue(params,{})});
 			};
 			//初始化viewmodel操作
 			_.bind = function(vm){
-				if(vm){			
-					_.vm = vm;
+				{
 					//完成配置合并
-					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
+					_.vm = V.merge(_.params,V.getValue(vm,{data:{}}));
+					V.forC(_.vm,function(k,v){
+						switch(k.toLowerCase()){
+							case 'data':
+							case 'controls':
+									vm[k] = v;
+								break;
+							default:
+								if(k.toLowerCase().indexOf('on')==0){
+									vm[k] = v;
+									_.events[k.toLowerCase().substring(2)] = v;
+								}
+								break;
+						}
+					},function(){
+						_.vm = vm;
+					},true);
 					//用于获取绑定对象的数据
 					_.get = function(){return _.vm.data;}
 					//完成类型名注入
@@ -128,15 +142,7 @@
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
 					_.vm.get = function(key){_.vm.data = V.merge(_.vm.data,_.fill());return key?_.vm.data[key]:_.vm.data;};
-					V.forC(_.vm,function(key,value){
-						key = key.toLowerCase();
-						if(key.indexOf('on')==0){
-							//事件注册
-							_.events[key.substring(2)] = value;
-						}
-					},function(){_.vm.bind(_);},true);						
-				} else{
-					_.vm = {data:V.merge(_.params,{})};
+					_.vm.bind(_);
 				}
 				if(_.path){
 					W.getTemplate(_.path,function(node){
@@ -150,8 +156,8 @@
 			};
 			//处理控件下载完成后的操作
 			_.onLoad = function(node){
-				_.call('load');
 				_.render();
+				_.call('load');
 			};
 			//在更新_.vm.data
 			_.fill = function(){
@@ -236,7 +242,7 @@
 					var cons = V.getValue(vm.controls,{});
 					_.controls = [];
 					_.views = {};
-					_.page = {model:cons};
+					_.models = cons;
 					var p = node.find('[_]').toArray();				
 					V.each(p,function(v1){
 						v = $(v1);
@@ -248,6 +254,7 @@
 						var obj = _.middler.getObjectByAppName(W.APP,nodeName);
 						if(!obj) V.showException('配置文件中没有找到对象类型定义:'+nodeName);
 						obj.init(_,v,V.isValid(v.attr('_'))?json:null);
+						obj.page = _.page;
 						_.controls.push(obj);
 						if(!id) {
 							id = nodeName+V.random();
@@ -256,7 +263,7 @@
 						if(!cons[id]){
 							cons[id] = {data:{}};
 						}
-						_.views[v.attr['id']] = obj;
+						_.views[id] = obj;
 						V.inherit.apply(cons[id],[M.Control,[]]);
 						obj.bind(cons[id]);		
 					},function(){
@@ -268,6 +275,7 @@
 								var node2 = V.newEl('div');
 								node.append(node2);
 								obj.init(_,node2,null);
+								obj.page = _.page;
 								_.controls.push(obj);
 								_.views[key] = obj;
 								V.inherit.apply(v,[M.Control,[]]);
@@ -320,7 +328,7 @@
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){
-						var val = _.events[name].apply(_.page.page.models,[_.vm.data,_.vm]);
+						var val = _.events[name].apply(_.parent.models,[_.vm.data,_.vm]);
 						if(val && val != {}){
 							_.render(val);
 						}
@@ -421,6 +429,7 @@
 				var vm = page.page;
 				_.page = page;
 				if(vm){
+					//仅针对page节点
 					_.vm = vm;
 					//完成配置合并
 					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
@@ -436,7 +445,8 @@
 					},function(){page.bind(_);},true);								
 				} else {
 					_.vm = {data:V.merge(_.params,{})};
-				}				
+				}
+				_.models = _.page.models;
 				if(_.path){
 					W.getTemplate(_.path,function(node){
 						_.replaceNode(node);
@@ -490,6 +500,7 @@
 					var obj = _.middler.getObjectByAppName(W.APP,nodeName);
 					if(!obj) V.showException('配置文件中没有找到对象类型定义:'+nodeName);
 					obj.init(_,v,V.isValid(v.attr('_'))?json:null);
+					obj.page = _;
 					_.controls.push(obj);
 					if(!id) {
 						id = nodeName+V.random();
@@ -498,7 +509,7 @@
 					if(!_.page.getModels(id)){
 						_.page.setModels(id,{data:{}});
 					}
-					_.views[v.attr['id']] = obj;
+					_.views[id] = obj;
 					V.inherit.apply(_.page.getModels(id),[M.Control,[]]);
 					obj.bind(_.page.getModels(id));		
 				},function(){
@@ -510,6 +521,7 @@
 							var node2 = V.newEl('div');
 							node.append(node2);
 							obj.init(_,node2,null);
+							obj.page = _;
 							_.controls.push(obj);
 							_.views[key] = obj;
 							V.inherit.apply(v,[M.Control,[]]);
@@ -528,6 +540,7 @@
 				node = node?node:V.newEl('div');
 				_.node.append(node);
 				obj.init(_,node,null);
+				obj.page = _;
 				_.controls.push(obj);
 				var key = V.random();
 				_.views[key] = obj;

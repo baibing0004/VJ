@@ -119,7 +119,7 @@
 								paras.push({ref:appName,name:name});
 							} else if(val.type){
 								var name = V.random()+'';
-								app[name] = __.convertContainer(config,val,defParam,app);
+								app[name] = __.convertContainer(config,val,defParam,app,pcm);
 								paras.push({ref:defParam.app,name:name});
 							} else if(val.self){
 								paras.push(pcm);
@@ -129,7 +129,7 @@
 									if(i!='params'){									
 										if(val[i].type){
 											var name = V.random()+'';
-											app[name] = __.convertContainer(config,val[i],defParam,app);
+											app[name] = __.convertContainer(config,val[i],defParam,app,pcm);
 											_v[i] = {ref:defParam.app,name:name};
 										} else if(val[i].ref){
 											var index = val[i].ref.indexOf('/')>=0?val[i].ref.indexOf('/'):val[i].ref.indexOf('\\')>=0?val[i].ref.indexOf('\\'):-1;
@@ -149,7 +149,7 @@
 						} else if(V.isArray(val)){
 							//objects
 							var name = V.random()+'';
-							app[name] = __.convertContainer(config,{params:val},defParam,app);
+							app[name] = __.convertContainer(config,{params:val},defParam,app,pcm);
 							paras.push({ref:defParam.app,name:name});
 						} else {
 							paras.push(val);
@@ -399,5 +399,25 @@
 	};
 	M.getMiddlerFromObj = function(obj){
 		return new M.Middler(V.config.getApplicationConfigManagerFromObj(obj));
+	};
+	M.getObjectByAppName = function(cm,app,name){
+		if(!V.middlers){
+			V.middlers = {};
+		}
+		if(!cm.randomid){
+			cm.randomid = V.random();
+			V.middlers[cm.randomid] = new M.Middler(cm);
+		}
+		return V.middlers[cm.randomid].getObjectByAppName(app,name);
+	};
+	M.getTypeByAppName = function(cm,app,name){
+		if(!V.middlers){
+			V.middlers = {};
+		}
+		if(!cm.randomid){
+			cm.randomid = V.random();
+			V.middlers[cm.randomid] = new M.Middler(cm);
+		}
+		return V.middlers[cm.randomid].getTypeByAppName(app,name);
 	};
 })(VJ,jQuery);

@@ -963,8 +963,14 @@ var classname = function(构造参数){
      * value index 设置从0开始的当前页面
  * VJ.view.FillControl 通过设置value属性，将value属性对应的json对象值填充到界面上，界面按照控件内的html内容根据VJ.format定义的<%=key%>或者{key}格式进行替换  
 	 * value {} 对象内容 后期将根据实际需求进行增强 添加譬如循环 条件等判断 特别地这里不做格式转换 转换工作请在逻辑控件中完成
+ * VJ.view.History 通过设置value属性，将value属性对应的json对象值填充到界面上，界面按照控件内的html内容根据VJ.format定义的<%=key%>或者{key}格式进行替换  
+	 * hash string data属性 获取当前location中的#号后的内容
+	 * history Array data属性 在data中获取到调用add属性添加进入历史的hash数组
+	 * onChange(data(hash),self) 获得location.hash更新的事件，可以获取到data.hash得到目前的值
+	 * add string data属性 往往通过update({add:'key'})方式进行调用,切换当前的window.location.hash为新的hash，并记录进入history数组
+	 * back true data属性 往往通过update({back:true})方式进行调用,将history中的最后一条数据取出来，回退window.location.hash
  * VJ.view.Panel 通过设置方法，使用hammers.js，生成兼容PC,手机的触摸式自由滑动面板，注意请用div+_='type:"Panel"'方式定义，因为其是容器控件，其内部需要放置同级的div作为滑动面板的内容,使用其请务必设置```<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">```;
-	 * onnUp 支持向上滑动  
+	 * onUp 支持向上滑动  
 	 * onUpOut 支持向上滑出  
 	 * onDown 支持向下滑动  
 	 * onDownOut 支持向下滑出  

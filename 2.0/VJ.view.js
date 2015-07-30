@@ -28,8 +28,7 @@
 							_.bindEvent(_.input,k,v);
 							break;
 					}
-				},null,true);
-				__.onLoad(node);
+				},function(){__.onLoad(node);},true);
 			};
 			_.fill = function(){
 				return {text:_.input.val(),value:_.input.val()};
@@ -613,6 +612,50 @@
 					switch(k.toLowerCase()){
 						case 'value':							
 							_.node.html(V.format(__.content,v));
+							break;
+					}
+				});
+				return data;
+			};
+		};
+		W.History = function(path,vm){
+			var _ = this,__ ={};
+			{
+				V.inherit.apply(_,[W.Control,[path || '<span style="display:none;"></span>',vm || {}]]);
+				__.onLoad = _.onLoad;
+				__.render = _.render;
+			}
+			_.fill = function(){
+				return {hash:window.location.hash};
+			};
+			_.onLoad = function(node){
+				V.forC(_.events,function(k,v){
+					switch(k.toLowerCase()){
+						case 'change':
+							$(window).bind('hashchange', function (e) {
+								_.call('change');
+							});
+							break;
+					}
+				},function(){__.onLoad(node);});
+			};
+			_.render = function(data){
+				if(data){
+					delete data.visible;
+					delete data.invisible;
+				}
+				data = __.render(data);
+				V.forC(data,function(k,v){
+					switch(k.toLowerCase()){
+						case 'add':
+							if(!_.get().history){_.get().history = [];}
+							_.get().history.push(window.location.hash);
+							window.location.hash = v;
+							break;
+						case 'back':
+							if(_.get().history && _.get().history.length>0 && v){
+								window.location.hash = _.get().history.pop();
+							}
 							break;
 					}
 				});

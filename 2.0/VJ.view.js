@@ -667,7 +667,7 @@
 		W.Panel = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<div style="background:blue;width:50px;height:50px;"></div>',vm || {}]]);
+				V.inherit.apply(_,[W.Control,[path || '<div></div>',vm || {}]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
 				__.hasRender = false;
@@ -692,10 +692,10 @@
 				};
 			}
 			//继承以方便继承类覆盖
-			_.onRight = function(ev){__.am({tx:ev.deltaX,ty:0})};
-			_.onLeft = function(ev){__.am({tx:ev.deltaX,ty:0})};
-			_.onUp = function(ev){_.am({ty:ev.deltaY,tx:0});};
-			_.onDown = function(ev){_.am({ty:ev.deltaY,tx:0});};
+			_.onRight = function(ev){if(ev.distance <_.node.offset().width/2) _.am({tx:ev.deltaX,ty:0})};
+			_.onLeft = function(ev){if(ev.distance <_.node.offset().width/2) _.am({tx:ev.deltaX,ty:0})};
+			_.onUp = function(ev){if(ev.distance < (_.node.height()/2)) _.am({ty:ev.deltaY,tx:0});};
+			_.onDown = function(ev){if(ev.distance <_.node.offset().height/2) _.am({ty:ev.deltaY,tx:0});};
 			_.onScale = function(ev){_.am({scale:ev.scale});};
 			_.onRotate = function(ev){_.am({angle:ev.angle,scale:__.pinch?ev.scale:1});};
 			_.onLoad = function(node){

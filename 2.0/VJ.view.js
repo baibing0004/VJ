@@ -432,6 +432,9 @@
 			_.onLoad = function(node){				
 				V.forC(_.events,function(k,v){
 					switch(k){
+						case 'change':
+							_.params.onSlideChangeEnd = function(){_.call('change');};
+							break;
 						default:
 							_.bindEvent(node,k,v);
 							break;
@@ -454,6 +457,11 @@
 				_.params.simulateTouch = true;
 				V.forC(data,function(k,v){				
 					switch(k.toLowerCase()){
+						case 'visible':
+							if(v && _.swiper){
+								_.swiper.onResize();
+							}
+							break;
 						case 'direction':
 							needRB = true;
 							_.params.direction = v;
@@ -694,7 +702,7 @@
 			//继承以方便继承类覆盖
 			_.onRight = function(ev){if(ev.distance <_.node.offset().width/2) _.am({tx:ev.deltaX,ty:0})};
 			_.onLeft = function(ev){if(ev.distance <_.node.offset().width/2) _.am({tx:ev.deltaX,ty:0})};
-			_.onUp = function(ev){if(ev.distance < (_.node.height()/2)) _.am({ty:ev.deltaY,tx:0});};
+			_.onUp = function(ev){if(ev.distance <_.node.height()/2) _.am({ty:ev.deltaY,tx:0});};
 			_.onDown = function(ev){if(ev.distance <_.node.offset().height/2) _.am({ty:ev.deltaY,tx:0});};
 			_.onScale = function(ev){_.am({scale:ev.scale});};
 			_.onRotate = function(ev){_.am({angle:ev.angle,scale:__.pinch?ev.scale:1});};

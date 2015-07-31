@@ -180,7 +180,7 @@
 							if(value){_.node.removeAttr('disabled');}else{_.node.attr('disabled','disabled');}
 							break;
 						case 'invisible':
-							if('true'.eq(value)){
+							if(value){
 								_.node.children().show();
 							} else {
 								_.node.children().hide();

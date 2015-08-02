@@ -700,10 +700,10 @@
 				};
 			}
 			//继承以方便继承类覆盖
-			_.onRight = function(ev){if(ev.distance <_.node.offset().width/2) _.am({tx:ev.deltaX,ty:0})};
-			_.onLeft = function(ev){if(ev.distance <_.node.offset().width/2) _.am({tx:ev.deltaX,ty:0})};
-			_.onUp = function(ev){if(ev.distance <_.node.height()/2) _.am({ty:ev.deltaY,tx:0});};
-			_.onDown = function(ev){if(ev.distance <_.node.offset().height/2) _.am({ty:ev.deltaY,tx:0});};
+			_.onRight = function(ev){_.am({tx:ev.deltaX,ty:0})};
+			_.onLeft = function(ev){_.am({tx:ev.deltaX,ty:0})};
+			_.onUp = function(ev){_.am({ty:ev.deltaY,tx:0});};
+			_.onDown = function(ev){_.am({ty:ev.deltaY,tx:0});};
 			_.onScale = function(ev){_.am({scale:ev.scale});};
 			_.onRotate = function(ev){_.am({angle:ev.angle,scale:__.pinch?ev.scale:1});};
 			_.onLoad = function(node){
@@ -763,7 +763,83 @@
 					}
 				},function(){
 					if(!__.hasRender){
-						__.hasRender = true;							
+						__.hasRender = true;
+						//当物理控件的相关事务返回真时，启动提前终止的动画操作
+						__.finalMove = false;
+						__.finalAnimate = function(){
+							V.once(function(){
+								__.transform = V.merge(__.transform,{tx:0,ty:0,scale:1,angle:0,rx:0,ry:0,rz:0});
+								__.eventname = '';
+								switch(__.lastAction){
+									case 'left':										
+										if(__.leftout){
+											__.transform.tx = screen.width*-1;
+										}
+										break;	
+									case 'right':
+										if(__.rightout){
+											__.transform.tx = screen.width;														
+										}
+										break;										
+									case 'up':										
+										if(__.upout){
+											__.transform.ty = screen.height*-1;
+										}
+										break;										
+									case 'down':										
+										if(__.downout){
+											__.transform.ty = screen.height;
+										}
+										break;
+								}
+								var value = V.format('translate3d({tx}px,{ty}px,0px) scale({scale},{scale}) rotate3d({rx},{ry},{rz},{angle}deg)',__.transform);										
+								_.node.addClass('animate').css('webkitTransform',value).css('mozTransform',value).css('transform',value);
+								__.finalMove = false;
+								switch(__.lastAction){
+									case 'left':		
+										if(__.leftout){
+											_.node.hide();
+											_.call('leftout');
+										}
+										else
+											_.call('left');
+										break;	
+									case 'right':		
+										if(__.rightout){
+											_.node.hide();
+											_.call('rightout');
+										}
+										else
+											_.call('right');
+										break;										
+									case 'up':
+										if(__.upout){
+											_.node.hide();
+											_.call('upout');
+										}
+										else
+											_.call('up');
+										break;										
+									case 'down':		
+										if(__.downout){
+											_.node.hide();
+											_.call('downout');
+										}
+										else
+											_.call('down');
+										break;
+									case 'scale':										
+										_.call('scale',{scale:__.scale});
+										break;							
+									case 'rotate':
+										if(__.pinch){
+											if(__.scale != 1) {_.call('scale',{scale:__.scale});}
+										}
+										_.call('rotate',{angle:__.angle});
+										break;
+								}
+							}, 100);
+						};
 						__.mc = new Hammer.Manager(_.node[0]);
 						__.mc.add(new Hammer.Pan({ threshold: 0, pointers: 0 }));
 						//__.mc.add(new Hammer.Swipe()).recognizeWith(__.mc.get('pan'));
@@ -772,139 +848,70 @@
 						__.mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
 						//__.mc.add(new Hammer.Tap());
 						__.mc.on(V.format("{hor} {vol} {pinorrot} {doubleclick}",{hor:__.hor?'panleft panright':'',vol:__.vol?'panup pandown':'',doubleclick:__.dblclick?'doubletap':'',pinorrot:__.rotate?'rotatestart rotatemove rotateend':(__.pinch?'pinchstart pinchmove pinchend':'')}), function(ev) {
-							switch(ev.type){
-								case 'panright':
-									if(!__.rotating){
+							if(!__.finalMove){
+								switch(ev.type){
+									case 'panright':
+										if(!__.rotating){
+											_.node.removeClass('animate');
+											__.lastAction = 'right';
+											__.finalMove = false ||	_.onRight(ev);
+										}
+										break;
+									case 'panleft':									
+										if(!__.rotating){
+											_.node.removeClass('animate');
+											__.lastAction = 'left';											
+											__.finalMove = false ||	_.onLeft(ev);
+										}
+										break;
+									case 'panup':																
+										if(!__.rotating){
+											_.node.removeClass('animate');
+											__.lastAction = 'up';							
+											__.finalMove = false ||	_.onUp(ev);
+										}
+										break;
+									case 'pandown':																							
+										if(!__.rotating){
+											_.node.removeClass('animate');
+											__.lastAction = 'down';			
+											__.finalMove = false ||	_.onDown(ev);
+										}
+										break;
+									case 'pinchstart':
+										__.rotating = true;
+									case 'pinchmove':
 										_.node.removeClass('animate');
-										_.onRight(ev);
-										__.lastAction = 'right';
-									}
-									break;
-								case 'panleft':									
-									if(!__.rotating){
+										__.finalMove = false ||	_.onScale(ev);
+										break;
+									case 'pinchin':
+									case 'pinchout':
+										__.lastAction = 'scale';
+										__.scale = ev.scale;
+										break;
+									case 'pinchend':									
+										__.rotating = false;
+										break;
+									case 'rotatestart':
+										__.rotating = true;
+									case 'rotatemove':
+										//完成一个panel基础版本 其事件类应该可以由子类触发 完成一个hswiperpanel版本 完成一个上下移动的SPA初级模块
 										_.node.removeClass('animate');
-										_.onLeft(ev);
-										__.lastAction = 'left';
-									}
-									break;
-								case 'panup':																
-									if(!__.rotating){
-										_.node.removeClass('animate');
-										_.onUp(ev);
-										__.lastAction = 'up';
-									}
-									break;
-								case 'pandown':																							
-									if(!__.rotating){
-										_.node.removeClass('animate');
-										_.onDown(ev);
-										__.lastAction = 'down';
-									}
-									break;
-								case 'pinchstart':
-									__.rotating = true;
-								case 'pinchmove':
-									_.node.removeClass('animate');
-									_.onScale(ev);
-									break;
-								case 'pinchin':
-								case 'pinchout':
-									__.lastAction = 'scale';
-									__.scale = ev.scale;
-									break;																										
-									__.lastAction = 'out';
-									__.scale = ev.scale;
-									break;
-								case 'pinchend':									
-									__.rotating = false;
-									break;
-								case 'rotatestart':
-									__.rotating = true;
-								case 'rotatemove':
-									_.node.removeClass('animate');
-									_.onRotate(ev);
-									__.lastAction = 'rotate';
-									__.angle = ev.angle;
-									if(__.pinch){__.scale = ev.scale};
-									break;
-								case 'rotateend':										
-									__.rotating = false;
-									break;
+										__.lastAction = 'rotate';
+										__.angle = ev.angle;
+										__.finalMove = false || _.onRotate(ev);
+										if(__.pinch){__.scale = ev.scale};
+										break;
+									case 'rotateend':										
+										__.rotating = false;
+										break;
+								}
+								if(__.finalMove){__.finalAnimate();}
 							}
 						});
 						__.mc.on("hammer.input", function(ev) {
-							if(ev.isFinal) {
-								V.once(function(){
-									__.transform = V.merge(__.transform,{tx:0,ty:0,scale:1,angle:0,rx:0,ry:0,rz:0});
-									__.eventname = '';
-									switch(__.lastAction){
-										case 'left':										
-											if(__.leftout){
-												__.transform.tx = screen.width*-1;
-											}
-											break;	
-										case 'right':
-											if(__.rightout){
-												__.transform.tx = screen.width;														
-											}
-											break;										
-										case 'up':										
-											if(__.upout){
-												__.transform.ty = screen.height*-1;
-											}
-											break;										
-										case 'down':										
-											if(__.downout){
-												__.transform.ty = screen.height;
-											}
-											break;
-									}
-									var value = V.format('translate3d({tx}px,{ty}px,0px) scale({scale},{scale}) rotate3d({rx},{ry},{rz},{angle}deg)',__.transform);										
-									_.node.addClass('animate').css('webkitTransform',value).css('mozTransform',value).css('transform',value);
-									switch(__.lastAction){
-										case 'left':		
-											if(__.leftout){
-												_.node.hide();
-												_.call('leftout');
-											}
-											else
-												_.call('left');
-											break;	
-										case 'right':		
-											if(__.rightout){
-												_.node.hide();
-												_.call('rightout');
-											}
-											else
-												_.call('right');
-											break;										
-										case 'up':
-											if(__.upout){
-												_.node.hide();
-												_.call('upout');
-											}
-											else
-												_.call('up');
-											break;										
-										case 'down':		
-											if(__.downout){
-												_.node.hide();
-												_.call('downout');
-											}
-											else
-												_.call('down');
-											break;
-										case 'scale':										
-											_.call('scale',{scale:__.scale});
-											break;							
-										case 'rotate':
-											if(__.pinch){
-												if(__.scale != 1) {_.call('scale',{scale:__.scale});}
-											}
-											_.call('rotate',{angle:__.angle});
-											break;
-									}
-								}, 100);							
+							if(ev.isFinal && !__.finalMove) {
+								__.finalAnimate();
 							}
 						});
 						/*
@@ -914,6 +921,35 @@
 					}
 				});
 				return data;
+			};
+		};
+		//验证控件可控地允许在3/1 4/1的情况下设定控件完成移动后直接完成回复动画 未支持Panel内超出部分Panel的滑动
+		W.RangePanel = function(panel,path,vm,rangpercent,outback){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[panel,[path,vm]]);
+				__.onUp = _.onUp;
+				__.onRight = _.onRight;
+				__.onDown = _.onDown;
+				__.onLeft = _.onLeft;
+				__.rp = 0.5 || rangpercent;
+				__.or = false || outback;
+			}
+			_.onUp = function(ev){
+				if(ev.distance < _.node.height()* __.rp) __.onUp(ev);
+				else return __.or;
+			};
+			_.onDown = function(ev){
+				if(ev.distance < _.node.height()* __.rp) __.onDown(ev);
+				else return __.or;
+			};				
+			_.onLeft = function(ev){
+				if(ev.distance < _.node.width()* __.rp) __.onLeft(ev);
+				else return __.or;
+			};
+			_.onRight = function(ev){
+				if(ev.distance < _.node.width()* __.rp) __.onRight(ev);
+				else return __.or;
 			};
 		};
 	}

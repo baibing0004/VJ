@@ -24,6 +24,10 @@
 			fill:{type:'.FillControl'},
 			history:{type:'.History'},
 			panel:{type:'.Panel',path:'hammer.min.js'},
+			rangepanel:{type:'.RangePanel',params:[
+				{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
+				'',{},0.2,true
+			]},
 			
 			//动画			
 			bounce:{type:'VJ.view.CssAction',mode:'static',path:"animate.min.css",params:['bounce .4s linear']},

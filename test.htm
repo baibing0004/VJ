@@ -343,6 +343,7 @@
 	</script>
 	<script type="text/javascript">
 		if(true){
+			//验证子控件是可行的
 			var APanel = function(panel,path,vm){
 				var _ = this,__ = {};
 				{
@@ -360,6 +361,8 @@
 					}]]);					
 				}
 			};
+			
+			//CPanel todo 计算所有children的位置 将其大小都改为100%
 			//识别 上下左右滑动及其动画，同时支持滑入滑出，支持点击或者tap，支持加载动画
 			//data:{values:[]}
 			//show left/right/up/down/fade
@@ -448,27 +451,36 @@
 									console.log(data.value);
 								}
 							},
+							panel:{
+								data:{value:0,visible:true},
+								onLoad:function(data,self){									
+									//self.update({show:'fadeInRight'});
+								},
+								onClick:function(data,self){
+									console.log(data);
+								},
+								onRotate1:function(data,self){
+									console.log(1);
+								},
+								onScale1:function(data,self){
+								},
+								onLeft:function(){console.log('up');},
+								onRight:function(){console.log('down');}
+							},
 							panel2:{
 								data:{value:0,visible:true},
 								onLoad:function(data,self){									
-									self.update({show:'fadeInRight'});
+									//self.update({show:'fadeInRight'});
 								},
 								onClick:function(data,self){
 									console.log(data);
 								},								
-								onLeft1:function(data,self){
+								onUp:function(data,self){
 									console.log('left');
 								},
-								onRight1:function(data,self){
-									this.txt.update({text:'rightout'});
-								},
-								onRotate:function(data,self){
-									console.log(1);
-								},
-								onScale:function(data,self){
-								},
-								onUp:function(){console.log('up');},
-								onDown1:function(){console.log('down');}
+								onDown:function(data,self){
+									//this.txt.update({text:'rightout'});
+								}
 							},
 							fill:{
 								data:{},
@@ -549,46 +561,7 @@
 					}
 				}
 			}));			
-		}
-		if(false){
-			$(function(){
-			/*
-				var attrs = $('input')[0].attributes;
-				var i = attrs.length;
-				VJ.whileC(function(){i--;return i>=0?{key:attrs[i],val:attrs[i].value}:null},function(v){console.log(v);},function(){},true);
-				
-				var a = function(){
-					var _ = this;
-					_.abc = function(){
-						console.log(_.b);
-					}
-				};
-				var s = {
-					b:22
-				};
-				VJ.inherit.apply(s,[a,[]]);
-				console.log(s);
-				s.abc();
-				//window.onbeforeunload  = function(){console.log('退出事件');};
-				$('#aaa').load("content.html",function(){
-					//$(this).after($(this).html()).after($(this).html());
-					var h = $(this)[0].innerHTML;
-					console.log($(this)[0]);
-					$(this).after(h).after(h).remove();
-					//var s = $(this).children();
-					//$(this).after(s.clone()).after(s.clone());
-				});*/
-				//console.log(VJ.encHtml('<input/>'));
-				var i = 0;
-				var nodes = $('[_]');
-				//测试结论对于自定义标签 html标准无法识别div类（section等等也算）的标签内容 故转换自定义标签为 div 设置_='type:"标签类型"'
-				VJ.whileC(function(){return i<nodes.length?nodes[i++]:null;},function(v){			
-					console.log(i);
-					console.log(v);
-					console.log(v[0].innerHTML+"::::"+v.html());
-				});
-			});
-		}
+		}		
 	</script>	
 </head>
 <body>
@@ -611,9 +584,8 @@
 		<p><checklist id="cl" _="name:'bbbb'" ></checklist></p>
 		<p>
 		<!--div id="panel" style="width:200px;height:200px;"_="type:'swiperpanel'"><div>1</div><div>2</div><div>3</div></div-->
-		<div id="panel" style="width:200px;height:200px;"_="type:'apanel'"><div>1</div><div>2</div><div>3</div></div>
-		</p>
-		<div id="panel2" style="width:200px;height:200px;"_="type:'panel'"><div>1</div><div>2</div><div>3</div></div>
+		<div id="panel" style="width:400px;height:400px;background:yellow;"_="type:'rangepanel'">
+		<div id="panel2" style="width:300px;height:300px;background:blue;"_="type:'rangepanel'"><div style="width:100%;height:100%;background:green;overflow: scroll;"><div style="width:100%;height:500px;background:red;">A</div></div></div></div>
 		</p>
 		<div id='fill' _="type:'fill'">
 			version:{text}<br/>

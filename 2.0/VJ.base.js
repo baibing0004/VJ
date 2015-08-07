@@ -248,7 +248,7 @@ VJ = window.top.VJ;
 			}
 			return eval(ret+'))');
 		};
-		//用于数组，对象的深度合并功能。moveIndex属性用于设定移动至的位置，mergeIndex只用于合并数组中的第几个对象 需要进入reference
+		//用于数组，对象的深度合并功能。moveIndex属性用于设定移动至的位置，mergeIndex只用于合并数组中的第几个对象 需要进入reference 当为true时会发生状态的改变
 		//例如
 		//var ret = V.merge({a:22,c:23},{a:34,b:33},{d:"2334",f:true,g:function(){alert("hahaha");}},{h:[1,2,3,4]});
 		//var ret = V.merge({a:[{a:2},{b:3}]},{a:[{moveIndex:3,j:3},{k:4}],b:25});
@@ -315,10 +315,17 @@ VJ = window.top.VJ;
 			};
 			var argu = arguments;
 			if (argu.length < 2) { return argu[0] ? argu[0] : {} };
-			var _ = {};
-			for (var i2 = 0; i2 < argu.length; i2++)
-				_ = _merge(_, argu[i2]);
-			return _;
+			if(argu.length>0 && true == argu[argu.length-1]){
+				var _ = argu[0];
+				for (var i2 = 1; i2 < argu.length; i2++)
+					_ = _merge(_, argu[i2]);
+				return _;
+			}else{
+				var _ = {};
+				for (var i2 = 0; i2 < argu.length; i2++)
+					_ = _merge(_, argu[i2]);
+				return _;
+			}
 		};		
 	}
 	//自动判断获取userAgent状态

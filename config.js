@@ -24,10 +24,12 @@
 			fill:{type:'.FillControl'},
 			history:{type:'.History'},
 			panel:{type:'.Panel',path:'hammer.min.js'},
+			rangepanel:{type:'.Panel',path:'hammer.min.js',params:['',{},0.5,true]},
+			/*作为继承父类的例子
 			rangepanel:{type:'.RangePanel',params:[
 				{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
-				'',{},0.2,true
-			]},
+				'',{},0.5,false
+			]},*/
 			
 			//动画			
 			bounce:{type:'VJ.view.CssAction',mode:'static',path:"animate.min.css",params:['bounce .4s linear']},

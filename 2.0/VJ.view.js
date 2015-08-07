@@ -811,7 +811,7 @@
 						//事件的触发应该有阀值，在超出阀值时触发事件 并引发或者不引发回滚						
 						__.mc.add(new Hammer.Pan({ threshold: 0, pointers: 0 }));						
 						//__.mc.add(new Hammer.Swipe()).recognizeWith(__.mc.get('pan'));						
-						if(__.status.rotate){
+						if(__.status.rotate || __.status.pinch){
 							__.mc.add(new Hammer.Rotate({threshold:0})).recognizeWith(__.mc.get('pan'));
 						} 
 						if(__.status.pinch){
@@ -829,8 +829,10 @@
 							function(ev) {
 								//开始就有一个panelid 判断发生的target是否有panelid 如果有panelid且不是自己则不处理这个事情，否则处理这个事情（解决同向的滚动问题）
 								//修改为只要其定义的事件集合不包含我们的事件集合就可以处理
-								if(ev.target.hasAttribute('panelid') && ev.target.getAttribute('panelid')!=__.status.panelid && ev.target.hasAttribute('panelaction') && ''!=ev.target.getAttribute('panelaction')){
-									var action = ev.target.getAttribute('panelaction').split(',');
+								var parent = ev.target.hasAttribute('panelid')?$(ev.target):$(ev.target).parents('[panelid]:first');
+								parent = parent.length>0?parent:null;
+								if(parent && parent.attr('panelid') !=__.status.panelid && parent.attr('panelaction') !=''){
+									var action = parent.attr('panelaction').split(',');
 									switch(ev.type){
 										case 'panright':
 										case 'panleft':
@@ -950,16 +952,16 @@
 			
 			//以方便继承类覆盖并执行动画
 			_.onRight = function(ev,e){
-				if(ev.distance < _.node.width()* e.limit) _.am({tx:(e.right||e.rightout)?ev.deltaX:Math.max(0,ev.deltaX),ty:0});
+				if(ev.distance < _.node.width()* e.limit) _.am({tx:(e.right||e.rightout)?ev.deltaX:Math.min(0,ev.deltaX),ty:0});
 				else {e.callevent.value = true;return e.limitBack;}};
 			_.onLeft = function(ev,e){
-				if(ev.distance < _.node.width()* e.limit) _.am({tx:(e.left||e.leftout)?ev.deltaX:Math.min(0,ev.deltaX),ty:0});
+				if(ev.distance < _.node.width()* e.limit) _.am({tx:(e.left||e.leftout)?ev.deltaX:Math.max(0,ev.deltaX),ty:0});
 				else {e.callevent.value = true;return e.limitBack;}};
 			_.onUp = function(ev,e){
 				if(ev.distance < _.node.height()* e.limit) _.am({ty:(e.up||e.upout)?ev.deltaY:Math.max(0,ev.deltaY),tx:0});
 				else {e.callevent.value = true;return e.limitBack;}};
 			_.onDown = function(ev,e){				
-				if(ev.distance < _.node.height()* e.limit) _.am({ty:(e.up||e.upout)?ev.deltaY:Math.min(0,ev.deltaY),tx:0});
+				if(ev.distance < _.node.height()* e.limit) _.am({ty:(e.down||e.downout)?ev.deltaY:Math.min(0,ev.deltaY),tx:0});
 				else {e.callevent.value = true;return e.limitBack;}};
 			_.onScale = function(ev,e){
 				if(Math.abs(ev.scale-1)<e.limit) _.am({scale:ev.scale});
@@ -1015,6 +1017,7 @@
 						break;
 				}
 			};
+			//最后触发的事件
 			_.onFinal = function(e){	
 				switch(e.lastAction){
 					case 'left':		

@@ -802,6 +802,7 @@
 					}
 				},function(){
 					if(!__.hasRender){
+						__.document = $(document);
 						__.hasRender = true;
 						//当物理控件的相关事务返回真时，启动提前终止的动画操作
 						__.finalMove = false;
@@ -821,9 +822,9 @@
 							__.mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
 						}
 						//__.mc.add(new Hammer.Tap());
-						__.mc.on(V.format("{vol} {hor} {up} {down} {pinorrot} {doubleclick}",{
-								hor:(__.status.hor?'panleft panright':''),
-								vol:(__.status.vol?'panup pandown':''),
+						__.mc.on(V.format("panleft panright panup pandown {pinorrot} {doubleclick}",{
+								//hor:(__.status.hor?'panleft panright':''),
+								//vol:(__.status.vol?'panup pandown':''),
 								pinorrot:__.status.rotate?'rotatestart rotatemove rotateend':(__.status.pinch?'pinchstart pinchmove pinchend':''),
 								doubleclick:__.status.dblclick?'doubletap':''}),
 							function(ev) {
@@ -862,31 +863,41 @@
 								if(!__.finalMove){
 									switch(ev.type){
 										case 'panright':
-											if(!__.rotating && !__.finalMove){
+											if(__.status.hor && !__.rotating && !__.finalMove){
 												_.node.removeClass('animate');
 												__.status.lastAction = 'right';
 												__.finalMove = false ||	_.onRight(ev,__.status);
+											} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
+												__.document.scrollLeft(Math.max(__.document.scrollLeft()-ev.distance,0));
+												console.log(__.document.scrollLeft()+ev.distance);
 											}
+											console.log(document.body.clientWidth +':'+document.body.scrollWidth);
 											break;
 										case 'panleft':									
-											if(!__.rotating && !__.finalMove){
+											if(__.status.hor && !__.rotating && !__.finalMove){
 												_.node.removeClass('animate');
 												__.status.lastAction = 'left';											
 												__.finalMove = false ||	_.onLeft(ev,__.status);
+											} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
+												__.document.scrollLeft(Math.min(__.document.scrollLeft()+ev.distance,document.body.scrollWidth - document.body.clientWidth));
 											}
 											break;
 										case 'panup':																
-											if(!__.rotating && !__.finalMove){
+											if(__.status.vol && !__.rotating && !__.finalMove){
 												_.node.removeClass('animate');
 												__.status.lastAction = 'up';							
 												__.finalMove = false ||	_.onUp(ev,__.status);
+											} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
+												__.document.scrollTop(Math.max(__.document.scrollTop()-ev.distance,0));
 											}
 											break;
 										case 'pandown':
-											if(!__.rotating && !__.finalMove){
+											if(__.status.vol && !__.rotating && !__.finalMove){
 												_.node.removeClass('animate');
 												__.status.lastAction = 'down';			
 												__.finalMove = false ||	_.onDown(ev,__.status);
+											} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
+												__.document.scrollTop(Math.min(__.document.scrollTop()+ev.distance,document.body.scrollHeight - window.screen.availHeight));
 											}
 											break;
 										case 'pinchstart':

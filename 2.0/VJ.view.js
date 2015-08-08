@@ -868,10 +868,8 @@
 												__.status.lastAction = 'right';
 												__.finalMove = false ||	_.onRight(ev,__.status);
 											} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
-												__.document.scrollLeft(Math.max(__.document.scrollLeft()-ev.distance,0));
-												console.log(__.document.scrollLeft()+ev.distance);
+												__.document.scrollLeft(Math.max(__.document.scrollLeft()-ev.distance *0.1,0));
 											}
-											console.log(document.body.clientWidth +':'+document.body.scrollWidth);
 											break;
 										case 'panleft':									
 											if(__.status.hor && !__.rotating && !__.finalMove){
@@ -879,7 +877,7 @@
 												__.status.lastAction = 'left';											
 												__.finalMove = false ||	_.onLeft(ev,__.status);
 											} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
-												__.document.scrollLeft(Math.min(__.document.scrollLeft()+ev.distance,document.body.scrollWidth - document.body.clientWidth));
+												__.document.scrollLeft(Math.min(__.document.scrollLeft()+ev.distance*0.1,document.body.scrollWidth - document.body.clientWidth));
 											}
 											break;
 										case 'panup':																
@@ -888,7 +886,9 @@
 												__.status.lastAction = 'up';							
 												__.finalMove = false ||	_.onUp(ev,__.status);
 											} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
-												__.document.scrollTop(Math.max(__.document.scrollTop()-ev.distance,0));
+												var height = __.document.scrollTop();
+												__.document.scrollTop(height+ev.distance*0.1);
+												__.pandown = document.body.scrollHeight;
 											}
 											break;
 										case 'pandown':
@@ -897,7 +897,10 @@
 												__.status.lastAction = 'down';			
 												__.finalMove = false ||	_.onDown(ev,__.status);
 											} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
-												__.document.scrollTop(Math.min(__.document.scrollTop()+ev.distance,document.body.scrollHeight - window.screen.availHeight));
+												var height = __.document.scrollTop();
+												__.pandown = V.getValue(__.pandown,document.body.scrollHeight);
+												__.pandown = Math.min(height-ev.distance*0.4,__.pandown);
+												__.document.scrollTop(__.pandown);
 											}
 											break;
 										case 'pinchstart':

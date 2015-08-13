@@ -906,14 +906,13 @@ var classname = function(构造参数){
     * visible 设置控件是否可视
     * addClass 设置控件添加样式
     * removeClass 设置控件删除样式
-    
-            VJ.view.TextBox 设置一个支持标题和text输入框的对象，绑定jQuery的对应事件，其属性有
-             * text 输入框的内容
-             * name 输入框的name
-             * key 输入框的标题
-             * size 输入框的大小限制
-             * onHover 将jQuery hover事件改为onHover事件
-             * 例如 ```<textbox id="" _></textbox>```
+ * VJ.view.TextBox 设置一个支持标题和text输入框的对象，绑定jQuery的对应事件，其属性有
+	 * text 输入框的内容
+	 * name 输入框的name
+	 * key 输入框的标题
+	 * size 输入框的大小限制
+	 * onHover 将jQuery hover事件改为onHover事件
+	 * 例如 ```<textbox id="" _></textbox>```
  * VJ.view.RadioBox 继承自TextBox 并新增
      * checked 设置/获取节点是否已经设置为checked
      * 例如 ```<radiobox name="ra1" id="" _><radiobox>```
@@ -982,8 +981,8 @@ var classname = function(构造参数){
 	 * onScale(data(scale),self) 双指改变大小事件
 	 * onRotate(data(angle),self)双指旋转事件
 	 * show('animatename') 先显示，然后运行动画  
-	 * hide('animatename') 先运行动画 然后隐藏
-	```如下为物理控件方法```
+	 * hide('animatename') 先运行动画 然后隐藏  
+	---如下为物理控件方法  
 	 * am(node,{tx: 0, ty: 0,scale: 1,angle: 0,rx: 0,ry: 0,rz: 0}) (物理控件可继承) 更改node的位置和位移
 	 * onUp(ev,e) 完成向上运行时的动画 ev hammers手势对象 e panel内部status对象标示控件当前的运行位置和订阅事件的类型等等    
 	 * onDown 支持向下滑动时的动画  ev hammers手势对象 e panel内部status对象标示控件当前的运行位置和订阅事件的类型等等     
@@ -1008,7 +1007,7 @@ var classname = function(构造参数){
 	 * value 重置内部控件填充的json对象，其解析效果由控件的onValue方法实现
 	 * values 重置内部控件填充的json对象数组，其解析效果由控件的onValue方法实现
 	 * addvalues 添加内部控件填充的json对象数组，其解析效果由控件的onValue方法实现
-	 ```如下为物理控件方法```
+	---如下为物理控件方法：
 	 * onValue(v,func) 根据传入的v值，即逻辑控件根据value,values,addvalues传入的json对象数组，进行处理，处理后调用func('string'/[{},{}])的方式让Panel控件添加新增的内容其中string是html内容，json数组则可以是新增控件的逻辑控件数组。  
 ####2.1 todo panel 容器类对象的控件信息重新绑定，逻辑控件的data标准定义基本上确定可以有width,height,values,value,visible,invisible,key
  

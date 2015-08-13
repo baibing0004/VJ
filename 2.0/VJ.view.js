@@ -834,8 +834,55 @@
 							function(ev) {
 								//开始就有一个panelid 判断发生的target是否有panelid 如果有panelid且不是自己则不处理这个事情，否则处理这个事情（解决同向的滚动问题）
 								//修改为只要其定义的事件集合不包含我们的事件集合就可以处理
+								//需要过滤掉panelid相等但是不是本身的
 								var parent = ev.target.hasAttribute('panelid')?$(ev.target):$(ev.target).parents('[panelid]:first');
 								parent = parent.length>0?parent:null;
+								if(parent && parent.attr('panelid') ==__.status.panelid){							
+									switch(ev.type){
+										case 'panright':
+										case 'panleft':
+										case 'swiperight':
+										case 'swipeleft':
+											if($.inArray('hor',__.status.panelaction)<0) {
+												parent = $(parent).parents('[panelid]:first');
+												parent = parent.length>0?parent:null;
+											};
+											break;
+										case 'panup':
+										case 'pandown':
+										case 'swipeup':
+										case 'swipedown':
+											if($.inArray('vol',__.status.panelaction)<0) {
+												parent = $(parent).parents('[panelid]:first');
+												parent = parent.length>0?parent:null;
+											};
+											break;
+										case 'pinchstart':
+										case 'pinchmove':
+										case 'pinchin':
+										case 'pinchout':
+										case 'pinchend':
+											if($.inArray('pinch',__.status.panelaction)<0) {
+												parent = $(parent).parents('[panelid]:first');
+												parent = parent.length>0?parent:null;
+											};
+											break;
+										case 'rotatestart':
+										case 'rotatemove':
+										case 'rotateend':							
+											if($.inArray('rotate',__.status.panelaction)<0) {
+												parent = $(parent).parents('[panelid]:first');
+												parent = parent.length>0?parent:null;
+											};
+											break;
+										case 'doubletap':								
+											if($.inArray('dblclick',__.status.panelaction)<0) {
+												parent = $(parent).parents('[panelid]:first');
+												parent = parent.length>0?parent:null;
+											};
+											break;
+									}
+								}
 								if(parent && parent.attr('panelid') !=__.status.panelid && parent.attr('panelaction') !=''){
 									var action = parent.attr('panelaction').split(',');
 									switch(ev.type){

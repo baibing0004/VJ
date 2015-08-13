@@ -970,19 +970,46 @@ var classname = function(构造参数){
 	 * add string data属性 往往通过update({add:'key'})方式进行调用,切换当前的window.location.hash为新的hash，并记录进入history数组
 	 * back true data属性 往往通过update({back:true})方式进行调用,将history中的最后一条数据取出来，回退window.location.hash
  * VJ.view.Panel 通过设置方法，使用hammers.js，生成兼容PC,手机的触摸式自由滑动面板，注意请用div+_='type:"Panel"'方式定义，因为其是容器控件，其内部需要放置同级的div作为滑动面板的内容,使用其请务必设置```<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">```;
-	 * onUp 支持向上滑动  
+	 * onUp 支持向上滑动后还原  
 	 * onUpOut 支持向上滑出  
-	 * onDown 支持向下滑动  
+	 * onDown 支持向下滑动后还原  
 	 * onDownOut 支持向下滑出  
-	 * onLeft 支持向左滑动  
+	 * onLeft 支持向左滑动后还原  
 	 * onLeftOut 支持向左滑出  
-	 * onRight 支持向右滑动  
+	 * onRight 支持向右滑动后还原  
 	 * onRightOut 支持向右滑出  
 	 * onDblClick 支持双击  
 	 * onScale(data(scale),self) 双指改变大小事件
 	 * onRotate(data(angle),self)双指旋转事件
 	 * show('animatename') 先显示，然后运行动画  
 	 * hide('animatename') 先运行动画 然后隐藏
+	```如下为物理控件方法```
+	 * am(node,{tx: 0, ty: 0,scale: 1,angle: 0,rx: 0,ry: 0,rz: 0}) (物理控件可继承) 更改node的位置和位移
+	 * onUp(ev,e) 完成向上运行时的动画 ev hammers手势对象 e panel内部status对象标示控件当前的运行位置和订阅事件的类型等等    
+	 * onDown 支持向下滑动时的动画  ev hammers手势对象 e panel内部status对象标示控件当前的运行位置和订阅事件的类型等等     
+	 * onLeft 支持向左滑动时的动画  ev hammers手势对象 e panel内部status对象标示控件当前的运行位置和订阅事件的类型等等    
+	 * onRight 支持向右滑动时的动画  ev hammers手势对象 e panel内部status对象标示控件当前的运行位置和订阅事件的类型等等     
+	 * onScale(data(scale),self) 双指改变大小动画  ev hammers手势对象 e panel内部status对象标示控件当前的运行位置和订阅事件的类型等等    
+	 * onRotate(data(angle),self)双指旋转事件动画  ev hammers手势对象 e panel内部status对象标示控件当前的运行位置和订阅事件的类型等等    
+	 * onBackAnimate(node,e) 最终执行动画并触发事件缓冲100毫秒发生 其中涉及到动画的还原和对e.finalMove=false的重置有300毫秒的包含，否则会发生闪动的Bug
+	 * onFinal(e) 根据e.lastAction 最终触发的事件
+ * VJ.view.PagePanel 继承VJ.view.Panel 重载其移动事件实现对内部放置的html节点实现自动填充Panel窗口，然后实现左右平移或者上下滑动翻页效果的功能，注意请用div+_='type:"PagePanel"'方式定义，因为其是容器控件，其内部需要放置同级的div作为滑动面板的内容,使用其请务必设置```<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">```;
+	 * width 外层控件的宽度，请务必设定 支持百分比
+	 * height 外层控件的高度，请务必设定 支持百分比
+	 * value 当前页面 
+	 * direction 'hor/vol'水平移动或者垂直移动
+	 * onChange 当前页面切换操作 
+ * VJ.view.ScrollPanel 继承VJ.view.Panel 重载其移动事件实现对内部放置的html节点根据direction属性自动实现垂直或者水平大小，然后实现左右平移或者上下滑动拉伸和缓冲效果的功能，注意请用div+_='type:"ScrollPanel"'方式定义，因为其是容器控件，其内部需要放置同级的div作为滑动面板的内容,使用其请务必设置```<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">```; 
+ 	 * width 外层控件的宽度，请务必设定 支持百分比
+	 * height 外层控件的高度，请务必设定 支持百分比
+	 * direction 'hor/vol'水平移动或者垂直移动的移动panel
+	 * onReload 支持重载页面内容(刷新)
+	 * onNext 支持添加下一页内容(不刷新)
+	 * value 重置内部控件填充的json对象，其解析效果由控件的onValue方法实现
+	 * values 重置内部控件填充的json对象数组，其解析效果由控件的onValue方法实现
+	 * addvalues 添加内部控件填充的json对象数组，其解析效果由控件的onValue方法实现
+	 ```如下为物理控件方法```
+	 * onValue(v,func) 根据传入的v值，即逻辑控件根据value,values,addvalues传入的json对象数组，进行处理，处理后调用func('string'/[{},{}])的方式让Panel控件添加新增的内容其中string是html内容，json数组则可以是新增控件的逻辑控件数组。
 ####2.1 todo panel 容器类对象的控件信息重新绑定，逻辑控件的data标准定义基本上确定可以有width,height,values,value,visible,invisible,key
  
 

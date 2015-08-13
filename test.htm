@@ -539,7 +539,7 @@
 								}
 							},
 							txt:{
-								type:'textbox',
+								type1:'textbox',
 								data:{text:'hello world',visible:false,validate:{isNumber:'请输入数字'}},
 								onReady:function(data,self){
 									console.log('');
@@ -677,7 +677,7 @@
 									var __ = this;
 									VJ.once(function(){
 										console.log(__.txt);
-										__.txt.update({enable:true,visiable:true,text:'22233'});										
+										//__.txt.update({enable:true,visiable:true,text:'22233'});										
 									},2000);
 									this.his.update({add:'abc'});									
 									//this.his.update({add:'bcd'});
@@ -742,6 +742,7 @@
 	<form id='frmMain' Action="" _>
 		<span id="animationSandbox" style="display: block;" class="bounce animated"><h1 class="site__title mega">Animate.css</h1></span>
 		<ruby>汉字<rt>han zi</rt><rp>{}</rp></ruby>
+		<!--
 		<p><TextBox id="txt" _="key:'输入框:'"></TextBox></p>
 		<p><textbox id="txt2" _="key:'输入框2:'"></textbox></p>
 		<p><textbox id="txt3" _="key:'输入框:',value:'123'"></textbox></p>
@@ -752,7 +753,7 @@
 		<p><passwordbox id="pass" _="key:'密码框:'"></passwordbox></p>
 		<p><button id="but" _="key:'按钮'"></button>
 		<submit id="sub" _="key:'提交钮4'"></submit>
-		<reset _="key:'重置钮'"></reset></p>
+		<reset _="key:'重置钮'"></reset></p>-->
 		<box  _="key:'中心'" style="width:200px;height:50px;" class="abc"></box>
 		<p><radiolist id="rl" _="name:'aaaa'"></radiolist></p>
 		<p><checklist id="cl" _="name:'bbbb'" ></checklist></p>

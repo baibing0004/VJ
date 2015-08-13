@@ -1,5 +1,6 @@
 (function(V,$,W,M){
 	{
+		/*
 		W.TextBox = function(path,vm){
 			var _ = this,__ = {};
 			{
@@ -283,7 +284,7 @@
 				});
 				return data;
 			};
-		};
+		};*/
 		W.Box = function(path,vm){
 			var _ = this,__ = {};
 			{
@@ -421,6 +422,7 @@
 			};
 		};
 		//构建时需要swiper.js
+		/*
 		W.SwiperPanel = function(path,vm){
 			var _ = this,__ = {};
 			{
@@ -591,8 +593,7 @@
 				});
 				return data;
 			};
-		};
-		//todo panel 容器类对象的controls对象设置 bind方法设置
+		};*/
 		//todo file
 		W.FillControl = function(path,vm){
 			var _ = this,__ = {};
@@ -1228,14 +1229,12 @@
 				},true);
 			};
 			_.change = function(val,nofire,first){
-				//if(!_.panel.hasClass('animate')){
-					val = (''+val).toLowerCase();
-					var num = Math.ceil(__.distance/(_.hor?_.node.width():_.node.height()));
-					val=Math.max(0,Math.min(_.children.length-1,val=='true'?(_.get().value+num):(val == 'false'?(_.get().value-num):parseInt(val))));
-					_.index = val;
-					if(!nofire && val != parseInt(_.get().value)) {_.call('change',{value:val});}
-					else {_.onBackAnimate(_.panel,_.status,first);}
-				//}
+				val = (''+val).toLowerCase();
+				var num = Math.ceil(__.distance/(_.hor?_.node.width():_.node.height()));
+				val=Math.max(0,Math.min(_.children.length-1,val=='true'?(_.get().value+num):(val == 'false'?(_.get().value-num):parseInt(val))));
+				_.index = val;
+				if(!nofire && val != parseInt(_.get().value)) {_.call('change',{value:val});}
+				else {_.onBackAnimate(_.panel,_.status,first);}
 			};
 			_.onBackAnimate = function(node,e,first){
 				V.once(function(){

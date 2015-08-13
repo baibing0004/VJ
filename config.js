@@ -24,7 +24,13 @@
 			fill:{type:'.FillControl'},
 			history:{type:'.History'},
 			panel:{type:'.Panel',path:'hammer.min.js'},
-			rangepanel:{type:'.Panel',path:'hammer.min.js',params:['',{},0.5,true]},
+			rangepanel:{type:'.Panel',path:'hammer.min.js',params:['',{},0.4,true]},
+			pagepanel:{type:'.PagePanel',params:[
+				{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
+				'','',0.4,false]},
+			scrollpanel:{type:'.ScrollPanel',params:[
+				{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
+				'','',100,false]},
 			/*作为继承父类的例子
 			rangepanel:{type:'.RangePanel',params:[
 				{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},

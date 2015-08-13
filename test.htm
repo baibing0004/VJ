@@ -10,7 +10,7 @@
 	<script src="2.0/VJ.js" type="text/javascript"></script>
 	<script src="config.js" type="text/javascript"></script>
 	<script src="ni.js" type="text/javascript"></script>
-	<style type="text/css">
+	<style type="text/css">		
 		.animate {transition: all 0.3s;-webkit-animation-timing-function:ease;}		
 	</style>
 	<script type="text/javascript">
@@ -89,7 +89,7 @@
 		//console.log(hello.prototype.constructor(1,2));//.constructor.apply({},[1,2])
 		//console.log(new function(){var _ = this;hello.apply(_,[{a:3},{b:4}]);});
 		//var v = new function(){var _ = this;VJ.inherit.apply(_,[hello,[{a:3},{b:4}]]);};
-		//console.log(v.Instance());
+		//console.log(VJ.Instance());
 		/*测试目的，应可以支持本地对象生成，远程对象生成，支持mode为static instance pool 支持 method 为constructor，bean，factory，constructorbean，factorybean 5种方式 并支持 pack */
 		//本地+static+constructor+bean+pool+factory+factorybean+constructorparalength+size+pack+path
 		/*var middler = VJ.middler.getMiddlerFromObj({
@@ -361,7 +361,154 @@
 					}]]);					
 				}
 			};
-			
+			//todo 根据panel孩子节点 全部整理成与父类一样大小 ，然后 设置overflow:hidden 根据direction属性设置为hor或者vol，根据属性value设置当前的对象和onchange事件。
+			//todo 实现商品列表
+			//todo 实现panel子类直接显示	
+			//
+			//一个是 没有探测出来回滚的位置 方向似乎不正确
+			// 1. 当向下拉动时 动画移动的位置不能大于limit 移动位置大于5即可判断为reload事件 且超出0设置为回滚到0
+			// 2. 当向上拉动时 动画距离不能小于-panel.height+node.height-limit 移动位置小于-panel.height+node.height-5即可判断为next事件 且小于-panel.height+node.height则回滚到-panel.height+node.height
+			var BPanel = function(panel,path,vm,limit,limitBack){
+				var _ = this,__ = {};
+				{	
+					VJ.inherit.apply(_,[panel,[VJ.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),VJ.getValue(vm,{
+						data:{direction:'vol',value:0},						
+						onLeft:function(data,self){_.call('next')},
+						onRight:function(data,self){_.call('reload')},
+						onUp:function(data,self){_.call('next')},
+						onDown:function(data,self){_.call('reload');}
+					}),limit || 0.2,limitBack || true]]);
+					__.onLoad = _.onLoad;
+					__.render = _.render;
+					VJ.merge(_.status.transform,{x:0,y:0},true);
+				}
+				_.onLoad = function(node){
+					node.removeClass('animate');
+					_.panel = node.find('div:first');
+					_.children  = _.panel.siblings();
+					if(_.children.length==0) return;
+					_.length = _.children.length;					
+					_.value = Math.max(0,Math.min(_.children.length,parseInt(_.value)));
+					_.children.css('position','relative');
+					_.children.addClass('noactive');
+					_.panel.append(_.children);
+					//根据direction覆盖监听操作 同时修改panelaction
+					var dir = _.get().direction;
+					switch(dir){
+						case 'vol':
+							_.vol = true;
+							delete _.events.left;
+							delete _.events.right;
+							//取消水平操作动画
+							_.panel.css('width','100%');
+							_.children.css('width','100%')
+							break;
+						case 'hor':
+						default:
+							//取消垂直操作动画
+							_.hor = true;
+							delete _.events.up;
+							delete _.events.down;
+							_.panel.css('height','100%');//.css('display','flex');						
+							_.children.css('height','100%').css('float','left');
+							break;
+					}
+					VJ.forC(_.events,function(k,v){
+						k = k.toLowerCase();
+						switch(k){
+							case 'next':
+							case 'reload':
+								break;
+							default:
+								_.bindEvent(node,k,v);
+								break;
+						}
+					},function(){__.onLoad(node);});
+				};
+				//以方便继承类覆盖并执行动画
+				_.onLeft = function(ev,e){
+					if(_.vol) return;
+					__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
+					var x = e.transform.x+ev.deltaX;
+					if(x < (_.node.width()-5-_.panel.width())){e.callevent.value=true;}
+					if(x > (_.node.width()-e.limit-_.panel.width())){_.am(_.panel,{tx:(e.left||e.leftout)?x:Math.max(0,ev.deltaX),ty:0});} else return e.limitBack;
+				};
+				_.onRight = function(ev,e){
+					if(_.vol) return;
+					__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
+					var x = e.transform.x+ev.deltaX;
+					if(x > 5){e.callevent.value=true;}
+					if(x < e.limit){_.am(_.panel,{tx:(e.right||e.rightout)?x:Math.max(0,ev.deltaX),ty:0});} else return e.limitBack;
+				};
+				_.onUp = function(ev,e){
+					if(_.hor) return;
+					__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
+					var y = e.transform.y+ev.deltaY;
+					if(y < (_.node.height()-5-_.panel.height())){e.callevent.value=true;}
+					if(y > (_.node.height()-e.limit-_.panel.height())){_.am(_.panel,{ty:(e.up||e.upout)?y:Math.max(0,ev.deltaY),tx:0});} else return e.limitBack;
+				};
+				_.onDown = function(ev,e){
+					if(_.hor) return;
+					__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
+					var y = e.transform.y+ev.deltaY;
+					if(y > 5){e.callevent.value=true;}
+					if(y < limit){_.am(_.panel,{ty:(e.down||e.downout)?y:Math.max(0,ev.deltaY),tx:0});} else return e.limitBack;
+				};
+				_.onScale = function(ev,e){
+					if(Math.abs(ev.scale-1)*Math.min(_.node.width(),_.node.height)<e.limit) _.am(_.panel,{scale:ev.scale});
+					else {e.callevent.value = true;}};
+				//low设计需要区别第一次
+				__.first = true;
+				_.render = function(data){				
+					data = __.render(data);
+					VJ.forC(data,function(k,v){
+						switch(k.toLowerCase()){
+							case 'value':
+								_.onValue([v],function(content){_.panel.append(content);});
+								break;
+							case 'values':
+								_.onValue(v,function(content){_.panel.empty().append(content);});
+								break;
+							case 'addValues':						
+								_.onValue(v,function(content){_.panel.append(content);});
+								break;
+						}
+					},function(){
+					},true);
+					_.panel.show();
+				};
+				//一般需要重载此方法即可
+				_.onValue = function(v,func){
+					console.log(v);
+					if(!VJ.isArray(v)) v = [v];
+					var sb = VJ.sb();
+					VJ.each(v,function(v2){sb.append(VJ.toJsonString(v2));},function(){func(sb.clear());sb = null;});
+				};			
+				_.onBackAnimate = function(node,e){
+					VJ.once(function(){
+						console.log(e.transform.x+":"+e.transform.tx);
+						if(e.vol && e.transform.ty<0 && e.transform.ty > (_.node.height() - _.panel.height())){e.transform.y = e.transform.ty;return;}
+						if(e.hor && e.transform.tx<0 && e.transform.tx > (_.node.width() - _.panel.width())){e.transform.x = e.transform.tx;return;}
+						VJ.merge(e.transform,{
+							tx:Math.min(0,Math.max(_.node.width() - _.panel.width(),e.transform.tx)),
+							ty:Math.min(0,Math.max(_.node.height() - _.panel.height(),e.transform.ty)),
+							scale:1,angle:0,rx:0,ry:0,rz:0,startX:0,startY:0},true);
+						VJ.merge(e.transform,{x:e.transform.tx,y:e.transform.ty},true);
+						//等待1秒是希望在触发事件更新Index之后再处理动画才能合理显示
+						var value = VJ.format('translate3d({tx}px,{ty}px,0px) scale({scale},{scale}) rotate3d({rx},{ry},{rz},{angle}deg)',e.transform);
+						_.panel.addClass('animate').css('webkitTransform',value).css('mozTransform',value).css('transform',value).show();
+						/*var cur = $(_.children.get(_.index));
+						if(cur.hasClass('noactive')){
+							cur.removeClass('noactive').addClass('active');
+							//不仅仅是动画 需要显示
+							_._animate('fadeOut',_.panel.children(':lt('+_.index+').active,:gt('+_.index+').active'),function(){
+								_.panel.children(':lt('+_.index+').active,:gt('+_.index+').active').hide().removeClass('active').addClass('noactive');
+							})
+							_._animate('fadeIn',cur,function(){cur.show();});
+						}*/
+					},10);
+				};
+			};
 			//CPanel todo 计算所有children的位置 将其大小都改为100%
 			//识别 上下左右滑动及其动画，同时支持滑入滑出，支持点击或者tap，支持加载动画
 			//data:{values:[]}
@@ -375,8 +522,8 @@
 				new function(){
 					var _ = this,__ = {};
 					{
-						V.isDebug = true;
-						V.inherit.apply(_,[M.Page,[cm,{
+						VJ.isDebug = true;
+						VJ.inherit.apply(_,[M.Page,[cm,{
 							txt3:{
 								data:{validate:{isRequired:'必须输入值!'}},
 								onLoad:function(data,self){
@@ -466,14 +613,14 @@
 								},
 								onScale1:function(data,self){
 								},
-								onLeft1:function(){console.log('left');},
-								onRight1:function(){console.log('right');},
+								onLeft:function(){console.log('left');},
+								onRight:function(){console.log('right');},
 								onUp1:function(data,self){
 								//distance没提交
 								console.log(data);
-								window.scrollTo(0,self.v.node.top()+data.distance);},
+								window.scrollTo(0,self.VJ.node.top()+data.distance);},
 								onDown1:function(){
-								window.scrollTo(0,self.v.node.top()-data.distance);}
+								window.scrollTo(0,self.VJ.node.top()-data.distance);}
 							},
 							panel2:{
 								data:{value:0,visible:true},
@@ -498,10 +645,23 @@
 								data:{},
 								onLoad:function(data,self){
 									//todo onload 在data的value的上面执行
-									self.update({value:{text:navigator.userAgent.toLowerCase(),ver:V.toJsonString(V.userAgent),web:V.userAgent.pad?'本':(V.userAgent.mobile?'手机':'电脑')}});
+									self.update({value:{text:navigator.userAgent.toLowerCase(),ver:VJ.toJsonString(VJ.userAgent),web:VJ.userAgent.pad?'本':(VJ.userAgent.mobile?'手机':'电脑')}});
 									//self.update({value:{text:'111'}});
-									//V.once(function(){},1);
-									//V.once(function(){self.update({value:{abc:'abc2',text:'FillControl首秀2!'}});},2000);
+									//VJ.once(function(){},1);
+									//VJ.once(function(){self.update({value:{abc:'abc2',text:'FillControl首秀2!'}});},2000);
+								}
+							},
+							bp:{data:{value:2},
+								onChange:function(data,self){
+									console.log('change'+data.value);
+								}
+							},
+							bp2:{data:{values1:[{a:2},{a:3},{b:4}]},
+								onReload:function(data,self){
+									console.log('reload');
+								},								
+								onNext:function(data,self){
+									console.log('next');
 								}
 							},
 							his:{data:{},onChange:function(data,self){
@@ -525,7 +685,7 @@
 									/*_.ni.excute('template','ajaxtest1',{SONumber:10001103386854},function(res){
 										//console.log(res.get('ajaxtest1'));
 										console.log(res.get('ajaxtest1'));
-										//res.each('ajaxtest1',function(v){V.each(v,function(v){console.log(v);});});
+										//res.each('ajaxtest1',function(v){VJ.each(v,function(v){console.log(v);});});
 									});*/
 									//console.log(_.middler.getObjectByAppName(M.APP,'SessionDataManager'));
 									_.session.update('ssss',{aaaa:22});
@@ -533,7 +693,7 @@
 									//_.session.update('kd2.0',{casting:'223232222222223332222333232',mobile:'133520493404'});									
 									//跨域同步请求要求 IIS支持添加Html返回头 Access-Control-Allow-Origin: * 或者具体的域名
 									//setTimeout(function(){
-									//console.log(V.userAgent);
+									//console.log(VJ.userAgent);
 									//	VJ.include('http://10.32.11.166:800/kd/js/s_code.js');
 									//	console.log(s_account);
 									//},100);
@@ -568,8 +728,10 @@
 						panel2:{type:'panel',params:[],path:'hammer.min.js'},
 						apanel:{type:'APanel',params:[
 							{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
-							'']}
-						
+							'']},
+						bpanel:{type:'BPanel',params:[
+							{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
+							'','',100,false]}						
 					}
 				}
 			}));			
@@ -596,18 +758,26 @@
 		<p><checklist id="cl" _="name:'bbbb'" ></checklist></p>
 		<p>
 		<!--div id="panel" style="width:200px;height:200px;"_="type:'swiperpanel'"><div>1</div><div>2</div><div>3</div></div-->
-		<div id="panel" style="width:400px;height:600px;background:yellow;"_="type:'rangepanel'">
+		<!--
+		<div style="width:400px;height:600px;overflow:hidden;"><div id="panel" style="width:400px;height:600px;background:yellow;"_="type:'rangepanel'">
 			<div id="panel2" style="width:300px;height:300px;background:blue;overflow:scroll;" _="type:'rangepanel',visible:false">
 				<div style="width:30px;height:50px;background:red;">A<br/>B<br/>C<br/>D</div>
 			</div>
-		</div>
+		</div></div>-->
 		</p>
-		<div id='fill' _="type:'fill'">
+		<div id='fill' _="type:'fill',direction:'vol'">
 			version:{text}<br/>
 			ver:{ver}<br/>
 			web:{web}
 		</div>
 		<history id='his' _></history>
+		<div id='bp' _="type:'pagepanel',direction:'hor'" style="height:250px;width:300px;">
+			<div style="background:red;">A</div><div style="background:blue;">B</div><div style="background:yellow;">C</div>
+		</div>
+		<div id='bp2' _="type:'scrollpanel',direction:'vol'" style="height:250px;width:300px;">
+			<div style="background:red;height:200px;">A1</div><div style="background:blue;height:100px;">B1</div><div style="background:yellow;height:300px;">C1</div>
+		</div>
+		
 		<!--ytsearchbox class="p_searchbox" id="aaa" _></ytsearchbox-->
 	</form>	
 </body>

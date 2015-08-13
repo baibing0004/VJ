@@ -7,20 +7,20 @@
 			host:'../../VJ/2.0/ref/',
 			page:{type:'.Page'},
 			//控件
-			textbox:{type:'.TextBox'},
-			radiobox:{type:'.RadioBox'},
-			checkbox:{type:'.CheckBox'},
-			select:{type:'.Select'},
-			hidden:{type:'.Hidden'},
-			passwordbox:{type:'.PasswordBox'},
-			button:{type:'.Button'},
-			submit:{type:'.Submit'},
-			reset:{type:'.Reset'},
-			form:{type:'.Form'},
+			textbox:{type:'.TextBox',path:'../VJ.view.extend.js'},
+			radiobox:{type:'.RadioBox',path:'../VJ.view.extend.js'},
+			checkbox:{type:'.CheckBox',path:'../VJ.view.extend.js'},
+			select:{type:'.Select',path:'../VJ.view.extend.js'},
+			hidden:{type:'.Hidden',path:'../VJ.view.extend.js'},
+			passwordbox:{type:'.PasswordBox',path:'../VJ.view.extend.js'},
+			button:{type:'.Button',path:'../VJ.view.extend.js'},
+			submit:{type:'.Submit',path:'../VJ.view.extend.js'},
+			reset:{type:'.Reset',path:'../VJ.view.extend.js'},
+			form:{type:'.Form',path:'../VJ.view.extend.js'},
 			box:{type:'.Box'},
 			radiolist:{type:'.RadioList'},
 			checklist:{type:'.CheckList'},
-			swiperpanel:{type:'.SwiperPanel',path:'swiper3.07.min.css;animate.min.css;swiper3.07.jquery.min.js;swiper.animate1.0.2.min.js'},
+			swiperpanel:{type:'.SwiperPanel',path:'swiper3.07.min.css;animate.min.css;swiper3.07.jquery.min.js;swiper.animate1.0.2.min.js;../VJ.view.extend.js'},
 			fill:{type:'.FillControl'},
 			history:{type:'.History'},
 			panel:{type:'.Panel',path:'hammer.min.js'},
@@ -30,13 +30,7 @@
 				'','',0.4,false]},
 			scrollpanel:{type:'.ScrollPanel',params:[
 				{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
-				'','',100,false]},
-			/*作为继承父类的例子
-			rangepanel:{type:'.RangePanel',params:[
-				{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
-				'',{},0.5,false
-			]},*/
-			
+				'','',100,false]},			
 			//动画			
 			bounce:{type:'VJ.view.CssAction',mode:'static',path:"animate.min.css",params:['bounce .4s linear']},
 			flash:{type:'VJ.view.CssAction',mode:'static',path:"animate.min.css",params:['flash .4s linear']},

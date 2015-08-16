@@ -1007,9 +1007,11 @@ var classname = function(构造参数){
 	 * value 重置内部控件填充的json对象，其解析效果由控件的onValue方法实现
 	 * values 重置内部控件填充的json对象数组，其解析效果由控件的onValue方法实现
 	 * addvalues 添加内部控件填充的json对象数组，其解析效果由控件的onValue方法实现
+	 * top	设置为真时移动到顶部。
+	 * bottom	设置为真时移动到底部。
 	---如下为物理控件方法：
 	 * onValue(v,func) 根据传入的v值，即逻辑控件根据value,values,addvalues传入的json对象数组，进行处理，处理后调用func('string'/[{},{}])的方式让Panel控件添加新增的内容其中string是html内容，json数组则可以是新增控件的逻辑控件数组。  
-####2.1 todo panel 容器类对象的控件信息重新绑定，逻辑控件的data标准定义基本上确定可以有width,height,values,value,visible,invisible,key
+####2.1 todo panel 容器类对象的控件信息重新绑定，逻辑控件的data标准定义基本上确定可以有width,height,values,value,addvalues,visible,invisible,key
  
 
 ##附录A VESH架构简介

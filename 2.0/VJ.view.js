@@ -947,10 +947,23 @@
 										break;
 								}});
 							break;
+						case 'top':
+							if(v){
+								_.get().top = false;
+								_.onBackAnimate(_.node,V.merge(_.status,{transform:{tx:0,ty:0}},true));
+							}
+							break;
+						case 'bottom':
+							if(v){
+								_.get().bottom = false;
+								_.onBackAnimate(_.node,V.merge(_.status,{transform:{tx:_.status.vol?0:(_.node.width() - _.panel.width()),ty:_.status.hor?0:(_.node.height() - _.panel.height())}},true));
+							}
+							break;
 					}
 				},function(){
 				},true);
 				_.panel.show();
+				return data;
 			};
 			//一般需要重载此方法即可
 			_.onValue = function(v,func){

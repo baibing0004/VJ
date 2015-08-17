@@ -245,7 +245,7 @@
 					_.models = cons;
 					var p = node.find('[_]').toArray();				
 					V.each(p,function(v1){
-						v = $(v1);
+						var v = $(v1);
 						var id = v.attr('id');
 						var json = eval("({"+v.attr('_')+"})");
 						var type = json.type?json.type:(id && cons[id] && cons[id].type)?cons[id].type:null;
@@ -512,7 +512,7 @@
 				//这里应该由真实的View层调用使用document.ready实现
 				var p = node.find('[_]').toArray();				
 				V.whileC(function(){return p.shift();},function(v1){
-					v = $(v1);
+					var v = $(v1);
 					var id = v.attr('id');
 					var json = eval("({"+v.attr('_')+"})");
 					var type = json.type?json.type:(id && _.page.getModels(id) && _.page.getModels(id).type)?_.page.getModels(id).type:null;

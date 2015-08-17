@@ -329,6 +329,13 @@
 						case 'direction':
 							needRB = true;
 							_.params.direction = v;
+							switch(v){
+								case 'vertical':
+									_.node.attr('panelaction','vol');
+									break;
+								case 'horizontal':
+									_.node.attr('panelaction','hor');
+							}
 							break;
 						case 'autoplay':
 							needRB = true;

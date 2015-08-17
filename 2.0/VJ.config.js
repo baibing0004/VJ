@@ -200,6 +200,7 @@
 	C.getConfigManagerFromJS = function(cm,name,path){
 		if(!name) return cm;
 		if(path){
+			if(typeof(path) == 'string' && path.indexOf(';')>=0){path = path.split(';');}
 			if(V.isArray(path)){
 				for(var i in path){
 					V.include(path[i]);

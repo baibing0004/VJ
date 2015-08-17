@@ -1,4 +1,5 @@
 //命令注册变量
+//很多地方用不了 接驳原型链报错 直接调用逻辑控件的update报错 "use strict"
 if (!window.top.VJ) {
 	window.top.VJ = {};
 }
@@ -239,7 +240,7 @@ VJ = window.top.VJ;
 		V.create2 = function(type,args){
 			var ret = '(new '+type+'(';
 			if(V.isArray(args)){
-				for(i in args){
+				for(var i in args){
 					ret+='args['+i+'],'
 				}
 				if(args.length>0){
@@ -263,7 +264,7 @@ VJ = window.top.VJ;
 					case 'array':
 					case 'Array':
 						var aim = [];
-						for (i in source) {
+						for (var i in source) {
 							aim.push(_clone(source[i]));
 						}
 						return aim;
@@ -351,7 +352,7 @@ VJ = window.top.VJ;
 		(s = ua.match(/(mobile)/)) ? V.userAgent.mobile = true : false;
 		(s = ua.match(/(ipad)|(mediapad)/)) ? (V.userAgent.pad = true,V.userAgent.mobile = false) : false;
 		V.userAgent.pc = !(V.userAgent.mobile || V.userAgent.pad);
-		for (key in V.userAgent) { if (key!='pc' && V.getValue(V.userAgent[key], false)) { V.userAgent.name = key; } }
+		for (var key in V.userAgent) { if (key!='pc' && V.getValue(V.userAgent[key], false)) { V.userAgent.name = key; } }
 		console.log("VJ.userAgent:" + V.userAgent.name);
 		if (V.getValue(V.userAgent.ie, false)) {
 			var ver = V.userAgent.ie;
@@ -758,8 +759,8 @@ VJ = window.top.VJ;
 		*/
 		function _V_AppendScript(data, callback) {
 			var ua = navigator.userAgent.toLowerCase();
-			isOpera = ua.indexOf("opera") > -1
-			isIE = !isOpera && ua.indexOf("msie") > -1
+			var isOpera = ua.indexOf("opera") > -1
+			var isIE = !isOpera && ua.indexOf("msie") > -1
 			var head = document.getElementsByTagName("head")[0] || document.documentElement, script = document.createElement("script");
 			script.type = "text/javascript";
 			//不能使用 src 因为其已经获得了JS 只是需要加载入当前页面，所以不会有onload事件。

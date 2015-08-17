@@ -684,6 +684,7 @@
 				}),limit || 0.2,limitBack || true]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
+				_.lock = false;
 			}
 			_.onLoad = function(node){
 				node.removeClass('animate');
@@ -734,25 +735,25 @@
 			};
 			__.onLeft = _.onLeft;
 			_.onLeft = function(ev,e){
-				if(_.vol) return;
+				if(_.vol || !_.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onLeft(ev,e);
 			};
 			__.onRight = _.onRight;
 			_.onRight = function(ev,e){
-				if(_.vol) return;
+				if(_.vol || !_.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onRight(ev,e);
 			};
 			__.onUp = _.onUp;
 			_.onUp = function(ev,e){
-				if(_.hor) return;
+				if(_.hor || !_.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onUp(ev,e);
 			};
 			__.onDown = _.onDown;
 			_.onDown = function(ev,e){
-				if(_.hor) return;
+				if(_.hor || !_.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onDown(ev,e);
 			};
@@ -765,6 +766,10 @@
 						case 'value':
 							_.change(v,true,__.first);
 							__.first = false;
+							break;
+						case 'freeze':
+						case 'lock':
+							_.lock = v;
 							break;
 					}
 				},function(){
@@ -811,6 +816,7 @@
 				}),limit || 0.2,limitBack || true]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
+				_.lock = false;
 				V.merge(_.status.transform,{x:0,y:0},true);
 			}
 			_.onLoad = function(node){
@@ -858,28 +864,28 @@
 			};
 			//以方便继承类覆盖并执行动画
 			_.onLeft = function(ev,e){
-				if(_.vol) return;
+				if(_.vol || !_.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var x = e.transform.x+ev.deltaX;
 				if(x < (_.node.width()-5-_.panel.width())){e.callevent.value=true;}
 				if(x > (_.node.width()-e.limit-_.panel.width())){_.am(_.panel,{tx:(e.left||e.leftout)?x:Math.max(0,ev.deltaX),ty:0});} else return e.limitBack;
 			};
 			_.onRight = function(ev,e){
-				if(_.vol) return;
+				if(_.vol || !_.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var x = e.transform.x+ev.deltaX;
 				if(x > 5){e.callevent.value=true;}
 				if(x < e.limit){_.am(_.panel,{tx:(e.right||e.rightout)?x:Math.max(0,ev.deltaX),ty:0});} else return e.limitBack;
 			};
 			_.onUp = function(ev,e){
-				if(_.hor) return;
+				if(_.hor || !_.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				var y = e.transform.y+ev.deltaY;
 				if(y < (_.node.height()-5-_.panel.height())){e.callevent.value=true;}
 				if(y > (_.node.height()-e.limit-_.panel.height())){_.am(_.panel,{ty:(e.up||e.upout)?y:Math.max(0,ev.deltaY),tx:0});} else return e.limitBack;
 			};
 			_.onDown = function(ev,e){
-				if(_.hor) return;
+				if(_.hor || !_.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var y = e.transform.y+ev.deltaY;
 				if(y > 5){e.callevent.value=true;}
@@ -958,6 +964,10 @@
 								_.get().bottom = false;
 								_.onBackAnimate(_.node,V.merge(_.status,{transform:{tx:_.status.vol?0:(_.node.width() - _.panel.width()),ty:_.status.hor?0:(_.node.height() - _.panel.height())}},true));
 							}
+							break;
+						case 'freeze':
+						case 'lock':
+							_.lock = v;
 							break;
 					}
 				},function(){

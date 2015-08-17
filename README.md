@@ -997,6 +997,7 @@ var classname = function(构造参数){
 	 * height 外层控件的高度，请务必设定 支持百分比
 	 * value 当前页面 
 	 * direction 'hor/vol'水平移动或者垂直移动
+	 * freeze/lock 都可以设置当前界面操作为锁死不可移动或者放开可以移动 默认为false
 	 * onChange 当前页面切换操作 
  * VJ.view.ScrollPanel 继承VJ.view.Panel 重载其移动事件实现对内部放置的html节点根据direction属性自动实现垂直或者水平大小，然后实现左右平移或者上下滑动拉伸和缓冲效果的功能，注意请用div+_='type:"ScrollPanel"'方式定义，因为其是容器控件，其内部需要放置同级的div作为滑动面板的内容,使用其请务必设置```<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">```; 
  	 * width 外层控件的宽度，请务必设定 支持百分比
@@ -1009,6 +1010,7 @@ var classname = function(构造参数){
 	 * addvalues 添加内部控件填充的json对象数组，其解析效果由控件的onValue方法实现
 	 * top	设置为真时移动到顶部。
 	 * bottom	设置为真时移动到底部。
+	 * freeze/lock 都可以设置当前界面操作为锁死不可移动或者放开可以移动 默认为false
 	---如下为物理控件方法：
 	 * onValue(v,func) 根据传入的v值，即逻辑控件根据value,values,addvalues传入的json对象数组，进行处理，处理后调用func('string'/[{},{}])的方式让Panel控件添加新增的内容其中string是html内容，json数组则可以是新增控件的逻辑控件数组。  
 ####2.1 todo panel 容器类对象的控件信息重新绑定，逻辑控件的data标准定义基本上确定可以有width,height,values,value,addvalues,visible,invisible,key

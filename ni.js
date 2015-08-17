@@ -1,4 +1,4 @@
-window.top.ni = {
+VJ.merge(VJ.getValue(window.top.ni,{}),{
 	Ni:{
 		ajaxtest11:{command:'http://localhost/VESHTest/Module/help/test.tjsonp?_n=recorder',dbtype:'tjson',params:{limit:11},template:'template2'},
 		ajaxtest1:{command:'http://localhost/KDAPI/Module/GetOrderTrackItems.tjsonp?_n=Order',dbtype:'tjson',params:{},template:'template2'},
@@ -8,4 +8,4 @@ window.top.ni = {
 		sqlselect:{command:'select * from table1;',dbtype:'json',params:{data:[]},template:'sqltemp'},
 		sqlselect2:{command:'select * from table1 where name=?',dbtype:'json',params:{data:[]},template:'sqltemp'}
 	}
-};
+},true);

@@ -242,6 +242,7 @@
 				_.status = __.status;
 				__.moving = false;
 				_.am = function(node,data,timeout){
+					console.log(data);
 					if(!__.moving) {
 						V.once(function(){
 							__.status.transform = V.merge(__.status.transform,data);
@@ -336,226 +337,213 @@
 			_.fill = function(){return {};};
 			_.render = function(data){
 				data = __.render(data);
-				V.forC(data,function(k,v){
-					switch(k.toLowerCase()){
-						case 'show':
-							_.vm.data.visible = true;
-							_.node.show();
-							_.animate(v);
-							break;
-						case 'hide':
-							_.animate(v,function(){_.node.hide();_.vm.data.visible = false;});
-							break;							
+				if(!__.hasRender){
+					__.document = $(document);
+					__.hasRender = true;
+					//当物理控件的相关事务返回真时，启动提前终止的动画操作
+					__.finalMove = false;
+					__.mc = new Hammer.Manager(_.node[0]);
+					//最终动画方法和事件应该以便后面的控件自己控制移动和回滚的动画
+					//应该允许后面的继承控件自己控制
+					//事件的触发应该有阀值，在超出阀值时触发事件 并引发或者不引发回滚						
+					__.mc.add(new Hammer.Pan({ threshold: 0, pointers: 0 }));						
+					//__.mc.add(new Hammer.Swipe({velocity:0.6})).recognizeWith(__.mc.get('pan'));						
+					if(__.status.rotate || __.status.pinch){
+						__.mc.add(new Hammer.Rotate({threshold:0})).recognizeWith(__.mc.get('pan'));
+					} 
+					if(__.status.pinch){
+						__.mc.add(new Hammer.Pinch({threshold:0})).recognizeWith([__.mc.get('pan'), __.mc.get('rotate')]);
 					}
-				},function(){
-					if(!__.hasRender){
-						__.document = $(document);
-						__.hasRender = true;
-						//当物理控件的相关事务返回真时，启动提前终止的动画操作
-						__.finalMove = false;
-						__.mc = new Hammer.Manager(_.node[0]);
-						//最终动画方法和事件应该以便后面的控件自己控制移动和回滚的动画
-						//应该允许后面的继承控件自己控制
-						//事件的触发应该有阀值，在超出阀值时触发事件 并引发或者不引发回滚						
-						__.mc.add(new Hammer.Pan({ threshold: 0, pointers: 0 }));						
-						//__.mc.add(new Hammer.Swipe({velocity:0.6})).recognizeWith(__.mc.get('pan'));						
-						if(__.status.rotate || __.status.pinch){
-							__.mc.add(new Hammer.Rotate({threshold:0})).recognizeWith(__.mc.get('pan'));
-						} 
-						if(__.status.pinch){
-							__.mc.add(new Hammer.Pinch({threshold:0})).recognizeWith([__.mc.get('pan'), __.mc.get('rotate')]);
-						}
-						if(__.status.dblclick){
-							__.mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
-						}
-						//__.mc.add(new Hammer.Tap());swipeleft swiperight swipeup swipedown 
-						__.mc.on(V.format("panleft panright panup pandown {pinorrot} {doubleclick}",{
-								//hor:(__.status.hor?'panleft panright':''),
-								//vol:(__.status.vol?'panup pandown':''),
-								pinorrot:__.status.rotate?'rotatestart rotatemove rotateend':(__.status.pinch?'pinchstart pinchmove pinchend':''),
-								doubleclick:__.status.dblclick?'doubletap':''}),
-							function(ev) {
-								//开始就有一个panelid 判断发生的target是否有panelid 如果有panelid且不是自己则不处理这个事情，否则处理这个事情（解决同向的滚动问题）
-								//修改为只要其定义的事件集合不包含我们的事件集合就可以处理
-								//需要过滤掉panelid相等但是不是本身的
-								var parent = ev.target.hasAttribute('panelid')?$(ev.target):$(ev.target).parents('[panelid]:first');
-								parent = parent.length>0?parent:null;
-								if(parent && parent.attr('panelid') ==__.status.panelid){							
-									switch(ev.type){
-										case 'panright':
-										case 'panleft':
-										case 'swiperight':
-										case 'swipeleft':
-											if($.inArray('hor',__.status.panelaction)<0) {
-												parent = $(parent).parents('[panelid]:first');
-												parent = parent.length>0?parent:null;
-											};
-											break;
-										case 'panup':
-										case 'pandown':
-										case 'swipeup':
-										case 'swipedown':
-											if($.inArray('vol',__.status.panelaction)<0) {
-												parent = $(parent).parents('[panelid]:first');
-												parent = parent.length>0?parent:null;
-											};
-											break;
-										case 'pinchstart':
-										case 'pinchmove':
-										case 'pinchin':
-										case 'pinchout':
-										case 'pinchend':
-											if($.inArray('pinch',__.status.panelaction)<0) {
-												parent = $(parent).parents('[panelid]:first');
-												parent = parent.length>0?parent:null;
-											};
-											break;
-										case 'rotatestart':
-										case 'rotatemove':
-										case 'rotateend':							
-											if($.inArray('rotate',__.status.panelaction)<0) {
-												parent = $(parent).parents('[panelid]:first');
-												parent = parent.length>0?parent:null;
-											};
-											break;
-										case 'doubletap':								
-											if($.inArray('dblclick',__.status.panelaction)<0) {
-												parent = $(parent).parents('[panelid]:first');
-												parent = parent.length>0?parent:null;
-											};
-											break;
-									}
+					if(__.status.dblclick){
+						__.mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
+					}
+					//__.mc.add(new Hammer.Tap());swipeleft swiperight swipeup swipedown 
+					__.mc.on(V.format("panleft panright panup pandown {pinorrot} {doubleclick}",{
+							//hor:(__.status.hor?'panleft panright':''),
+							//vol:(__.status.vol?'panup pandown':''),
+							pinorrot:__.status.rotate?'rotatestart rotatemove rotateend':(__.status.pinch?'pinchstart pinchmove pinchend':''),
+							doubleclick:__.status.dblclick?'doubletap':''}),
+						function(ev) {
+							//开始就有一个panelid 判断发生的target是否有panelid 如果有panelid且不是自己则不处理这个事情，否则处理这个事情（解决同向的滚动问题）
+							//修改为只要其定义的事件集合不包含我们的事件集合就可以处理
+							//需要过滤掉panelid相等但是不是本身的
+							var parent = ev.target.hasAttribute('panelid')?$(ev.target):$(ev.target).parents('[panelid]:first');
+							parent = parent.length>0?parent:null;
+							if(parent && parent.attr('panelid') ==__.status.panelid){							
+								switch(ev.type){
+									case 'panright':
+									case 'panleft':
+									case 'swiperight':
+									case 'swipeleft':
+										if($.inArray('hor',__.status.panelaction)<0) {
+											parent = $(parent).parents('[panelid]:first');
+											parent = parent.length>0?parent:null;
+										};
+										break;
+									case 'panup':
+									case 'pandown':
+									case 'swipeup':
+									case 'swipedown':
+										if($.inArray('vol',__.status.panelaction)<0) {
+											parent = $(parent).parents('[panelid]:first');
+											parent = parent.length>0?parent:null;
+										};
+										break;
+									case 'pinchstart':
+									case 'pinchmove':
+									case 'pinchin':
+									case 'pinchout':
+									case 'pinchend':
+										if($.inArray('pinch',__.status.panelaction)<0) {
+											parent = $(parent).parents('[panelid]:first');
+											parent = parent.length>0?parent:null;
+										};
+										break;
+									case 'rotatestart':
+									case 'rotatemove':
+									case 'rotateend':							
+										if($.inArray('rotate',__.status.panelaction)<0) {
+											parent = $(parent).parents('[panelid]:first');
+											parent = parent.length>0?parent:null;
+										};
+										break;
+									case 'doubletap':								
+										if($.inArray('dblclick',__.status.panelaction)<0) {
+											parent = $(parent).parents('[panelid]:first');
+											parent = parent.length>0?parent:null;
+										};
+										break;
 								}
-								if(parent && parent.attr('panelid') !=__.status.panelid && parent.attr('panelaction') !=''){
-									var action = parent.attr('panelaction').split(',');
-									switch(ev.type){
-										case 'panright':
-										case 'panleft':
-										case 'swiperight':
-										case 'swipeleft':
-											if($.inArray('hor',action)>=0) return;
-											break;
-										case 'panup':
-										case 'pandown':
-										case 'swipeup':
-										case 'swipedown':
-											if($.inArray('vol',action)>=0) return;
-											break;
-										case 'pinchstart':
-										case 'pinchmove':
-										case 'pinchin':
-										case 'pinchout':
-										case 'pinchend':
-											if($.inArray('pinch',action)>=0) return;
-											break;
-										case 'rotatestart':
-										case 'rotatemove':
-										case 'rotateend':											
-											if($.inArray('rotate',action)>=0) return;
-											break;
-										case 'doubletap':											
-											if($.inArray('dblclick',action)>=0) return;
-											break;
-									}									
+							}
+							if(parent && parent.attr('panelid') !=__.status.panelid && parent.attr('panelaction') !=''){
+								var action = parent.attr('panelaction').split(',');
+								switch(ev.type){
+									case 'panright':
+									case 'panleft':
+									case 'swiperight':
+									case 'swipeleft':
+										if($.inArray('hor',action)>=0) return;
+										break;
+									case 'panup':
+									case 'pandown':
+									case 'swipeup':
+									case 'swipedown':
+										if($.inArray('vol',action)>=0) return;
+										break;
+									case 'pinchstart':
+									case 'pinchmove':
+									case 'pinchin':
+									case 'pinchout':
+									case 'pinchend':
+										if($.inArray('pinch',action)>=0) return;
+										break;
+									case 'rotatestart':
+									case 'rotatemove':
+									case 'rotateend':											
+										if($.inArray('rotate',action)>=0) return;
+										break;
+									case 'doubletap':											
+										if($.inArray('dblclick',action)>=0) return;
+										break;
+								}									
+							}
+							if(!__.finalMove){
+								//这里会出现闪烁，除非立即设定现在的位置 按理说finalMove应保护最终动画的完成
+								_.node.removeClass('animate').find('.animate').removeClass('animate');
+								switch(ev.type){
+									case 'panright':
+									case 'swiperight':										
+										if(__.status.hor && !__.rotating && !__.finalMove){
+											__.status.lastAction = 'right';
+											__.finalMove = false ||	_.onRight(ev,__.status);
+										} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
+											//改为以一个固定的起始点+位移为处理方法 这样可以避免移动加倍的问题。
+											if(__.status.startX == 0) __.status.startX = __.document.scrollLeft();
+											__.document.scrollLeft(Math.max(__.status.startX-ev.deltaX,0));
+										}
+										break;
+									case 'panleft':	
+									case 'swipeleft':								
+										if(__.status.hor && !__.rotating && !__.finalMove){
+											__.status.lastAction = 'left';											
+											__.finalMove = false ||	_.onLeft(ev,__.status);
+										} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
+											if(__.status.startX == 0) __.status.startX = __.document.scrollLeft();
+											__.document.scrollLeft(Math.min(__.status.startX-ev.deltaX,document.body.scrollWidth - document.body.clientWidth));
+										}
+										break;
+									case 'panup':
+									case 'swipeup':																
+										if(__.status.vol && !__.rotating && !__.finalMove){
+											__.status.lastAction = 'up';							
+											__.finalMove = false ||	_.onUp(ev,__.status);
+										} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
+											if(__.status.startY == 0) __.status.startY = __.document.scrollTop();
+											__.document.scrollTop(Math.max(__.status.startY-ev.deltaY,document.body.scrollHeight - document.body.clientHeight));
+										}
+										break;
+									case 'pandown':
+									case 'swipedown':	
+										if(__.status.vol && !__.rotating && !__.finalMove){
+											__.status.lastAction = 'down';			
+											__.finalMove = false ||	_.onDown(ev,__.status);
+										} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
+											if(__.status.startY == 0) __.status.startY = __.document.scrollTop();
+											__.document.scrollTop(Math.min(__.status.startY-ev.deltaY,document.body.scrollHeight));
+										}
+										break;
+									case 'pinchstart':
+										__.rotating = true;
+									case 'pinchmove':
+										__.finalMove = false ||	_.onScale(ev,__.status);
+										break;
+									case 'pinchin':
+									case 'pinchout':
+										__.status.lastAction = 'scale';
+										__.scale = ev.scale;
+										break;
+									case 'pinchend':									
+										__.rotating = false;
+										break;
+									case 'rotatestart':
+										__.rotating = true;
+									case 'rotatemove':
+										//完成一个panel基础版本 其事件类应该可以由子类触发 完成一个hswiperpanel版本 完成一个上下移动的SPA初级模块
+										__.status.lastAction = 'rotate';
+										__.status.angle = ev.angle;
+										__.finalMove = false || _.onRotate(ev,__.status);
+										if(__.pinch){__.status.scale = ev.scale};
+										break;
+									case 'rotateend':										
+										__.rotating = false;
+										break;
 								}
-								if(!__.finalMove){
-									//这里会出现闪烁，除非立即设定现在的位置 按理说finalMove应保护最终动画的完成
-									_.node.removeClass('animate').find('.animate').removeClass('animate');
-									switch(ev.type){
-										case 'panright':
-										case 'swiperight':										
-											if(__.status.hor && !__.rotating && !__.finalMove){
-												__.status.lastAction = 'right';
-												__.finalMove = false ||	_.onRight(ev,__.status);
-											} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
-												//改为以一个固定的起始点+位移为处理方法 这样可以避免移动加倍的问题。
-												if(__.status.startX == 0) __.status.startX = __.document.scrollLeft();
-												__.document.scrollLeft(Math.max(__.status.startX-ev.deltaX,0));
-											}
-											break;
-										case 'panleft':	
-										case 'swipeleft':								
-											if(__.status.hor && !__.rotating && !__.finalMove){
-												__.status.lastAction = 'left';											
-												__.finalMove = false ||	_.onLeft(ev,__.status);
-											} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
-												if(__.status.startX == 0) __.status.startX = __.document.scrollLeft();
-												__.document.scrollLeft(Math.min(__.status.startX-ev.deltaX,document.body.scrollWidth - document.body.clientWidth));
-											}
-											break;
-										case 'panup':
-										case 'swipeup':																
-											if(__.status.vol && !__.rotating && !__.finalMove){
-												__.status.lastAction = 'up';							
-												__.finalMove = false ||	_.onUp(ev,__.status);
-											} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
-												if(__.status.startY == 0) __.status.startY = __.document.scrollTop();
-												__.document.scrollTop(Math.max(__.status.startY-ev.deltaY,document.body.scrollHeight - document.body.clientHeight));
-											}
-											break;
-										case 'pandown':
-										case 'swipedown':	
-											if(__.status.vol && !__.rotating && !__.finalMove){
-												__.status.lastAction = 'down';			
-												__.finalMove = false ||	_.onDown(ev,__.status);
-											} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
-												if(__.status.startY == 0) __.status.startY = __.document.scrollTop();
-												__.document.scrollTop(Math.min(__.status.startY-ev.deltaY,document.body.scrollHeight));
-											}
-											break;
-										case 'pinchstart':
-											__.rotating = true;
-										case 'pinchmove':
-											__.finalMove = false ||	_.onScale(ev,__.status);
-											break;
-										case 'pinchin':
-										case 'pinchout':
-											__.status.lastAction = 'scale';
-											__.scale = ev.scale;
-											break;
-										case 'pinchend':									
-											__.rotating = false;
-											break;
-										case 'rotatestart':
-											__.rotating = true;
-										case 'rotatemove':
-											//完成一个panel基础版本 其事件类应该可以由子类触发 完成一个hswiperpanel版本 完成一个上下移动的SPA初级模块
-											__.status.lastAction = 'rotate';
-											__.status.angle = ev.angle;
-											__.finalMove = false || _.onRotate(ev,__.status);
-											if(__.pinch){__.status.scale = ev.scale};
-											break;
-										case 'rotateend':										
-											__.rotating = false;
-											break;
-									}
-									//仅处理还原
-									if(__.finalMove){
-										V.once(function(){
-											if(__.status.callevent.value) _.onFinal(__.status);
-											_.onBackAnimate(_.node,__.status);											
-											__.status.callevent.value = false;
-											V.once(function(){__.finalMove = false;},300);
-										},100);
-									}
-								}
-							});
-							__.mc.on("hammer.input", function(ev) {
-								if(ev.isFinal && !__.finalMove) {
+								//仅处理还原
+								if(__.finalMove){
 									V.once(function(){
 										if(__.status.callevent.value) _.onFinal(__.status);
-										_.onBackAnimate(_.node,__.status);
+										_.onBackAnimate(_.node,__.status);											
 										__.status.callevent.value = false;
 										V.once(function(){__.finalMove = false;},300);
 									},100);
 								}
-							});
-						/*
-						__.mc.on("swipe", onSwipe);
-						__.mc.on("tap", onTap);
-						*/
-					}
-				});
+							}
+						});
+						__.mc.on("hammer.input", function(ev) {
+							if(ev.isFinal && !__.finalMove) {
+								V.once(function(){
+									if(__.status.callevent.value) _.onFinal(__.status);
+									_.onBackAnimate(_.node,__.status);
+									__.status.callevent.value = false;
+									V.once(function(){__.finalMove = false;},300);
+								},100);
+							}
+						});
+					/*
+					__.mc.on("swipe", onSwipe);
+					__.mc.on("tap", onTap);
+					*/
+				}
 				return data;
 			};
 			
@@ -735,25 +723,25 @@
 			};
 			__.onLeft = _.onLeft;
 			_.onLeft = function(ev,e){
-				if(_.vol || !_.lock) return;
+				if(_.vol || _.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onLeft(ev,e);
 			};
 			__.onRight = _.onRight;
 			_.onRight = function(ev,e){
-				if(_.vol || !_.lock) return;
+				if(_.vol || _.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onRight(ev,e);
 			};
 			__.onUp = _.onUp;
 			_.onUp = function(ev,e){
-				if(_.hor || !_.lock) return;
+				if(_.hor || _.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onUp(ev,e);
 			};
 			__.onDown = _.onDown;
 			_.onDown = function(ev,e){
-				if(_.hor || !_.lock) return;
+				if(_.hor || _.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onDown(ev,e);
 			};
@@ -864,28 +852,28 @@
 			};
 			//以方便继承类覆盖并执行动画
 			_.onLeft = function(ev,e){
-				if(_.vol || !_.lock) return;
+				if(_.vol || _.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var x = e.transform.x+ev.deltaX;
 				if(x < (_.node.width()-5-_.panel.width())){e.callevent.value=true;}
 				if(x > (_.node.width()-e.limit-_.panel.width())){_.am(_.panel,{tx:(e.left||e.leftout)?x:Math.max(0,ev.deltaX),ty:0});} else return e.limitBack;
 			};
 			_.onRight = function(ev,e){
-				if(_.vol || !_.lock) return;
+				if(_.vol || _.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var x = e.transform.x+ev.deltaX;
 				if(x > 5){e.callevent.value=true;}
 				if(x < e.limit){_.am(_.panel,{tx:(e.right||e.rightout)?x:Math.max(0,ev.deltaX),ty:0});} else return e.limitBack;
 			};
 			_.onUp = function(ev,e){
-				if(_.hor || !_.lock) return;
+				if(_.hor || _.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				var y = e.transform.y+ev.deltaY;
 				if(y < (_.node.height()-5-_.panel.height())){e.callevent.value=true;}
 				if(y > (_.node.height()-e.limit-_.panel.height())){_.am(_.panel,{ty:(e.up||e.upout)?y:Math.max(0,ev.deltaY),tx:0});} else return e.limitBack;
 			};
 			_.onDown = function(ev,e){
-				if(_.hor || !_.lock) return;
+				if(_.hor || _.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var y = e.transform.y+ev.deltaY;
 				if(y > 5){e.callevent.value=true;}

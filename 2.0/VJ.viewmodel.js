@@ -223,6 +223,14 @@
 							var text = data.value || _.get().value;
 							if(_.valid){_.valid(text);}
 							break;
+						case 'show':
+							_.vm.data.visible = true;
+							_.node.show();
+							_.animate(v);
+							break;
+						case 'hide':
+							_.animate(v,function(){_.node.hide();_.vm.data.visible = false;});
+							break;
 					}
 				});
 				return data;

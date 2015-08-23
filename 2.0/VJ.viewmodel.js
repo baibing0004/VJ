@@ -226,10 +226,10 @@
 						case 'show':
 							_.vm.data.visible = true;
 							_.node.show();
-							_.animate(v);
+							_.animate(value);
 							break;
 						case 'hide':
-							_.animate(v,function(){_.node.hide();_.vm.data.visible = false;});
+							_.animate(value,function(){_.node.hide();_.vm.data.visible = false;});
 							break;
 					}
 				});

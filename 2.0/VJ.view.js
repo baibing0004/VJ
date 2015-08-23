@@ -3,7 +3,7 @@
 		W.Box = function(path,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<div></div>',vm || {}]]);
+				V.inherit.apply(_,[W.Control,[path || '<div></div>',vm || {border:1}]]);
 				__.render = _.render;
 				__.onLoad = _.onLoad;
 			}			
@@ -17,8 +17,11 @@
 				data = __.render(data);
 				V.forC(data,function(k,v){
 					switch(k.toLowerCase()){
+						case 'border':
+							_.node.css({border:'solid '+v+'px'});
+							break;
 						case 'key':							
-							_.node.css({'text-align':'center','line-height':_.node.height()+'px','vertical-align':'middle',border:'solid 1px',margin:'0 auto','minwidth':'40px','minheight':'20px'}).html(v);
+							_.node.css({'text-align':'center','line-height':_.node.height()+'px','vertical-align':'middle',margin:'0 auto','minwidth':'40px','minheight':'20px'}).html(v);
 							break;
 					}
 				});

@@ -245,7 +245,6 @@
 				_.status = __.status;
 				__.moving = false;
 				_.am = function(node,data,timeout){
-					console.log(data);
 					if(!__.moving) {
 						V.once(function(){
 							__.status.transform = V.merge(__.status.transform,data);

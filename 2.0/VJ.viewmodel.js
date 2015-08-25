@@ -141,6 +141,7 @@
 					_.vm.nodeName = _.nodeName;
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
+					_.vm.call = function(){_.call.apply(_,arguments);};
 					_.vm.get = function(key){_.vm.data = V.merge(_.vm.data,_.fill());return key?_.vm.data[key]:_.vm.data;};
 					_.vm.bind(_);
 				}
@@ -463,7 +464,8 @@
 					//完成配置合并
 					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
 					//完成方法注入
-					_.vm.update = function(){_.render.apply(_,arguments);};
+					_.vm.update = function(){_.render.apply(_,arguments);};					
+					_.vm.call = function(){_.call.apply(_,arguments);};
 					_.vm.add = function(){_.addControl.apply(_,arguments);};
 					V.forC(vm,function(key,value){
 						key = key.toLowerCase();

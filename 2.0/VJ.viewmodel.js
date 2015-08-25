@@ -16,6 +16,10 @@
 			{
 				_.bind = function(view){
 					_.v = view;
+					_.config = _.v.config;
+					_.middler = _.v.middler;
+					_.ni = _.v.ni;
+					_.session = _.v.session;
 				};
 				_.data = V.getValue(_.data,{});
 			}

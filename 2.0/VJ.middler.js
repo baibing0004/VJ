@@ -205,6 +205,7 @@
 								V.include(v);
 							},null,true);
 						}
+						var paras = para.getParas();
 						return eval('('+type+')');
 					};
 					_.getValue = function(){

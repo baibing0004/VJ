@@ -145,7 +145,7 @@
 					_.vm.nodeName = _.nodeName;
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
-					_.vm.call = function(){_.call.apply(_,arguments);};
+					_.vm.call = function(){_.call.apply(_.parent.models,arguments);};
 					_.vm.get = function(key){_.vm.data = V.merge(_.vm.data,_.fill());return key?_.vm.data[key]:_.vm.data;};
 					_.vm.bind(_);
 				}
@@ -335,9 +335,9 @@
 			_.call = function(name,param){
 				//所有的事件调用全部采用异步调用方式 V.once
 				if(param){
-					_.vm.data = V.merge(_.vm.data,param);
+					V.merge(_.vm.data,param,true);
 				}
-				_.vm.data = V.merge(_.vm.data,_.fill(),V.getValue(param,{}));
+				V.merge(_.vm.data,_.fill(),V.getValue(param,{}),true);
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){
@@ -469,7 +469,7 @@
 					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};					
-					_.vm.call = function(){_.call.apply(_,arguments);};
+					_.vm.call = function(){_.call.apply(_.page.getModels(),arguments);};
 					_.vm.add = function(){_.addControl.apply(_,arguments);};
 					V.forC(vm,function(key,value){
 						key = key.toLowerCase();
@@ -508,9 +508,9 @@
 			_.call = function(name,param){
 				//所有的事件调用全部采用异步调用方式 V.once
 				if(param){
-					_.vm.data = V.merge(_.vm.data,param);
+					V.merge(_.vm.data,param,true);
 				}
-				_.vm.data = V.merge(_.vm.data,_.fill());
+				V.merge(_.vm.data,_.fill(),V.getValue(param,{}),true);
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){

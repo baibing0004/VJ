@@ -54,7 +54,7 @@
 						__.template = __.node[0].innerHTML;
 						__.node.remove();
 					} else {
-						__.node.load(url,function(){
+						__.node.load(path,function(){
 							__.template = __.node[0].innerHTML
 							__.node.remove();
 							_.callback();

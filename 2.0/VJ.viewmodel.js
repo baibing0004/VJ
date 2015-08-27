@@ -444,7 +444,7 @@
 					var _page = _.middler.getObjectByAppName(W.APP,'page');					
 					if(!_page){throw new Error('没有找到page对应的页面view层对象'); }					
 					_page.ready(function(){
-						_page.init(_page,$(document.body));
+						_page.init(_,$(document.body));
 						_page.bind(_);
 					});
 				}

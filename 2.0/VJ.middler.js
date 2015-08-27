@@ -359,7 +359,7 @@
 					}
 				}
 			}
-			//转换成App对象
+			//转换成App对象 todo app成为默认关键词 不可重复定义
 			__.convertApp = function(config,v,app,pcm){
 				var keys = {method:'constructor',mode:'static',path:false,pack:false,constructorparalength:false,size:50,app:app,host:''};
 				return new function(){

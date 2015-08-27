@@ -47,7 +47,7 @@
 						}
 					};
 					_.callback = function(){
-						V.whileC(function(){__.funs.shift()},function(v){v($(__.template));},function(){});						
+						V.whileC(function(){return __.funs.shift()},function(v){v($(__.template));},function(){});						
 					};
 					if(path.indexOf('<')>=0){	
 						__.node.append(path);

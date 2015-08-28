@@ -578,7 +578,11 @@
 								onClick:function(data,self){
 									var _ = this;
 									this.txt.update({text:_.rl.get().value,animate:'tada'});
-									this.sub.update({animate:{'zoomOutUp':function(){_.sub.update({visible:false})}}});
+									//this.sub.update({animate:{'zoomOutUp':function(){_.sub.update({visible:false})}}});
+									if(this.sub.data.visible)
+										this.sub.update({hide:'zoomOutUp'});
+									else
+										this.sub.update({show:'zoomInDown'});
 									this.txt2.update({text:_.cl.get().value});
 									//this.txt3.update({text:_.sel.get().value});
 									console.log(this.txt3.get());
@@ -754,7 +758,7 @@
 		<p><button id="but" _="key:'按钮'"></button>
 		<submit id="sub" _="key:'提交钮4'"></submit>
 		<reset _="key:'重置钮'"></reset></p>
-		<box  _="key:'中心'" style="width:200px;height:50px;" class="abc"></box>
+		<box  id="box" _="key:'中心'" style="width:200px;height:50px;" class="abc"></box>
 		<p><radiolist id="rl" _="name:'aaaa'"></radiolist></p>
 		<p><checklist id="cl" _="name:'bbbb'" ></checklist></p>
 		<p>

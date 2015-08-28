@@ -77,24 +77,27 @@
 			this.go = function(node,func){
 				if(V.isValid(__.css)){
 					node = $(node);
-					node.css('-webkit-animation','none').css('-moz-animation','none').css('-o-animation','none');
-					//实在不明白为啥直接写不行
-					setTimeout(function(){node.css('-webkit-animation',css).css('-moz-animation',css).css('-o-animation',css);},20);
-					if(func){
+					node.css('-webkit-animation',css).css('-moz-animation',css).css('-o-animation',css);				
+					{
 						node.one('webkitAnimationEnd',function(){
-							func();
+							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(func) func();
 						});
 						node.one('mozAnimationEnd',function(){
-							func();
+							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(func) func();
 						});
 						node.one('MSAnimationEnd',function(){
-							func();
+							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(func) func();
 						});
 						node.one('oanimationend',function(){
-							func();
+							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(func) func();
 						});
 						node.one('animationend',function(){
-							func();
+							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(func) func();
 						});
 					}
 				}
@@ -171,7 +174,7 @@
 			//可以将数据更新到标签上
 			_.render = function(data){
 				if(data){
-					_.vm.data = V.merge(_.vm.data,data);
+					V.merge(_.vm.data,data,true);
 				} else {
 					data = V.merge({},_.vm.data);
 					//专门用于初始化操作
@@ -228,10 +231,10 @@
 							var text = data.value || _.get().value;
 							if(_.valid){_.valid(text);}
 							break;
-						case 'show':
+case 'show':
 							_.vm.data.visible = true;
-							_.node.show();
-							_.animate(value);
+							_.animate(value,function(){});
+							V.once(function(){_.node.show();},1);
 							break;
 						case 'hide':
 							_.animate(value,function(){_.node.hide();_.vm.data.visible = false;});
@@ -536,7 +539,6 @@
 					if(!obj) V.showException('配置文件中没有找到对象类型定义:'+nodeName);
 					obj.init(_,v,V.isValid(v.attr('_'))?json:null);
 					obj.page = _;
-					_.controls.push(obj);
 					if(!id) {
 						id = nodeName+V.random();
 					}

@@ -858,7 +858,7 @@
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var x = e.transform.x+ev.deltaX;
 				if(x < (_.node.width()-5-_.panel.width())){e.callevent.value=true;}
-				if(x > (_.node.width()-e.limit-_.panel.width())){_.am(_.panel,{tx:(e.left||e.leftout)?x:Math.max(0,ev.deltaX),ty:0});} else return e.limitBack;
+				if(x > Math.min(-e.limit,(_.node.width()-e.limit-_.panel.width()))) {_.am(_.panel,{tx:(e.left||e.leftout)?x:Math.max(0,ev.deltaX),ty:0});} else return e.limitBack;
 			};
 			_.onRight = function(ev,e){
 				if(_.vol || _.lock) return;
@@ -872,14 +872,14 @@
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				var y = e.transform.y+ev.deltaY;
 				if(y < (_.node.height()-5-_.panel.height())){e.callevent.value=true;}
-				if(y > (_.node.height()-e.limit-_.panel.height())){_.am(_.panel,{ty:(e.up||e.upout)?y:Math.max(0,ev.deltaY),tx:0});} else return e.limitBack;
+				if(y > Math.min(-e.limit,(_.node.height()-e.limit-_.panel.height()))) {_.am(_.panel,{ty:(e.up||e.upout)?y:Math.max(0,ev.deltaY),tx:0});} else return e.limitBack;
 			};
 			_.onDown = function(ev,e){
 				if(_.hor || _.lock) return;
 				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var y = e.transform.y+ev.deltaY;
 				if(y > 5){e.callevent.value=true;}
-				if(y < limit){_.am(_.panel,{ty:(e.down||e.downout)?y:Math.max(0,ev.deltaY),tx:0});} else return e.limitBack;
+				if(y < e.limit){_.am(_.panel,{ty:(e.down||e.downout)?y:Math.max(0,ev.deltaY),tx:0});} else return e.limitBack;
 			};
 			_.onScale = function(ev,e){
 				if(Math.abs(ev.scale-1)*Math.min(_.node.width(),_.node.height)<e.limit) _.am(_.panel,{scale:ev.scale});

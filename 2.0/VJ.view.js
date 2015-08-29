@@ -813,7 +813,7 @@
 				node.removeClass('animate');
 				_.panel = node.find('div:first');
 				_.children  = _.panel.siblings();
-				if(_.children.length==0) return;
+				//if(_.children.length==0) return;
 				_.length = _.children.length;					
 				_.value = Math.max(0,Math.min(_.children.length,parseInt(_.value)));
 				_.children.css('position','relative');

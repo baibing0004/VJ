@@ -85,7 +85,8 @@
 				{b:2},
 				'',
 				1,
-				{self:"true"}
+				{middler:true},
+				{self:true}
 			]},
 			ObjectsName:{path:'',method:'',mode:'',constractparalength:'',params:[
 				{type:'',path:'',method:'',mode:'',constractparalength:''},
@@ -123,6 +124,8 @@
 								paras.push({ref:defParam.app,name:name});
 							} else if(val.self){
 								paras.push(pcm);
+							} else if(val.middler){
+								paras.push(new M.Middler(pcm));
 							} else if(val.params){
 								var _v = {params:val.params};
 								for(var i in val){

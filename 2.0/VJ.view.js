@@ -180,14 +180,14 @@
 				__.render = _.render;
 			}
 			_.fill = function(){
-				return {hash:window.location.hash};
+				return {hash:window.location.hash.replace(/#/g,'')};
 			};
 			_.onLoad = function(node){
 				V.forC(_.events,function(k,v){
 					switch(k.toLowerCase()){
 						case 'change':
 							$(window).bind('hashchange', function (e) {
-								if(_.lastAction != 'add')
+								if(_.lastAction != window.location.hash)
 									_.call('change');
 							});
 							break;
@@ -201,8 +201,8 @@
 				}
 				data = __.render(data);
 				V.forC(data,function(k,v){
-					_.lastAction = k.toLowerCase();
-					switch(_.lastAction){
+					_.lastAction = v;
+					switch(k.toLowerCase()){
 						case 'add':
 							if(!_.get().history){_.get().history = [];}
 							_.get().history.push(window.location.hash);
@@ -665,13 +665,13 @@
 		W.PagePanel = function(panel,path,vm,limit,limitBack){
 			var _ = this,__ = {};
 			{	
-				V.inherit.apply(_,[panel,[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.getValue(vm,{
+				V.inherit.apply(_,[panel,[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.merge(V.getValue(vm,{}),{
 					data:{direction:'hor',value:0},						
 					onLeft:function(data,self){_.change(true);},
 					onRight:function(data,self){_.change(false);},
 					onUp:function(data,self){_.change(true);},
 					onDown:function(data,self){_.change(false);}
-				}),limit || 0.2,limitBack || true]]);
+				},true),limit || 0.2,limitBack || true]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
 				_.lock = false;
@@ -797,13 +797,13 @@
 		W.ScrollPanel = function(panel,path,vm,limit,limitBack){
 			var _ = this,__ = {};
 			{	
-				V.inherit.apply(_,[panel,[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.getValue(vm,{
+				V.inherit.apply(_,[panel,[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.merge(V.getValue(vm,{}),{
 					data:{direction:'vol'},						
 					onLeft:function(data,self){_.call('next')},
 					onRight:function(data,self){_.call('reload')},
 					onUp:function(data,self){_.call('next')},
 					onDown:function(data,self){_.call('reload');}
-				}),limit || 0.2,limitBack || true]]);
+				},true),limit || 0.2,limitBack || true]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
 				_.lock = false;
@@ -885,18 +885,22 @@
 				if(Math.abs(ev.scale-1)*Math.min(_.node.width(),_.node.height)<e.limit) _.am(_.panel,{scale:ev.scale});
 				else {e.callevent.value = true;}};
 			_.addControl = function(node,v){
+				if(!_.controls){
+					_.controls = [];
+					_.views = {};
+					_.models = {};
+				}
 				var obj = _.middler.getObjectByAppName(W.APP,v.type);
 				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
-				node = node?node:V.newEl('div');
-				_.panel.append(node);
-				obj.init(_,node,null);
-				obj.page = _;
-				_.controls.push(obj);				
+				node = node?node:V.newEl('div').appendTo(_.panel);
+				obj.init(_,node,v);
+				obj.page = _.page;
+				_.controls.push(obj);
 				var key = V.getValue(v.id,V.random());
-				if(_.views[key]){V.showException('控件id为'+id+'的控件已经存在，请更换id名');return;}
+				if(_.views[key]){V.showException('控件id为'+id+'的子控件已经存在，请更换id名');return;}
 				_.views[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
-				_.vm.models[key]=v;
+				_.models[key]=v;
 				obj.bind(v);
 				return v;
 			};

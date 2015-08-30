@@ -106,11 +106,14 @@
 		//html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 控件均支持先创建 再init 然后bind绑定的过程 再调用onLoad和render事件
 		W.Control = function(path,params){
 			var _ = this,__ = {};
-			{		
+			{
 				_.path = path;
 				_.vm = null;
 				_.events = {};
 				_.params = V.getValue(params,{});
+				_.desc = function(){
+					console.log('todo 说明性文字');
+				};
 			}
 			_.init = function(parent,node,params){				
 				_.parent = parent;
@@ -127,17 +130,9 @@
 					//完成配置合并
 					_.vm = V.merge(_.params,V.getValue(vm,{data:{}}));
 					V.forC(_.vm,function(k,v){
-						switch(k.toLowerCase()){
-							case 'data':
-							case 'controls':
-									vm[k] = v;
-								break;
-							default:
-								if(k.toLowerCase().indexOf('on')==0){
-									vm[k] = v;
-									_.events[k.toLowerCase().substring(2)] = v;
-								}
-								break;
+						vm[k] = v;
+						if(k.toLowerCase().indexOf('on')==0){
+							_.events[k.toLowerCase().substring(2)] = v;
 						}
 					},function(){
 						_.vm = vm;
@@ -149,6 +144,8 @@
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
 					_.vm.call = function(){_.call.apply(_.parent.models,arguments);};
+					_.vm.add = function(){_.addControl.apply(_,arguments);};
+					_.vm.desc = function(){_.desc();};
 					_.vm.get = function(key){_.vm.data = V.merge(_.vm.data,_.fill());return key?_.vm.data[key]:_.vm.data;};
 					_.vm.bind(_);
 				}
@@ -381,9 +378,8 @@ case 'show':
 				}
 				var obj = _.middler.getObjectByAppName(W.APP,v.type);
 				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
-				node = node?node:V.newEl('div');
-				_.node.append(node);
-				obj.init(_,node,null);
+				node = node?node:V.newEl('div').appendTo(_.node);
+				obj.init(_,node,v);
 				obj.page = _.page;
 				_.controls.push(obj);
 				var key = V.getValue(v.id,V.random());
@@ -393,6 +389,28 @@ case 'show':
 				_.models[key]=v;
 				obj.bind(v);
 				return v;
+			};
+			_.removeControl = function(id){
+				delete _.models[id];
+				if(_.views[id]){
+					var val = _.views[id];
+					_.controls = $.grep(_.controls,function(v,i){return v!=val;});
+					V.tryC(function(){_.views[id].remove();});
+					delete _.views[id];
+				}
+			};
+			_.clearControl = function(){
+				if(!_.controls){
+					_.controls = [];
+					_.views = {};
+					_.models = {};
+				} else {
+					_.controls.slice(0,_.controls.length);
+					var vs = _.views;
+					V.forC(vs,function(k,v){V.tryC(function(){$(v).remove();});});
+					_.views = {};
+					V.forC(_.models,function(k,v){delete _.models[k];});
+				}
 			};
 		};
 	}
@@ -474,6 +492,9 @@ case 'show':
 					_.vm.update = function(){_.render.apply(_,arguments);};					
 					_.vm.call = function(){_.call.apply(_.page.getModels(),arguments);};
 					_.vm.add = function(){_.addControl.apply(_,arguments);};
+					_.vm.desc = function(){_.desc();};
+					_.vm.get = function(key){_.vm.data = V.merge(_.vm.data,_.fill());return key?_.vm.data[key]:_.vm.data;};
+					
 					V.forC(vm,function(key,value){
 						key = key.toLowerCase();
 						if(key.indexOf('on')==0){
@@ -574,9 +595,8 @@ case 'show':
 			_.addControl = function(node,v){
 				var obj = _.middler.getObjectByAppName(W.APP,v.type);
 				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
-				node = node?node:V.newEl('div');
-				_.node.append(node);
-				obj.init(_,node,null);
+				node = node?node:V.newEl('div').appendTo(_.node);
+				obj.init(_,node,v);
 				obj.page = _;
 				_.controls.push(obj);				
 				var key = V.getValue(v.id,V.random());
@@ -586,6 +606,28 @@ case 'show':
 				_.vm.models[key]=v;
 				obj.bind(v);
 				return v;
+			};
+			_.removeControl = function(id){
+				delete _.vm.models[id];
+				if(_.views[id]){
+					var val = _.views[id];
+					_.controls = $.grep(_.controls,function(v,i){return v!=val;});
+					V.tryC(function(){_.views[id].remove();});
+					delete _.views[id];
+				}
+			};
+			_.clearControl = function(){
+				if(!_.controls){
+					_.controls = [];
+					_.views = {};
+					_.models = {};
+				} else {
+					_.controls.slice(0,_.controls.length);
+					var vs = _.views;
+					V.forC(vs,function(k,v){V.tryC(function(){$(v).remove();});});
+					_.views = {};
+					V.forC(_.vm.models,function(k,v){delete _.vm.models[k];});
+				}
 			};
 			//可以将数据更新
 			_.render = function(data){

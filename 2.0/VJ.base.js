@@ -351,6 +351,8 @@ VJ = window.top.VJ;
 		(s = ua.match(/version\/([\d.]+).*safari/)) ? V.userAgent.safari = s[1] : 0;
 		(s = ua.match(/(mobile)/)) ? V.userAgent.mobile = true : false;
 		(s = ua.match(/(ipad)|(mediapad)/)) ? (V.userAgent.pad = true,V.userAgent.mobile = false) : false;
+		(s = ua.match(/(Android)|(Linux)/)) ? (V.userAgent.android = true) : false;
+		(s = ua.match(/(iPhone)|(Mac)/)) ? (V.userAgent.iphone = true) : false;
 		V.userAgent.pc = !(V.userAgent.mobile || V.userAgent.pad);
 		for (var key in V.userAgent) { if (key!='pc' && V.getValue(V.userAgent[key], false)) { V.userAgent.name = key; } }
 		console.log("VJ.userAgent:" + V.userAgent.name);

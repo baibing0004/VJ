@@ -47,7 +47,9 @@
 						}
 					};
 					_.callback = function(){
-						V.whileC(function(){return __.funs.shift()},function(v){v($(__.template));},function(){});						
+						V.whileC(function(){return __.funs.shift()},function(v){v($(__.template));},function(){
+							//这里处理加载完成
+						});						
 					};
 					if(path.indexOf('<')>=0){	
 						__.node.append(path);
@@ -588,7 +590,7 @@ case 'show':
 					},function(){
 						_.onReady();
 						_.call('start');
-					});
+					},true);
 				});
 			};
 			//动态添加控件到指定位置 如果不指定那么会添加到最后

@@ -973,7 +973,7 @@
 			_.onValue = function(v,func){
 				if(!V.isArray(v)) v = [v];
 				var sb = V.sb();
-				V.each(v,function(v2){sb.append(V.toJsonString(v2));},function(){func(sb.clear());sb = null;});
+				V.each(v,function(v2){if(typeof(v2)=='string') {sb.append(v2);} else sb.append(V.toJsonString(v2));},function(){func(sb.clear());sb = null;});
 			};			
 			_.onBackAnimate = function(node,e){
 				V.once(function(){

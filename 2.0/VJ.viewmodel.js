@@ -227,10 +227,10 @@
 							}							
 							break;
 						case 'valid':
-							var text = data.value || _.get().value;
-							if(_.valid){_.valid(text);}
+							_.fill();
+							if(_.valid){_.valid(data.value || _.get().value,value);}
 							break;
-case 'show':
+						case 'show':
 							_.vm.data.visible = true;
 							_.animate(value,function(){});
 							V.once(function(){_.node.show();},1);
@@ -854,7 +854,7 @@ case 'show':
 							reg.init(control,v.reg,v.error,input);
 							regs.push(reg);
 						},function(){
-							control.valid = function(text){
+							control.valid = function(text,func){
 								if(control.isError){
 									control.onClearError();
 								}
@@ -870,7 +870,7 @@ case 'show':
 											control.isError = true;
 											control.onError(reg.error);
 										}
-									},function(){if(success){control.isError = false;control.onSuccess();}});
+									},function(){if(success){control.isError = false;control.onSuccess();if(func){func();}}});
 								});
 							};
 						});						

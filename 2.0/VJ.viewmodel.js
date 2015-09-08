@@ -79,7 +79,7 @@
 			this.go = function(node,func){
 				if(V.isValid(__.css)){
 					node = $(node);
-					node.css('-webkit-animation',css).css('-moz-animation',css).css('-o-animation',css);				
+					node.css('-webkit-animation',css).css('-webkit-animation-play-state','running').css('-moz-animation',css).css('-moz-animation-play-state','running').css('-o-animation',css).css('-o-animation-play-state','running');
 					{
 						node.one('webkitAnimationEnd',function(){
 							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
@@ -227,7 +227,7 @@
 							}							
 							break;
 						case 'valid':
-							_.fill();
+							V.merge(_.get(),_.fill(),true);
 							if(_.valid){_.valid(data.value || _.get().value,value);}
 							break;
 						case 'show':
@@ -870,8 +870,8 @@
 											control.isError = true;
 											control.onError(reg.error);
 										}
-									},function(){if(success){control.isError = false;control.onSuccess();if(func){func();}}});
-								});
+									});
+								},function(){if(success){control.isError = false;control.onSuccess();if(func){func();}}});
 							};
 						});						
 					}

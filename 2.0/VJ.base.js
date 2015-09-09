@@ -340,7 +340,9 @@ VJ = window.top.VJ;
 			opera: false,
 			mobile:false,
 			pc:false,
-			pad:false
+			pad:false,
+			iphone:false,
+			android:false
 		};
 		var ua = navigator.userAgent.toLowerCase();
 		var s;
@@ -583,7 +585,7 @@ VJ = window.top.VJ;
 		*/
 		V.ajax = function (data) {
 			var funcsucc = V.merge(V.getSettings("ajax",{
-				async: false,
+				async: true,
 				type: "POST",
 				dataType: "text",
 				cache: false,

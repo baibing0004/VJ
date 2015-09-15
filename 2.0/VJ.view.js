@@ -208,6 +208,9 @@
 							_.get().history.push(window.location.hash);
 							window.location.hash = v;
 							break;
+						case 'remove':
+							_.get().history.pop();
+							break;
 						case 'back':
 							if(_.get().history && _.get().history.length>0 && v){
 								window.location.hash = _.get().history.pop();

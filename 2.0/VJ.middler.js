@@ -202,7 +202,7 @@
 					_.getType = function(){
 						if(path) {
 							V.each(path.split(';'),function(v){
-								if(defParam.host && v.toLowerCase().indexOf('http://')<0){
+								if(defParam.host && v.toLowerCase().indexOf('../')<0 && v.toLowerCase().indexOf('http://')<0){
 									v = defParam.host + v;
 								}
 								V.include(v);
@@ -214,14 +214,12 @@
 					_.getValue = function(){
 						if(path) {
 							//以后可以修改 目前是有缓存的 path改为支持;号隔开的各个路径
-							if(path) {
-								V.each(path.split(';'),function(v){
-									if(defParam.host && v.toLowerCase().indexOf('http://')<0){
-										v = defParam.host + v;
-									}
-									V.include(v);
-								},null,true);
-							}
+							V.each(path.split(';'),function(v){
+								if(defParam.host && v.toLowerCase().indexOf('../')<0 && v.toLowerCase().indexOf('http://')<0){
+									v = defParam.host + v;
+								}
+								V.include(v);
+							},null,true);
 						}
 						var paras = para.getParas();
 						switch(method){

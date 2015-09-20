@@ -14,8 +14,10 @@
 					switch(k){
 						case 'hover':
 							_.node.hover(function(){
+								if(node.parents("[disabled]").length>0) return;
 								_.call('Hover',{hover:true});
 							},function(){
+								if(node.parents("[disabled]").length>0) return;
 								_.call('Hover',{hover:false});
 							});
 							break;

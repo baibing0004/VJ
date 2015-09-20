@@ -247,6 +247,7 @@
 				node = $(node);
 				if(typeof(node[k]) == 'function'){
 					node[k](function(e){
+						if(node.parents('[disabled]').length>0) return;
 						_.call(k,{e:e});
 					});
 				}

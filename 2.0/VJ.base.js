@@ -1,9 +1,17 @@
 //命令注册变量
 //很多地方用不了 接驳原型链报错 直接调用逻辑控件的update报错 "use strict"
-if (!window.top.VJ) {
-	window.top.VJ = {};
+if (top.location == location) {
+    if (!window.top.VJ) {
+        //跨域
+        window.top.VJ = {cross:false};
+    }
+    VJ = window.top.VJ;
+} else {
+    if (!window.VJ) {
+        window.VJ = {cross:true};
+    }
+    VJ = window.VJ
 }
-VJ = window.top.VJ;
 (function(V,$){
 	//常用基本操作
 	{		
@@ -353,8 +361,8 @@ VJ = window.top.VJ;
 		(s = ua.match(/version\/([\d.]+).*safari/)) ? V.userAgent.safari = s[1] : 0;
 		(s = ua.match(/(mobile)/)) ? V.userAgent.mobile = true : false;
 		(s = ua.match(/(ipad)|(mediapad)/)) ? (V.userAgent.pad = true,V.userAgent.mobile = false) : false;
-		(s = ua.match(/(Android)|(Linux)/)) ? (V.userAgent.android = true) : false;
-		(s = ua.match(/(iPhone)|(Mac)/)) ? (V.userAgent.iphone = true) : false;
+		(s = ua.match(/(android)|(linux)/)) ? (V.userAgent.android = true) : false;
+		(s = ua.match(/(iphone)|(mac)/)) ? (V.userAgent.iphone = true) : false;
 		V.userAgent.pc = !(V.userAgent.mobile || V.userAgent.pad);
 		for (var key in V.userAgent) { if (key!='pc' && V.getValue(V.userAgent[key], false)) { V.userAgent.name = key; } }
 		console.log("VJ.userAgent:" + V.userAgent.name);
@@ -892,7 +900,7 @@ VJ = window.top.VJ;
 				//一旦有 callback就是 post了
 				window.setTimeout(function () {
 					node.hide().load(url, function () {
-						window.top.setTimeout(function () {
+						window.setTimeout(function () {
 							if (!(node.hasClass('ui-dialog-content') || node.hasClass('g_hide'))) {
 								node.show();
 							}

@@ -187,8 +187,10 @@
 					switch(k.toLowerCase()){
 						case 'change':
 							$(window).bind('hashchange', function (e) {
-								if(_.lastAction != window.location.hash)
-									_.call('change');
+								if(_.lastAction != window.location.hash.replace(/#/g,'')){
+									_.call('change',{lastAction:_.lastAction});
+									_.lastAction = _.get().history.pop();
+								}						
 							});
 							break;
 					}
@@ -201,12 +203,15 @@
 				}
 				data = __.render(data);
 				V.forC(data,function(k,v){
-					_.lastAction = v;
 					switch(k.toLowerCase()){
 						case 'add':
 							if(!_.get().history){_.get().history = [];}
-							_.get().history.push(window.location.hash);
+							if(window.location.hash){
+								_.get().history.push(window.location.hash.replace(/#/g,''));
+							}
+							v = v.replace(/#/g,'');
 							window.location.hash = v;
+							_.lastAction = v;
 							break;
 						case 'remove':
 							_.get().history.pop();
@@ -419,7 +424,7 @@
 										};
 										break;
 								}
-							}
+							}							
 							if(parent && parent.attr('panelid') !=__.status.panelid && parent.attr('panelaction') !=''){
 								var action = parent.attr('panelaction').split(',');
 								switch(ev.type){

@@ -1,9 +1,17 @@
 //命令注册变量
 //很多地方用不了 接驳原型链报错 直接调用逻辑控件的update报错 "use strict"
-if (!window.top.VJ) {
-	window.top.VJ = {};
+if (top.location == location) {
+    if (!window.top.VJ) {
+        //跨域
+        window.top.VJ = {cross:false};
+    }
+    VJ = window.top.VJ;
+} else {
+    if (!window.VJ) {
+        window.VJ = {cross:true};
+    }
+    VJ = window.VJ
 }
-VJ = window.top.VJ;
 (function(V,$){
 	//常用基本操作
 	{		
@@ -892,7 +900,7 @@ VJ = window.top.VJ;
 				//一旦有 callback就是 post了
 				window.setTimeout(function () {
 					node.hide().load(url, function () {
-						window.top.setTimeout(function () {
+						window.setTimeout(function () {
 							if (!(node.hasClass('ui-dialog-content') || node.hasClass('g_hide'))) {
 								node.show();
 							}

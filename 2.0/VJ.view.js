@@ -207,11 +207,16 @@
 						case 'add':
 							if(!_.get().history){_.get().history = [];}
 							if(window.location.hash){
-								_.get().history.push(window.location.hash.replace(/#/g,''));
-							}
+								var his = _.get().history;
+								if(!(his.length>0 && his[his.length-1]==window.location.hash.replace(/#/g,''))){
+									his.push(window.location.hash.replace(/#/g,''));
+								}
+							}							
 							v = v.replace(/#/g,'');
-							window.location.hash = v;
-							_.lastAction = v;
+							if(_.lastAction != v){
+								window.location.hash = v;
+								_.lastAction = v;
+							}
 							break;
 						case 'remove':
 							_.get().history.pop();
@@ -560,18 +565,18 @@
 			//以方便继承类覆盖并执行动画
 			_.onLeft = function(ev,e){
 				//使用速度计算距离不是太合理 Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
-				if(ev.distance < Math.max(30,_.node.width()* e.limit)) {_.am(_.node,{tx:(e.left||e.leftout)?ev.deltaX:Math.max(0,ev.deltaX),ty:0});}
+				if(Math.abs(ev.deltaX) < Math.max(30,_.node.width()* e.limit)) {_.am(_.node,{tx:(e.left||e.leftout)?ev.deltaX:Math.max(0,ev.deltaX),ty:0});}
 				else {e.callevent.value = true;return e.limitBack;}
 				};
 			_.onRight = function(ev,e){
-				if(ev.distance < Math.max(30,_.node.width()* e.limit)) _.am(_.node,{tx:(e.right||e.rightout)?ev.deltaX:Math.max(0,ev.deltaX),ty:0});	
+				if(Math.abs(ev.deltaX) < Math.max(30,_.node.width()* e.limit)) _.am(_.node,{tx:(e.right||e.rightout)?ev.deltaX:Math.max(0,ev.deltaX),ty:0});	
 				else {e.callevent.value = true;return e.limitBack;}
 				};
 			_.onUp = function(ev,e){
-				if(ev.distance < Math.max(30,_.node.height()* e.limit)) _.am(_.node,{ty:(e.up||e.upout)?ev.deltaY:Math.max(0,ev.deltaY),tx:0});
+				if(Math.abs(ev.deltaY) < Math.max(30,_.node.height()* e.limit)) _.am(_.node,{ty:(e.up||e.upout)?ev.deltaY:Math.max(0,ev.deltaY),tx:0});
 				else {e.callevent.value = true;return e.limitBack;}};
 			_.onDown = function(ev,e){				
-				if(ev.distance < Math.max(30,_.node.height()* e.limit)) _.am(_.node,{ty:(e.down||e.downout)?ev.deltaY:Math.min(0,ev.deltaY),tx:0});
+				if(Math.abs(ev.deltaY) < Math.max(30,_.node.height()* e.limit)) _.am(_.node,{ty:(e.down||e.downout)?ev.deltaY:Math.min(0,ev.deltaY),tx:0});
 				else {e.callevent.value = true;return e.limitBack;}};
 			_.onScale = function(ev,e){
 				if(Math.abs(ev.scale-1)<e.limit) _.am(_.node,{scale:ev.scale});
@@ -734,25 +739,25 @@
 			__.onLeft = _.onLeft;
 			_.onLeft = function(ev,e){
 				if(_.vol || _.lock) return;
-				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
+				__.distance = Math.abs(ev.deltaX);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onLeft(ev,e);
 			};
 			__.onRight = _.onRight;
 			_.onRight = function(ev,e){
 				if(_.vol || _.lock) return;
-				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
+				__.distance = Math.abs(ev.deltaX);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onRight(ev,e);
 			};
 			__.onUp = _.onUp;
 			_.onUp = function(ev,e){
 				if(_.hor || _.lock) return;
-				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
+				__.distance = Math.abs(ev.deltaY);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onUp(ev,e);
 			};
 			__.onDown = _.onDown;
 			_.onDown = function(ev,e){
 				if(_.hor || _.lock) return;
-				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
+				__.distance = Math.abs(ev.deltaY);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				return __.onDown(ev,e);
 			};
 			//low设计需要区别第一次
@@ -863,28 +868,28 @@
 			//以方便继承类覆盖并执行动画
 			_.onLeft = function(ev,e){
 				if(_.vol || _.lock) return;
-				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
+				__.distance = Math.abs(ev.deltaX);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var x = e.transform.x+ev.deltaX;
 				if(x < (_.node.width()-5-_.panel.width())){e.callevent.value=true;}
 				if(x > Math.min(-e.limit,(_.node.width()-e.limit-_.panel.width()))) {_.am(_.panel,{tx:(e.left||e.leftout)?x:Math.max(0,ev.deltaX),ty:0});} else return e.limitBack;
 			};
 			_.onRight = function(ev,e){
 				if(_.vol || _.lock) return;
-				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
+				__.distance = Math.abs(ev.deltaX);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var x = e.transform.x+ev.deltaX;
 				if(x > 5){e.callevent.value=true;}
 				if(x < e.limit){_.am(_.panel,{tx:(e.right||e.rightout)?x:Math.max(0,ev.deltaX),ty:0});} else return e.limitBack;
 			};
 			_.onUp = function(ev,e){
 				if(_.hor || _.lock) return;
-				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
+				__.distance = Math.abs(ev.deltaY);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
 				var y = e.transform.y+ev.deltaY;
 				if(y < (_.node.height()-5-_.panel.height())){e.callevent.value=true;}
 				if(y > Math.min(-e.limit,(_.node.height()-e.limit-_.panel.height()))) {_.am(_.panel,{ty:(e.up||e.upout)?y:Math.max(0,ev.deltaY),tx:0});} else return e.limitBack;
 			};
 			_.onDown = function(ev,e){
 				if(_.hor || _.lock) return;
-				__.distance = Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
+				__.distance = Math.abs(ev.deltaY);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var y = e.transform.y+ev.deltaY;
 				if(y > 5){e.callevent.value=true;}
 				if(y < e.limit){_.am(_.panel,{ty:(e.down||e.downout)?y:Math.max(0,ev.deltaY),tx:0});} else return e.limitBack;

@@ -573,6 +573,8 @@ var classname = function(构造参数){
 	 * 例子:``` VJ.decHtml('<input%2F>')```
  * setChecked 用于将checked对象在不同浏览器中都设置成需要的值
     * 例如:```VJ.setChecked($node,true);```
+ * getChecked 用于将checked对象在不同浏览器中都获取需要的值
+    * 例如:```VJ.getChecked($node);```
  * maxlength 用于所有的textarea通过JS方法绑定maxlength属性 保证当大于一定值时自动截取
  * fill 用于使用数据填充带有'\_\_'属性的控件，默认自动处理input/textarea/select/img/div/span等等类型节点，当标签属性\_\_定义了field时会寻找data中的对应数据value进行填充，如果\_\_属性中定义了formatter属性那么会调用其进行数据格式化 
 	 * 例子:
@@ -634,7 +636,7 @@ var classname = function(构造参数){
     * 例如 ```V.cleanCommand('editor.open');```
     * VJ.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){}); 仅限iframe方式调用时，先取消原页面添加的方法
  * registEvent VJ用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。 
-	 * 例子: ```V.registEvent('showXXList',getData)```
+	 * 例子: ```V.registEvent('showXXList',getData),V.registEvent(['showXXList','showYYList'],getData)```
  * callEvent VJ用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。 
 	 * 例子: ```V.callEvent('showXXList',[{id:1}])```
  * haseEvent VJ用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false; 

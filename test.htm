@@ -683,7 +683,7 @@
 										console.log(__.txt);
 										__.txt.update({enable:true,visiable:true,text:'22233'});
 									},2000);
-									this.his.update({add:'abc'});									
+									this.his.update({add:'abc'});								
 									//this.his.update({add:'bcd'});
 									//console.log(this);
 									/*_.ni.excute('template','ajaxtest1',{SONumber:10001103386854},function(res){
@@ -702,6 +702,9 @@
 									//	console.log(s_account);
 									//},100);
 									//setTimeout(function(){console.log(s_account);},1);
+									VJ.registEvent(['a','b'],function(){console.log('a');});
+									VJ.callEvent('a');
+									VJ.callEvent('b');	
 								},
 								onDispose:function(){
 									console.log('dispose');

@@ -445,6 +445,15 @@ if (top.location == location) {
 				setCheckBox(node, value);
 			}
 		};
+		V.getChecked = function(node){
+			if (V.userAgent.ie6 || V.userAgent.ie7) {
+				if (V.isValid(all.get(0)))
+					return all.get(0).defaultChecked
+				return null;
+			} else {
+				return all.prop?all.prop('checked'):all.attr('checked');
+			}
+		};
 		V.maxlength = function () {
 			$("textarea[maxlength]").unbind('change').change(function (event) {
 				var _ = $(this);
@@ -971,25 +980,33 @@ if (top.location == location) {
 		/*
 		V用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
 		--案例
-		V.registEvent('showXXList',getData)
+		V.registEvent('showXXList',getData),V.registEvent(['showXXList',''],getData)
 		*/
-		V.registEvent = function (name,func,isTop) {		
-			var events = V.getSettings('events',[]);
-			var funs = events[name];
-			if (!V.isValid(funs)) {
-				funs = [];
-				events[name] = funs;
-			}
-			if (typeof (func) == 'function') {
-				if(isTop && !funs.top){
-					funs.top = func;
-					funs.unshift(func);
-				} else {
-					if(isTop && funs.top){V.showException('V.registEvent:'+name+' 事件已经有订阅者被置顶!');}
-					funs.push(func);
+		V.registEvent = function (name,func,isTop) {
+			var fun = function(name,func,isTop){
+				var events = V.getSettings('events',[]);
+				var funs = events[name];
+				if (!V.isValid(funs)) {
+					funs = [];
+					events[name] = funs;
 				}
+				if (typeof (func) == 'function') {
+					if(isTop && !funs.top){
+						funs.top = func;
+						funs.unshift(func);
+					} else {
+						if(isTop && funs.top){V.showException('V.registEvent:'+name+' 事件已经有订阅者被置顶!');}
+						funs.push(func);
+					}
+				}
+			};
+			if(V.isArray(name)){
+				V.each(name,function(v){
+					fun(v,func,isTop);
+				},null,true);
+			} else {
+				fun(name,func,isTop);
 			}
-			
 		};
 		/*
 		V用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。

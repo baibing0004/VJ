@@ -126,10 +126,22 @@
 							if(V.getType(value) == 'string'){
 								value = eval('('+value+')');
 							};
-							var sb = V.sb();
-							V.forC(value,function(k,v){								
-								sb.appendFormat('<option value="{value}">{key}</option>',{key:k,value:v});
-							},function(){_.sel.empty().append(sb.clear());sb = null;if(_.vm.data.value){setValue(_.vm.data.value);}});
+							if(V.userAgent.ie7){
+								V.forC(value,function(k,v){	
+									var opn = document.createElement("OPTION");
+									_.sel.get(0).appendChild(opn);//先追加
+									if(_.vm.data.value && _.vm.data.value == v){
+										opn.selected = true;
+									}
+									opn.innerText = k;
+									opn.value = v;
+								},null,true);
+							} else {
+								var sb = V.sb();
+								V.forC(value,function(k,v){								
+									sb.appendFormat('<option value="{value}">{key}</option>',{key:k,value:v});
+								},function(){_.sel.empty().html(sb.clear());sb = null;if(_.vm.data.value){setValue(_.vm.data.value);}});
+							}
 							break;
 						case 'value':							
 							setValue(value);

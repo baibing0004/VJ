@@ -1,3 +1,9 @@
+//兼容IE7
+if(typeof (console) == 'undefined'){
+	window.console={
+		log:function(e){}
+	}
+}
 //命令注册变量
 //很多地方用不了 接驳原型链报错 直接调用逻辑控件的update报错 "use strict"
 if (top.location == location) {
@@ -433,8 +439,10 @@ if (top.location == location) {
 				$(node2).attr('checked', value);
 				if (V.userAgent.ie6 || V.userAgent.ie7) {
 					var chk = $(node2);
-					if (V.isValid(chk.get(0)))
+					if (V.isValid(chk.get(0))){
 						chk.get(0).defaultChecked = value;
+						chk.get(0).checked = value;
+					}
 				}
 			};
 			if (node.length) {
@@ -447,8 +455,9 @@ if (top.location == location) {
 		};
 		V.getChecked = function(node){
 			if (V.userAgent.ie6 || V.userAgent.ie7) {
-				if (V.isValid(all.get(0)))
-					return all.get(0).defaultChecked
+				if (V.isValid(all.get(0))){
+					return all.get(0).checked
+				}
 				return null;
 			} else {
 				return all.prop?all.prop('checked'):all.attr('checked');

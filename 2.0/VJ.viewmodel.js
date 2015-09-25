@@ -313,10 +313,14 @@
 						if(n.length>1){
 							for(var i=0;i<n.length;i++){
 								var _n = $(n[i]);
-								_n.attr(v.key,((V.isValid(_n.attr(v.key)) && _n.attr(v.key) != v.val)?_n.attr(v.key)+" ":"")+v.val);
+								if(V.isValid(v.val) && v.val!='false'){
+									_n.attr(v.key,((V.isValid(_n.attr(v.key)) && _n.attr(v.key) != v.val)?_n.attr(v.key)+" ":"")+v.val);
+								}
 							}
 						} else {
-							n.attr(v.key,((V.isValid(n.attr(v.key)) && n.attr(v.key) != v.val)?n.attr(v.key)+" ":"")+v.val);
+							if(V.isValid(v.val) && v.val!='false'){
+								n.attr(v.key,((V.isValid(n.attr(v.key)) && n.attr(v.key) != v.val)?n.attr(v.key)+" ":"")+v.val);
+							}
 						}
 					},function(){},true);
 				}

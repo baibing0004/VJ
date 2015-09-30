@@ -356,7 +356,14 @@ if (top.location == location) {
 			pc:false,
 			pad:false,
 			iphone:false,
-			android:false
+			android:false,
+			height:(function(){
+				//兼容IOS 与 andriod 但是千万不要设置body的高度为定制 应该为100%
+				if (document.body && document.body.clientHeight > 0)
+					return document.body.clientHeight;
+				else
+					return document.documentElement.clientHeight;
+			})()
 		};
 		var ua = navigator.userAgent.toLowerCase();
 		var s;

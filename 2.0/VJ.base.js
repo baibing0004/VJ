@@ -455,12 +455,12 @@ if (top.location == location) {
 		};
 		V.getChecked = function(node){
 			if (V.userAgent.ie6 || V.userAgent.ie7) {
-				if (V.isValid(all.get(0))){
-					return all.get(0).checked
+				if (V.isValid(node.get(0))){
+					return node.get(0).checked;
 				}
 				return null;
 			} else {
-				return all.prop?all.prop('checked'):all.attr('checked');
+				return node.prop?all.prop('checked'):node.attr('checked');
 			}
 		};
 		V.maxlength = function () {

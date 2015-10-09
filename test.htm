@@ -677,6 +677,9 @@
 								data:{
 									title:'测试页面aa'
 								},
+								onResize:function(data,self){
+									console.log('Resize:'+data.height+':'+data.width);
+								},
 								onStart:function(data,self){
 									var __ = this;
 									VJ.once(function(){

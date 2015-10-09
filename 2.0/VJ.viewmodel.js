@@ -535,6 +535,7 @@
 				_.views = {};
 				_.controls = [];		
 				__.render = _.render;
+				__.onLoad = _.onLoad;
 			}
 			//一般调用M.Page对象都比较特殊
 			_.bind = function(page){
@@ -686,6 +687,24 @@
 					V.forC(_.vm.models,function(k,v){delete _.vm.models[k];});
 				}
 			};
+			_.onLoad = function(node){
+				V.forC(_.events,function(k,v){
+					switch(k){
+						case 'resize':
+							$(window).resize(function(){
+								V.userAgent.refresh();
+								_.call('resize',{
+									height:V.userAgent.height,
+									width:V.userAgent.width
+								});
+							});
+							break;
+						default:
+							_.bindEvent(node,k,v);
+							break;
+					}
+				},function(){__.onLoad(node);},true);
+			}
 			//可以将数据更新
 			_.render = function(data){
 				data = __.render(data);

@@ -357,14 +357,24 @@ if (top.location == location) {
 			pad:false,
 			iphone:false,
 			android:false,
-			height:(function(){
-				//兼容IOS 与 andriod 但是千万不要设置body的高度为定制 应该为100%
-				if (document.body && document.body.clientHeight > 0)
-					return document.body.clientHeight;
-				else
-					return document.documentElement.clientHeight;
-			})()
+			refresh:function(){
+				V.userAgent.width = (function(){
+					//兼容IOS 与 andriod 但是千万不要设置body的高度为定制 应该为100%
+					if (document.body && document.body.clientWidth > 0)
+						return document.body.clientWidth;
+					else
+						return document.documentElement.clientWidth;
+				})();
+				V.userAgent.height = (function(){
+					//兼容IOS 与 andriod 但是千万不要设置body的高度为定制 应该为100%
+					if (document.body && document.body.clientHeight > 0)
+						return document.body.clientHeight;
+					else
+						return document.documentElement.clientHeight;
+				})();
+			}
 		};
+		V.userAgent.refresh();
 		var ua = navigator.userAgent.toLowerCase();
 		var s;
 		(s = ua.match(/msie ([\d]+)/)) ? V.userAgent.ie = s[1] :

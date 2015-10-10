@@ -226,6 +226,56 @@
 								});
 							}							
 							break;
+						case 'globalposition':
+							//此方法不支持重复设置
+							if(_.node.attr('position')){
+								V.showException('W.Control.data.postion 不允许重复设置!'+_.node.attr('position'));
+							}else{
+								_.node.attr('position',value.toLowerCase());
+								_.node.css('position','absolute');
+								var parent = $(window);
+								switch(value.toLowerCase()){
+									case 'top':
+										parent.scroll(function(){
+											_.node.css('top', document.body.scrollTop+"px");
+										});
+										_.node.css('top', document.body.scrollTop+"px");
+										break;
+									case 'bottom':
+										parent.scroll(function(){
+										console.log(document.body.scrollTop+':'+$(window).height()+':'+_.node.height()+':'+(document.body.scrollTop+$(window).height()-_.node.height()));
+											_.node.css('top', (document.body.scrollTop+$(window).height()-_.node.height())+"px");
+										});
+										_.node.css('top', (document.body.scrollTop+$(window).height()-_.node.height())+"px");
+										break;
+								}
+							}
+							break;
+						case 'position':
+							//此方法不支持重复设置
+							if(_.node.attr('position')){
+								V.showException('W.Control.data.postion 不允许重复设置!'+_.node.attr('position'));
+							}else{
+								_.node.attr('position',value.toLowerCase());
+								_.node.css('position','absolute');
+								var parent = _.node.parent();
+								switch(value.toLowerCase()){
+									case 'top':
+										parent.scroll(function(){
+											console.log('scroll');
+											_.node.css('top', parent.get(0).scrollTop+"px");
+										});
+										_.node.css('top', parent.get(0).scrollTop+"px");
+										break;
+									case 'bottom':										
+										parent.scroll(function(){
+											_.node.css('top', (parent.get(0).scrollTop+$(document).height()-_.node.height())+"px");
+										});
+										_.node.css('top', (parent.get(0).scrollTop+$(document).height()-_.node.height())+"px");
+										break;
+								}
+							}
+							break;
 						case 'valid':
 							V.merge(_.get(),_.fill(),true);
 							if(_.valid){_.valid(data.value || _.get().value,value);}
@@ -485,6 +535,7 @@
 				_.views = {};
 				_.controls = [];		
 				__.render = _.render;
+				__.onLoad = _.onLoad;
 			}
 			//一般调用M.Page对象都比较特殊
 			_.bind = function(page){
@@ -636,6 +687,24 @@
 					V.forC(_.vm.models,function(k,v){delete _.vm.models[k];});
 				}
 			};
+			_.onLoad = function(node){
+				V.forC(_.events,function(k,v){
+					switch(k){
+						case 'resize':
+							$(window).resize(function(){
+								V.userAgent.refresh();
+								_.call('resize',{
+									height:V.userAgent.height,
+									width:V.userAgent.width
+								});
+							});
+							break;
+						default:
+							_.bindEvent(node,k,v);
+							break;
+					}
+				},function(){__.onLoad(node);},true);
+			}
 			//可以将数据更新
 			_.render = function(data){
 				data = __.render(data);

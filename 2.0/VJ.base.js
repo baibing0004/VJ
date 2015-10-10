@@ -460,7 +460,7 @@ if (top.location == location) {
 				}
 				return null;
 			} else {
-				return node.prop?all.prop('checked'):node.attr('checked');
+				return node.prop?node.prop('checked'):node.attr('checked');
 			}
 		};
 		V.maxlength = function () {

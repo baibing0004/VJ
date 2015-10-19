@@ -649,7 +649,21 @@
 								data:{},
 								onLoad:function(data,self){
 									//todo onload 在data的value的上面执行
-									self.update({value:{text:navigator.userAgent.toLowerCase(),ver:VJ.toJsonString(VJ.userAgent),web:VJ.userAgent.pad?'本':(VJ.userAgent.mobile?'手机':'电脑')}});
+									var leftTime = new Date(Date.parse('2015-10-15 13:22:45'.replace(/-/g, "/"))).add('n', 20).getTime() - Date.parse('2015-10-15 13:22:45'.replace(/-/g, "/"));
+									var leftsecond = parseInt(leftTime / 1000);
+									var ret = {
+										dd: Math.floor(leftsecond / 86400),
+										hh: Math.floor((leftsecond / 3600) % 24),
+										mm: Math.floor((leftsecond / 60) % 60),
+										ss: Math.floor(leftsecond % 60)
+									};
+									ret.hh = ret.hh < 10 ? ("0" + ret.hh) : ret.hh;
+									ret.mm = ret.mm < 10 ? ("0" + ret.mm) : ret.mm;
+									ret.ss = ret.ss < 10 ? ("0" + ret.ss) : ret.ss;
+									self.update({value:{text:navigator.userAgent.toLowerCase(),ver:VJ.toJsonString(VJ.userAgent),web:VJ.userAgent.pad?'本':(VJ.userAgent.mobile?'手机':'电脑'),
+									now:ret.mm,
+									next:ret.ss
+									}});
 									//self.update({value:{text:'111'}});
 									//VJ.once(function(){},1);
 									//VJ.once(function(){self.update({value:{abc:'abc2',text:'FillControl首秀2!'}});},2000);
@@ -673,6 +687,9 @@
 								console.log(data);
 								VJ.once(function(){self.update({back:true});},1000);
 							}},
+							timers:{
+								data:{value:new Date().add('n',20),now:'2015-10-15 14:31:00'},
+								onEnd: function (data, self) {console.log('timer end');},onload1:function(data,self){self.update({value:'2015-10-15 14:22:45'});}},
 							page:{
 								data:{
 									title:'测试页面aa'
@@ -729,7 +746,7 @@
 							{ref:'CookieDataResource'},
 							{params:'Resource','abc':{ref:'CookieDataResource'},'bcd':1},
 							{a:1}
-						]},
+						]},						
 						CookieDataResource:{type:'.CookieDataResource',mode:'static',params:[]}						
 					},
 					'VESH.view':{
@@ -741,7 +758,8 @@
 							'']},
 						bpanel:{type:'BPanel',params:[
 							{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
-							'','',100,false]}						
+							'','',100,false]},
+						timer:{type:'window.YT.view.Timer',path: '../VJ/timer.js' }
 					}
 				}
 			}));			
@@ -778,9 +796,12 @@
 		<div id='fill' _="type:'fill',direction:'vol'">
 			version:{text}<br/>
 			ver:{ver}<br/>
-			web:{web}
+			web:{web}<br/>
+			now:{now}<br/>
+			next:{next}
 		</div>
 		<history id='his' _></history>
+		<timer id="timers" _>过期时间 <span>{hh}</span>:<span>{mm}</span>:<span>{ss}</span></timer>
 		<div id='bp' _="type:'pagepanel',direction:'hor'" style="height:250px;width:300px;">
 			<div id='bp2' _="type:'scrollpanel',direction:'vol',bottom:'true',lock:false" style="height:250px;width:300px;">
 			<div style="background:red;height:200px;">

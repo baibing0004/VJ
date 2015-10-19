@@ -196,10 +196,10 @@
 						case 'visible':
 							if(value){_.node.show();} else {_.node.hide();}
 							break;
-						case 'addClass':
+						case 'addclass':
 							_.node.addClass(value);
 							break;
-						case 'removeClass':
+						case 'removeclass':
 							_.node.removeClass(value);
 							break;
 						case 'animate':

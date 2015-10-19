@@ -39,6 +39,10 @@
 				data = __.render(data);
 				V.forC(data,function(key,value){
 					switch(key){
+						case 'enable':
+							if(value){_.input.removeAttr('disabled');}else{_.input.attr('disabled','disabled');}
+							break;
+							break;
 						case 'text':
 						case 'value':
 							_.input.val(value);
@@ -54,6 +58,10 @@
 							break;
 						case 'size':
 							_.input.attr('size',value);
+							delete data[key];
+							break;
+						case 'kind':
+							_.input.attr('type',value);
 							delete data[key];
 							break;
 					}

@@ -387,7 +387,7 @@ if (top.location == location) {
 		(s = ua.match(/(android)|(linux)/)) ? (V.userAgent.android = true) : false;
 		(s = ua.match(/(iphone)|(mac)/)) ? (V.userAgent.iphone = true) : false;
 		V.userAgent.pc = !(V.userAgent.mobile || V.userAgent.pad);
-		for (var key in V.userAgent) { if (key!='pc' && V.getValue(V.userAgent[key], false)) { V.userAgent.name = key; } }
+		for (var key in V.userAgent) { if (key!='pc' && key!='width' && key!='height' && V.getValue(V.userAgent[key], false)) { V.userAgent.name = key; } }
 		console.log("VJ.userAgent:" + V.userAgent.name);
 		if (V.getValue(V.userAgent.ie, false)) {
 			var ver = V.userAgent.ie;
@@ -1005,6 +1005,7 @@ if (top.location == location) {
 		};
 		/*
 		V用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+		并约定1分钟内 允许注册者多次被触发
 		--案例
 		V.registEvent('showXXList',getData),V.registEvent(['showXXList',''],getData)
 		*/
@@ -1023,6 +1024,13 @@ if (top.location == location) {
 					} else {
 						if(isTop && funs.top){V.showException('V.registEvent:'+name+' 事件已经有订阅者被置顶!');}
 						funs.push(func);
+					}					
+					var ecall = V.getSettings('eventcall',{});
+					ecall = ecall[name]?ecall[name]:{};
+					if(ecall.time && ecall.time>=(new Date().getTime())){
+						V.once(function(){
+							func.apply(ecall.caller,ecall.data);
+						});
 					}
 				}
 			};
@@ -1035,7 +1043,8 @@ if (top.location == location) {
 			}
 		};
 		/*
-		V用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+		V用于调用被调用页面注册的事件以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+		并约定1分钟内 允许注册者多次被触发
 		--案例
 		V.callEvent('showXXList',[{id:1}])
 		*/
@@ -1052,6 +1061,12 @@ if (top.location == location) {
 					});
 				});
 			}
+			var ecall = V.getSettings('eventcall',{});
+			if(!ecall[name]){ecall[name] = {};}
+			ecall = ecall[name];
+			ecall.time = new Date().add('n',1).getTime();
+			ecall.data = data;
+			ecall.caller = caller;
 		};
 		/*
 		用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false;

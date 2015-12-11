@@ -157,6 +157,20 @@
 				}
 			};
 			_.clear = function(){__.datas = [];__.data = {};__.kv = {};};
+			_.hasData = function(key){
+				return key?(function(){
+					var v = _.get(key);
+					return v && v.length>0;
+				})():(__.datas.length>0 && (function(){
+					var hasData = false;
+					V.each(__.datas,function(v){
+						if(!hasData && v && v.length>0){
+							hasData = true;
+						}
+					},null,true);
+					return hasData;
+				})());
+			};
 		};
 	}
 	//分离NiDataResource完成static instance pool各种调用方式

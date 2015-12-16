@@ -687,9 +687,6 @@
 								console.log(data);
 								VJ.once(function(){self.update({back:true});},1000);
 							}},
-							timers:{
-								data:{value:new Date().add('n',20),now:'2015-10-15 14:31:00'},
-								onEnd: function (data, self) {console.log('timer end');},onload1:function(data,self){self.update({value:'2015-10-15 14:22:45'});}},
 							page:{
 								data:{
 									title:'测试页面aa'
@@ -703,7 +700,14 @@
 										console.log(__.txt);
 										__.txt.update({enable:true,visiable:true,text:'22233'});
 									},2000);
-									this.his.update({add:'abc'});								
+									this.his.update({add:'abc'});	
+									
+									VJ.callEvent('test11',[111]);
+									VJ.registEvent('test11',function(data){console.log(data);});
+									VJ.once(function(){									
+										VJ.registEvent('test11',function(data){console.log(data);});									
+									},50000);
+									//VJ.callEvent('test11',[222]);
 									//this.his.update({add:'bcd'});
 									//console.log(this);
 									/*_.ni.excute('template','ajaxtest1',{SONumber:10001103386854},function(res){
@@ -801,7 +805,6 @@
 			next:{next}
 		</div>
 		<history id='his' _></history>
-		<timer id="timers" _>过期时间 <span>{hh}</span>:<span>{mm}</span>:<span>{ss}</span></timer>
 		<div id='bp' _="type:'pagepanel',direction:'hor'" style="height:250px;width:300px;">
 			<div id='bp2' _="type:'scrollpanel',direction:'vol',bottom:'true',lock:false" style="height:250px;width:300px;">
 			<div style="background:red;height:200px;">

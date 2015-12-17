@@ -733,8 +733,8 @@
 			//以方便继承类覆盖并执行动画
 			__.am = _.am;
 			_.am = function(node,data,timeout){
-				if(_.hor){data.tx-=(node.width()*_.index);} else if(_.vol){data.ty-=(node.height()*_.index);};
-				__.am(_.panel,data,timeout);					
+				//if(_.hor){data.tx-=(node.width()*_.index);} else if(_.vol){data.ty-=(node.height()*_.index);};
+				//__.am(_.panel,data,timeout);					
 			};
 			__.onLeft = _.onLeft;
 			_.onLeft = function(ev,e){

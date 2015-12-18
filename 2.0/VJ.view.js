@@ -233,7 +233,7 @@
 		};
 		//识别 上下左右滑动及其动画，同时支持滑入滑出，支持点击或者tap，支持加载动画
 		//支持onUp向上滑动/onUpOut向上滑出/onDown向下滑动/onDownOut向下滑出/onLeft向左滑动/onLeftOut向左滑出/onRight向右滑动/onRightOut向右滑出/onDblClick双击/onScale(data(scale),self)双指改变大小/onRotate(data(angle),self)双指旋转 show('animatename')显示动画/hide('animatename')动画隐藏 limit动画事件响应阀值达到阀值后才触发事件，limitBack触发事件后是否立即回复正常
-		W.Panel = function(path,vm,limit,limitBack){
+		W.Panel = function(path,vm,limit,limitBack,lock){
 			var _ = this,__ = {};
 			{
 				V.inherit.apply(_,[W.Control,[path || '<div></div>',vm || {}]]);
@@ -253,12 +253,14 @@
 					callevent:{value:false},
 					limit:V.getValue(limit,0),
 					limitBack:V.getValue(limitBack,true),
+					lock:lock?lock:false,
 					startX:0,startY:0
 				};
 				_.status = __.status;
 				__.moving = false;
 				_.am = function(node,data,timeout){
-					if(!__.moving) {
+					console.log(__.status.lock);
+					if(!__.status.lock && !__.moving) {
 						V.once(function(){
 							__.status.transform = V.merge(__.status.transform,data);
 							var value = V.format('translate3d({tx}px,{ty}px,0px) scale({scale},{scale}) rotate3d(0,0,0,{angle}deg)',__.status.transform);
@@ -468,7 +470,7 @@
 								switch(ev.type){
 									case 'panright':
 									case 'swiperight':										
-										if(__.status.hor && !__.rotating && !__.finalMove){
+										if(__.status.hor && !__.rotating && !__.finalMove && Math.abs(ev.deltaX)>Math.abs(ev.deltaY)){
 											__.status.lastAction = 'right';
 											__.finalMove = false ||	_.onRight(ev,__.status);
 										} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
@@ -479,7 +481,7 @@
 										break;
 									case 'panleft':	
 									case 'swipeleft':								
-										if(__.status.hor && !__.rotating && !__.finalMove){
+										if(__.status.hor && !__.rotating && !__.finalMove && Math.abs(ev.deltaX)>Math.abs(ev.deltaY)){
 											__.status.lastAction = 'left';											
 											__.finalMove = false ||	_.onLeft(ev,__.status);
 										} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
@@ -489,7 +491,7 @@
 										break;
 									case 'panup':
 									case 'swipeup':																
-										if(__.status.vol && !__.rotating && !__.finalMove){
+										if(__.status.vol && !__.rotating && !__.finalMove && Math.abs(ev.deltaX)<Math.abs(ev.deltaY)){
 											__.status.lastAction = 'up';							
 											__.finalMove = false ||	_.onUp(ev,__.status);
 										} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
@@ -499,7 +501,7 @@
 										break;
 									case 'pandown':
 									case 'swipedown':	
-										if(__.status.vol && !__.rotating && !__.finalMove){
+										if(__.status.vol && !__.rotating && !__.finalMove && Math.abs(ev.deltaX)<Math.abs(ev.deltaY)){
 											__.status.lastAction = 'down';			
 											__.finalMove = false ||	_.onDown(ev,__.status);
 										} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
@@ -684,7 +686,7 @@
 					onRight:function(data,self){_.change(false);},
 					onUp:function(data,self){_.change(true);},
 					onDown:function(data,self){_.change(false);}
-				},true),limit || 0.2,limitBack || true]]);
+				},true),limit || 0.2,limitBack || true,true]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
 				_.lock = false;
@@ -731,11 +733,6 @@
 				},function(){__.onLoad(node);});
 			};
 			//以方便继承类覆盖并执行动画
-			__.am = _.am;
-			_.am = function(node,data,timeout){
-				//if(_.hor){data.tx-=(node.width()*_.index);} else if(_.vol){data.ty-=(node.height()*_.index);};
-				//__.am(_.panel,data,timeout);					
-			};
 			__.onLeft = _.onLeft;
 			_.onLeft = function(ev,e){
 				if(_.vol || _.lock) return;
@@ -867,7 +864,7 @@
 			};
 			//以方便继承类覆盖并执行动画
 			_.onLeft = function(ev,e){
-				if(_.vol || _.lock) return;
+				if(_.vol || _.lock) return;				
 				__.distance = Math.abs(ev.deltaX);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
 				var x = e.transform.x+ev.deltaX;
 				if(x < (_.node.width()-5-_.panel.width())){e.callevent.value=true;}

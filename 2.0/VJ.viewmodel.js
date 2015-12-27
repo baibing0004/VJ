@@ -114,7 +114,7 @@
 				_.events = {};
 				_.params = V.getValue(params,{});
 				__.desc="";
-				__.addDesc = function(d){__.desc+=(d+"\r\n");};
+				_.addDesc = function(d){__.desc+=(d+"\r\n");};
 				_.desc = function(){console.log(__.desc+'VJ.view.Control\r\n数据定义：\r\npath:html模板定义\r\nvm:虚拟控件对象\r\nevents:事件对象\r\nparams:默认参数对象\r\n');};
 			}
 			_.init = function(parent,node,params){				

@@ -113,9 +113,9 @@
 				_.vm = null;
 				_.events = {};
 				_.params = V.getValue(params,{});
-				_.desc = function(){
-					console.log('todo 说明性文字');
-				};
+				__.desc="";
+				__.addDesc = function(d){__.desc+=(d+"\r\n");};
+				_.desc = function(){console.log(__.desc+'VJ.view.Control\r\n数据定义：\r\npath:html模板定义\r\nvm:虚拟控件对象\r\nevents:事件对象\r\nparams:默认参数对象\r\n');};
 			}
 			_.init = function(parent,node,params){				
 				_.parent = parent;
@@ -287,6 +287,9 @@
 							break;
 						case 'hide':
 							_.animate(value,function(){_.node.hide();_.vm.data.visible = false;});
+							break;
+						case 'desc':
+							_.desc();
 							break;
 					}
 				});

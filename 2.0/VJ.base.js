@@ -191,9 +191,15 @@ if (top.location == location) {
 		//异步顺序处理 其结果集最终处理的方式 function(共享的json对象 {})
 		V.next = function(){
 			var funs = [];
-			for(var i=0;i<arguments.length;i++){funs.push(arguments[i]);}
-			var data = {};
-			V.whileC2(funs,function(v,next){V.tryC(function(){if(v){v.apply(null,[data]);}});if(next){next();}},null,false);
+			for(var i=0;i<arguments.length;i++){if(typeof(arguments[i]) == 'function') funs.push({key:funs.length,func:arguments[i]});}
+			if(funs.length>1){
+				var data = {},finalF = funs.length>0?funs.pop().func:null,len=funs.length,ret={};
+				V.each(funs,function(v){
+					var value = v;
+					value.func.apply(null,[data,function(){ret[value.key]=true;var retlen=0;for(var k in ret){retlen++;};if(retlen==len){finalF.apply(null,[data]);}}]);
+				},null,false);
+				//V.whileC(function(){return funs.shift();},function(v,next){V.tryC(function(){if(v){v.apply(null,[data]);}});if(next){next();}},null,false);
+			} else {finalF.apply(null,[{}]);}
 		};
 	}	
 	//类处理

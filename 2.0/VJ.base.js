@@ -108,9 +108,8 @@ if (top.location == location) {
 		V.isArray = function (obj) {
 			return Object.prototype.toString.call(obj) === '[object Array]';
 		};
+		//异步处理数组的方法
 		V.each = function(data,func,finalF,isSync){
-			var _ = this;
-			var index = 0;
 			data = Array.prototype.slice.call(data, 0);
 			V.whileC(function(){return data.shift();},func,finalF,isSync);
 		};
@@ -121,13 +120,15 @@ if (top.location == location) {
 			}
 			func.timeoutID = window.setTimeout(function(){V.tryC(function(){func();})},timeout);
 		};
+		//异步遍历对象的方法
 		V.forC = function(data,func,finalf,isSync){
 			var ret = [];
 			for(var i in data){
 				ret.push({key:i,value:data[i]});
 			}
 			V.whileC(function(){return ret.shift();},function(v){if(func){func(v.key,v.value);}},finalf,isSync);
-		};		
+		};
+		//异步链式遍历对象的方法,需要func显式调用传入的next方法
 		V.forC2 = function(data,func,finalf,isSync){
 			var ret = [];
 			for(var i in data){
@@ -186,6 +187,13 @@ if (top.location == location) {
 				};
 			}			
 			_func(exp());
+		};
+		//异步顺序处理 其结果集最终处理的方式 function(共享的json对象 {})
+		V.next = function(){
+			var funs = [];
+			for(var i=0;i<arguments.length;i++){funs.push(arguments[i]);}
+			var data = {};
+			V.whileC2(funs,function(v,next){V.tryC(function(){if(v){v.apply(null,[data]);}});if(next){next();}},null,false);
 		};
 	}	
 	//类处理
@@ -409,10 +417,10 @@ if (top.location == location) {
 				//throw e;
 			}
 		};
-		V.tryC = function (func) {
+		V.tryC = function (func,finalF) {
 			try {
 				return func();
-			} catch (e) { V.showException('', e); }
+			} catch (e) { V.showException('', e);if(finalF){finalF();} }
 		};
 		var start = null;
 		V.watch = function(restart){

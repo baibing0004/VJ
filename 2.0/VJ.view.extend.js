@@ -46,7 +46,6 @@
 						case 'text':
 						case 'value':
 							_.input.val(value);
-							delete data[key];
 							break;
 						case 'name':
 							_.input.attr('name',value);

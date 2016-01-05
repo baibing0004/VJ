@@ -248,7 +248,7 @@
 			var _ = this,__ = {};
 			{
 				_.isOpen = false;
-				_.params = {dbtype:'json'};
+				_.params = {};
 			}
 			_.open = function(){_.isOpen = true;};
 			_.close = function(){_.isOpen = false};
@@ -259,7 +259,7 @@
 			{
 				_.connection = null;
 				_.command = '';
-				_.params = null;
+				_.params = {dbtype:'json'};
 			}
 			_.excute = function(result,func){
 				if(!_.connection || !_.connection.isOpen){
@@ -309,7 +309,7 @@
 							if(hasFalse){
 								data = (hasFalse == true?false:hasFalse);
 							} else {
-								switch(_.connection.params.dbtype){
+								switch(_.params.dbtype){
 									default:
 									case 'json':
 										break;
@@ -579,7 +579,7 @@
 									if(hasFalse){
 										data = false;
 									} else {
-										switch(_.connection.params.dbtype){
+										switch(_.params.dbtype){
 											default:
 											case 'json':
 												break;

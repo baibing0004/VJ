@@ -68,7 +68,7 @@
 						params = V.merge(cmd.params,V.getValue(params,{}));
 						template = cmd.template;
 					}
-					_.lstCmd.push({name:command,params:params,func:func,template:template,key:name});
+					_.lstCmd.push({name:command,params:params,func:func,template:template,key:name,dbtype:V.getValue(cmd.dbtype,"tjson")});
 				};
 				_._excute = function(){
 					var _cms = _.lstCmd;
@@ -82,6 +82,7 @@
 							V.whileC2(function(){return _cms.shift();},function(v,next){
 								cmd.command = v.name;
 								cmd.params = v.params;
+								cmd.dbtype = v.dbtype;
 								var _func = v.func;
 								cmd.excute(_.result,function(data){
 									V.tryC(function(){
@@ -309,7 +310,7 @@
 							if(hasFalse){
 								data = (hasFalse == true?false:hasFalse);
 							} else {
-								switch(_.params.dbtype){
+								switch(_.dbtype){
 									default:
 									case 'json':
 										break;
@@ -579,7 +580,7 @@
 									if(hasFalse){
 										data = false;
 									} else {
-										switch(_.params.dbtype){
+										switch(_.dbtype){
 											default:
 											case 'json':
 												break;

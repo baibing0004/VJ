@@ -262,7 +262,6 @@
 				_.status = __.status;
 				__.moving = false;
 				_.am = function(node,data,timeout){
-					console.log(__.status.lock);
 					if(!__.status.lock && !__.moving) {
 						V.once(function(){
 							__.status.transform = V.merge(__.status.transform,data);
@@ -357,6 +356,16 @@
 			_.fill = function(){return {};};
 			_.render = function(data){
 				data = __.render(data);
+				V.forC(data,function(k,v){
+					switch(k.toLowerCase()){
+						case 'width':
+							_.node.width(v);
+							break;
+						case 'height':
+							_.node.height(v);
+							break;
+					}
+				},null,true);
 				if(!__.hasRender){
 					__.document = $(document);
 					__.hasRender = true;
@@ -698,9 +707,8 @@
 				node.removeClass('animate');
 				_.panel = node.find('div:first');
 				_.children  = _.panel.siblings();
-				if(_.children.length==0) return;
-				_.length = _.children.length;					
-				_.value = Math.max(0,Math.min(_.children.length,parseInt(_.value)));
+				//if(_.children.length==0) {}
+				_.length = _.children.length;
 				_.children.width(node.width()).height(node.height()).css('overflow','hidden').css('position','relative');
 				_.children.addClass('noactive');
 				_.panel.append(_.children);
@@ -773,6 +781,27 @@
 						case 'freeze':
 						case 'lock':
 							_.lock = v;
+							break;
+						case 'height':
+							_.children.height(v);
+							break;
+						case 'width':							
+							_.children.width(v);
+							break;
+						case 'values':
+							var lst = V.newEl('div','','').css('display','none;');
+							V.each(v,function(v2){
+								lst.append(v2);
+							},function(){
+								_.children = lst.children();
+								_.length = _.children.length;
+								_.children.width(_.node.width()).height(_.node.height()).css('overflow','hidden').css('position','relative');
+								_.children.addClass('noactive');						
+								_.panel.empty().append(_.children);
+								if(_.vol){_.panel.css('height',_.length+'00%').css('width','100%');}else{_.panel.css('width',_.length+'00%').css('height','100%');_.children.css('float','left');}
+								_.change(_.index==NaN?0:_.index,true,true);
+								lst.remove();								
+							},false);
 							break;
 					}
 				},function(){

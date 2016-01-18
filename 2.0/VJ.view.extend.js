@@ -305,7 +305,8 @@
 				return data;
 			};
 		};
-		//构建时需要swiper.js		
+		//构建时需要swiper.js	
+		/*2016-1-18 被pagePanel取代	
 		W.SwiperPanel = function(path,vm){
 			var _ = this,__ = {};
 			{
@@ -484,5 +485,6 @@
 				return data;
 			};
 		};
+		*/
 	}
 })(VJ,jQuery,VJ.view,VJ.viewmodel);

@@ -728,7 +728,19 @@
 									//setTimeout(function(){console.log(s_account);},1);
 									VJ.registEvent(['a','b'],function(){console.log('a');});
 									VJ.callEvent('a');
-									VJ.callEvent('b');	
+									VJ.callEvent('b');
+									console.log(Math);
+									var times = Math.random()*10000;
+									var times2 = Math.random()*1000;
+									var times3 = Math.random()*10000;
+									VJ.next(function(data,call){
+										data.a =[];
+										setTimeout(function(){data.a.push(1);call();},times3);
+									},function(data,call){									
+										setTimeout(function(){data.a.push(2);call();},times2);
+									},function(data,call){															
+										setTimeout(function(){data.a.push(3);call();},times);
+									},function(data){for(var i=0;i<data.a.length;i++){console.log(data.a[i]);}});
 								},
 								onDispose:function(){
 									console.log('dispose');

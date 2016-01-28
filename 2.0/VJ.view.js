@@ -927,22 +927,22 @@
 				if(Math.abs(ev.scale-1)*Math.min(_.node.width(),_.node.height)<e.limit) _.am(_.panel,{scale:ev.scale});
 				else {e.callevent.value = true;}};
 			_.addControl = function(node,v){
-				if(!_.controls){
-					_.controls = [];
-					_.views = {};
-					_.models = {};
+				if(!_.vs){
+					_.vs = [];
+					_.controls = {};
+					_.vms = {};_.models = _.vms;
 				}
 				var obj = _.middler.getObjectByAppName(W.APP,v.type);
 				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
 				node = node?node:V.newEl('div').appendTo(_.panel);
 				obj.init(_,node,v);
 				obj.page = _.page;
-				_.controls.push(obj);
+				_.vs.push(obj);
 				var key = V.getValue(v.id,V.random());
-				if(_.views[key]){V.showException('控件id为'+id+'的子控件已经存在，请更换id名');return;}
-				_.views[key] = obj;
+				if(_.controls[key]){V.showException('控件id为'+id+'的子控件已经存在，请更换id名');return;}
+				_.controls[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
-				_.models[key]=v;
+				_.vms[key]=v;
 				obj.bind(v);
 				return v;
 			};

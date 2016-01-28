@@ -116,6 +116,7 @@
 				__.desc="";
 				_.addDesc = function(d){__.desc+=(d+"\r\n");};
 				_.desc = function(){console.log(__.desc+'VJ.view.Control\r\n数据定义：\r\npath:html模板定义\r\nvm:虚拟控件对象\r\nevents:事件对象\r\nparams:默认参数对象\r\n');};
+				_.addDesc('\tts:物理控件的子物理控件数组\tcontrols: 物理控件的子物理控件id映射\tvms(models): 物理控件的子逻辑控件id映射\tvm:物理控件的对应逻辑控件\tpage:物理控件的页面物理控件\tparent:物理控件的父物理控件');
 			}
 			_.init = function(parent,node,params){				
 				_.parent = parent;
@@ -145,7 +146,7 @@
 					_.vm.nodeName = _.nodeName;
 					//完成方法注入
 					_.vm.update = function(){_.render.apply(_,arguments);};
-					_.vm.call = function(){_.call.apply(_.parent.models,arguments);};
+					_.vm.call = function(){_.call.apply(_.parent.vms,arguments);};
 					_.vm.add = function(){_.addControl.apply(_,arguments);};
 					_.vm.desc = function(){_.desc();};
 					_.vm.get = function(key){_.vm.data = V.merge(_.vm.data,_.fill());return key?_.vm.data[key]:_.vm.data;};
@@ -309,9 +310,10 @@
 				//此处进行内部控件生成需要判定controls属性
 				if(vm.controls || node.find('[_]').length>0){
 					var cons = V.getValue(vm.controls,{});
-					_.controls = [];
-					_.views = {};
-					_.models = cons;
+					_.vs = [];
+					_.controls = {};
+					_.vms = cons;
+					_.models = _.vms;
 					var p = node.find('[_]').toArray();				
 					V.each(p,function(v1){
 						var v = $(v1);
@@ -324,7 +326,7 @@
 						if(!obj) V.showException('配置文件中没有找到对象类型定义:'+nodeName);
 						obj.init(_,v,V.isValid(v.attr('_'))?json:null);
 						obj.page = _.page;
-						_.controls.push(obj);
+						_.vs.push(obj);
 						if(!id) {
 							id = nodeName+V.random();
 						}
@@ -332,7 +334,7 @@
 						if(!cons[id]){
 							cons[id] = {data:{}};
 						}
-						_.views[id] = obj;
+						_.controls[id] = obj;
 						V.inherit.apply(cons[id],[M.Control,[]]);
 						obj.bind(cons[id]);		
 					},function(){
@@ -345,8 +347,8 @@
 								node.append(node2);
 								obj.init(_,node2,null);
 								obj.page = _.page;
-								_.controls.push(obj);
-								_.views[key] = obj;
+								_.vs.push(obj);
+								_.controls[key] = obj;
 								V.inherit.apply(v,[M.Control,[]]);
 								obj.bind(v);
 							}
@@ -401,7 +403,7 @@
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){
-						var val = _.events[name].apply(_.parent.models,[_.vm.data,_.vm]);
+						var val = _.events[name].apply(_.parent.vms,[_.vm.data,_.vm]);
 						if(val && val != {}){
 							_.render(val);
 						}
@@ -431,45 +433,45 @@
 			_.onSuccess = function(){delete _.get().isError;_.call('success')};
 			_.dispose = function(){};
 			_.addControl = function(node,v){
-				if(!_.controls){
-					_.controls = [];
-					_.views = {};
-					_.models = {};
+				if(!_.vs){
+					_.vs = [];
+					_.controls = {};
+					_.vms = {};_.models = _.vms;
 				}
 				var obj = _.middler.getObjectByAppName(W.APP,v.type);
 				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
 				node = node?node:V.newEl('div').appendTo(_.node);
 				obj.init(_,node,v);
 				obj.page = _.page;
-				_.controls.push(obj);
+				_.vs.push(obj);
 				var key = V.getValue(v.id,V.random());
-				if(_.views[key]){V.showException('控件id为'+id+'的子控件已经存在，请更换id名');return;}
-				_.views[key] = obj;
+				if(_.controls[key]){V.showException('控件id为'+id+'的子控件已经存在，请更换id名');return;}
+				_.controls[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
-				_.models[key]=v;
+				_.vms[key]=v;
 				obj.bind(v);
 				return v;
 			};
 			_.removeControl = function(id){
-				delete _.models[id];
-				if(_.views[id]){
-					var val = _.views[id];
-					_.controls = $.grep(_.controls,function(v,i){return v!=val;});
-					V.tryC(function(){_.views[id].remove();});
-					delete _.views[id];
+				delete _.vms[id];
+				if(_.controls[id]){
+					var val = _.controls[id];
+					_.vs = $.grep(_.vs,function(v,i){return v!=val;});
+					V.tryC(function(){_.controls[id].remove();});
+					delete _.controls[id];
 				}
 			};
 			_.clearControl = function(){
-				if(!_.controls){
-					_.controls = [];
-					_.views = {};
-					_.models = {};
+				if(!_.vs){
+					_.vs = [];
+					_.controls = {};
+					_.vms = {};_.models = _.vms;
 				} else {
-					_.controls.slice(0,_.controls.length);
-					var vs = _.views;
+					_.vs.slice(0,_.vs.length);
+					var vs = _.controls;
 					V.forC(vs,function(k,v){V.tryC(function(){$(v).remove();});});
-					_.views = {};
-					V.forC(_.models,function(k,v){delete _.models[k];});
+					_.controls = {};
+					V.forC(_.vms,function(k,v){delete _.vms[k];});
 				}
 			};
 		};
@@ -479,10 +481,10 @@
 		M.Page = function(cm,data){
 			var _ = this,__ = {};
 			{
-				_.models = V.getValue(data,{});
+				_.vms = V.getValue(data,{});_.models=_.vms;
 				//默认使用配置作为事件定义
 				V.inherit.apply(_,[M.Control,[]]);
-				_.page = _.models.page?_.models.page:{};
+				_.page = _.vms.page?_.vms.page:{};
 				_.data = _.page.data?_.page.data:{};
 				if(cm){
 					switch(V.getType(cm)){
@@ -516,8 +518,8 @@
 					}
 					return false;
 				};
-				_.getModels = function(id){return id?(_.models[id]?_.models[id]:null):_.models;};
-				_.setModels = function(id,v){_.models[id] = v;};
+				_.getModels = function(id){return id?(_.vms[id]?_.vms[id]:null):_.vms;};
+				_.setModels = function(id,v){_.vms[id] = v;};
 				__.bind = _.bind;
 				_.bind = function(view){__.bind(view);_.page.v = view;}
 				{
@@ -535,8 +537,8 @@
 			var _ = this,__ = {};
 			{
 				V.inherit.apply(_,[W.Control,[path]]);
-				_.views = {};
-				_.controls = [];		
+				_.controls = {};
+				_.vs = [];		
 				__.render = _.render;
 				__.onLoad = _.onLoad;
 			}
@@ -566,7 +568,7 @@
 				} else {
 					_.vm = {data:V.merge(_.params,{})};
 				}
-				_.models = _.page.models;
+				_.vms = _.page.vms;_.models = _.vms;
 				if(_.path){
 					W.getTemplate(_.path,function(node){
 						_.replaceNode(node);
@@ -628,7 +630,7 @@
 					if(!_.page.getModels(id)){
 						_.page.setModels(id,{data:{}});
 					}
-					_.views[id] = obj;
+					_.controls[id] = obj;
 					V.inherit.apply(_.page.getModels(id),[M.Control,[]]);
 					obj.bind(_.page.getModels(id));		
 				},function(){
@@ -641,8 +643,8 @@
 							node.append(node2);
 							obj.init(_,node2,null);
 							obj.page = _;
-							_.controls.push(obj);
-							_.views[key] = obj;
+							_.vs.push(obj);
+							_.controls[key] = obj;
 							V.inherit.apply(v,[M.Control,[]]);
 							obj.bind(v);
 						}
@@ -659,35 +661,35 @@
 				node = node?node:V.newEl('div').appendTo(_.node);
 				obj.init(_,node,v);
 				obj.page = _;
-				_.controls.push(obj);				
+				_.vs.push(obj);				
 				var key = V.getValue(v.id,V.random());
-				if(_.views[key]){V.showException('控件id为'+id+'的控件已经存在，请更换id名');return;}
-				_.views[key] = obj;
+				if(_.controls[key]){V.showException('控件id为'+id+'的控件已经存在，请更换id名');return;}
+				_.controls[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
-				_.vm.models[key]=v;
+				_.vm.vms[key]=v;
 				obj.bind(v);
 				return v;
 			};
 			_.removeControl = function(id){
-				delete _.vm.models[id];
-				if(_.views[id]){
-					var val = _.views[id];
-					_.controls = $.grep(_.controls,function(v,i){return v!=val;});
-					V.tryC(function(){_.views[id].remove();});
-					delete _.views[id];
+				delete _.vm.vms[id];
+				if(_.controls[id]){
+					var val = _.controls[id];
+					_.vs = $.grep(_.vs,function(v,i){return v!=val;});
+					V.tryC(function(){_.controls[id].remove();});
+					delete _.controls[id];
 				}
 			};
 			_.clearControl = function(){
-				if(!_.controls){
-					_.controls = [];
-					_.views = {};
-					_.models = {};
+				if(!_.vs){
+					_.vs = [];
+					_.controls = {};
+					_.vms = {};_.models = _.vms;
 				} else {
-					_.controls.slice(0,_.controls.length);
-					var vs = _.views;
+					_.vs.slice(0,_.vs.length);
+					var vs = _.controls;
 					V.forC(vs,function(k,v){V.tryC(function(){$(v).remove();});});
-					_.views = {};
-					V.forC(_.vm.models,function(k,v){delete _.vm.models[k];});
+					_.controls = {};
+					V.forC(_.vm.vms,function(k,v){delete _.vm.vms[k];});
 				}
 			};
 			_.onLoad = function(node){

@@ -689,10 +689,10 @@
 				}
 			};			
 		};
-		W.PagePanel = function(path,vm,limit,limitBack){
+		W.PagePanel = function(middler,path,vm,limit,limitBack){
 			var _ = this,__ = {};
 			{	
-				V.inherit.apply(_,[W.Panel,[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.merge(V.getValue(vm,{}),{
+				V.inherit.apply(_,[middler.getTypeByAppName('VESH.view', 'panel'),[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.merge(V.getValue(vm,{}),{
 					data:{direction:'hor',value:0},						
 					onLeft:function(data,self){_.change(true);},
 					onRight:function(data,self){_.change(false);},
@@ -836,10 +836,10 @@
 			};
 		};
 		//上下或者左右滚动的方法的基本类，继承者注意重载onValue(v,func)函数 其中v代表按照value,values,addValues传入的数据，传入时已整理为数组，func是参数为字符串的对象，如果不适用，那么请{}方式添加子控件
-		W.ScrollPanel = function(path,vm,limit,limitBack){
+		W.ScrollPanel = function(middler,path,vm,limit,limitBack){
 			var _ = this,__ = {};
 			{	
-				V.inherit.apply(_,[W.Panel,[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.merge(V.getValue(vm,{}),{
+				V.inherit.apply(_,[middler.getTypeByAppName('VESH.view', 'panel'),[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.merge(V.getValue(vm,{}),{
 					data:{direction:'vol'},						
 					onLeft:function(data,self){_.call('next')},
 					onRight:function(data,self){_.call('reload')},

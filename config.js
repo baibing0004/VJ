@@ -26,11 +26,11 @@
 			panel:{type:'.Panel',path:'hammer.min.js'},
 			rangepanel:{type:'.Panel',path:'hammer.min.js',params:['',{},0.4,true]},
 			pagepanel:{type:'.PagePanel',params:[
-				{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
-				'','',0.4,false]},
+				//{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
+				{middler:true},'','',0.4,false]},
 			scrollpanel:{type:'.ScrollPanel',params:[
-				{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
-				'','',100,false]},			
+				//{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
+				{middler:true},'','',100,false]},			
 			//动画			
 			bounce:{type:'VJ.view.CssAction',mode:'static',path:"animate.min.css",params:['bounce .4s linear']},
 			flash:{type:'VJ.view.CssAction',mode:'static',path:"animate.min.css",params:['flash .4s linear']},

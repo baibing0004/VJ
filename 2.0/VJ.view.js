@@ -929,8 +929,8 @@
 			_.addControl = function(node,v){
 				if(!_.controls){
 					_.controls = [];
-					_.views = {};
-					_.models = {};
+					_.vs = {};
+					_.vms = {};
 				}
 				var obj = _.middler.getObjectByAppName(W.APP,v.type);
 				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
@@ -939,10 +939,10 @@
 				obj.page = _.page;
 				_.controls.push(obj);
 				var key = V.getValue(v.id,V.random());
-				if(_.views[key]){V.showException('控件id为'+id+'的子控件已经存在，请更换id名');return;}
-				_.views[key] = obj;
+				if(_.vs[key]){V.showException('控件id为'+id+'的子控件已经存在，请更换id名');return;}
+				_.vs[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
-				_.models[key]=v;
+				_.vms[key]=v;
 				obj.bind(v);
 				return v;
 			};

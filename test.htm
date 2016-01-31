@@ -669,7 +669,10 @@
 									//VJ.once(function(){self.update({value:{abc:'abc2',text:'FillControl首秀2!'}});},2000);
 								}
 							},
-							bp:{data:{value:2},
+							bp:{data:{value:0},
+								onLoad:function(data,self){
+									self.update({values:[V.newEl('div','','new1'),V.newEl('div','','new2')]});
+								},
 								onChange:function(data,self){
 									console.log('change'+data.value);
 								}
@@ -819,10 +822,14 @@
 		<history id='his' _></history>
 		<div id='bp' _="type:'pagepanel',direction:'hor'" style="height:250px;width:300px;">
 			<div id='bp2' _="type:'scrollpanel',direction:'vol',bottom:'true',lock:false" style="height:250px;width:300px;">
-			<div style="background:red;height:200px;">
-			<box id="box" _="key:'中心',globalposition:'bottom'" style="width:200px;height:50px;z-index:90000;" class="abc"></box>
-			</div><div style="background:blue;height:100px;">B1</div><div style="background:yellow;height:300px;">C1</div>
-		</div><div style="background:blue;">B</div><div style="background:yellow;">C</div>
+				<div style="background:red;height:200px;">
+					<box id="box" _="key:'中心',globalposition:'bottom'" style="width:200px;height:50px;z-index:90000;" class="abc"></box>
+				</div>
+				<div style="background:blue;height:100px;">B1</div>
+				<div style="background:yellow;height:300px;">C1</div>
+			</div>
+			<div style="background:blue;">B</div>
+			<div style="background:yellow;">C</div>
 		</div>
 		<!--
 		<div id='bp2' _="type:'scrollpanel',direction:'vol'" style="height:250px;width:300px;">

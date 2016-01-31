@@ -692,7 +692,8 @@
 		W.PagePanel = function(middler,path,vm,limit,limitBack){
 			var _ = this,__ = {};
 			{	
-				V.inherit.apply(_,[middler.getTypeByAppName('VESH.view','panel'),[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.merge(V.getValue(vm,{}),{
+
+				V.inherit.apply(_,[middler.getTypeByAppName('VESH.view', 'panel'),[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.merge(V.getValue(vm,{}),{
 					data:{direction:'hor',value:0},						
 					onLeft:function(data,self){_.change(true);},
 					onRight:function(data,self){_.change(false);},
@@ -839,7 +840,7 @@
 		W.ScrollPanel = function(middler,path,vm,limit,limitBack){
 			var _ = this,__ = {};
 			{	
-				V.inherit.apply(_,[middler.getTypeByAppName('VESH.view','panel'),[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.merge(V.getValue(vm,{}),{
+				V.inherit.apply(_,[middler.getTypeByAppName('VESH.view', 'panel'),[V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'),V.merge(V.getValue(vm,{}),{
 					data:{direction:'vol'},						
 					onLeft:function(data,self){_.call('next')},
 					onRight:function(data,self){_.call('reload')},
@@ -930,7 +931,7 @@
 				if(!_.controls){
 					_.controls = [];
 					_.vs = {};
-					_.vms = {};
+					_.vms = {};_.models = _.vms;
 				}
 				var obj = _.middler.getObjectByAppName(W.APP,v.type);
 				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);

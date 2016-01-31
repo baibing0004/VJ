@@ -274,7 +274,7 @@
             _.onLoad = function (node) {
                 V.forC(_.events, function (k, v) { _.bindEvent(node, k, v) }, function () { __.onLoad(node); }, true);
                 _.cons = [];
-                node.find('[_]').toArray();each(function (i, v) {
+                node.find('[_]').each(function (i, v) {
                     _.cons.push($(v).attr('id'));
                 });
             };

@@ -288,7 +288,6 @@
                 return { value: value };
             };
             _.render = function (data) {
-                data = __.render(data);
                 V.forC(data, function (key, value) {
                     switch (key) {
                         case 'method':
@@ -311,8 +310,9 @@
                             break;
                         case 'valid':
                             if (value) {
-                                var data = Array.prototype.slice.call(_.cons, 0);
-                                V.whileC2(function () { return data.shift(); }, function (v, next) {
+                                delete data.valid;
+                                var cons = Array.prototype.slice.call(_.cons, 0);
+                                V.whileC2(function () { return cons.shift(); }, function (v, next) {
                                     if (_.page.vms[v]) {
                                         _.page.vms[v].update({ valid: next });
                                     }
@@ -334,6 +334,8 @@
                             }
                             break;
                     }
+                }, function () {
+                   __.render(data);
                 });
                 return data;
             };

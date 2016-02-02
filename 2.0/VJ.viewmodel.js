@@ -144,7 +144,7 @@
 					//完成类型名注入
 					_.vm.nodeName = _.nodeName;
 					//完成方法注入
-					_.vm.update = function () { var as = Array.prototype.slice.call(arguments); as = V.getValue(as, [null]); as[0] = as[0] ? V.merge(_.vm.data, as[0], true) : V.merge({}, _.vm.data); _.render.apply(_, as); };
+					_.vm.update = function () { var as = Array.prototype.slice.call(arguments); as = V.getValue(as, [null]); if (as[0]) V.merge(_.vm.data, as[0], true); as[0] = as[0] ? as[0]:V.merge({}, _.vm.data); _.render.apply(_, as); };
 					_.vm.call = function(){_.call.apply(_.parent.vms,arguments);};
 					_.vm.add = function(){_.addControl.apply(_,arguments);};
 					_.vm.desc = function(){_.desc();};
@@ -545,7 +545,7 @@
 					//完成配置合并
 					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
 					//完成方法注入
-					_.vm.update = function () { var as = Array.prototype.slice.call(arguments); as = V.getValue(as, [null]); as[0] = as[0] ? V.merge(_.vm.data, as[0], true) : V.merge({}, _.vm.data); _.render.apply(_, as); };                    			
+					_.vm.update = function () { var as = Array.prototype.slice.call(arguments); as = V.getValue(as, [null]); if (as[0]) V.merge(_.vm.data, as[0], true); as[0] = as[0] ? as[0] : V.merge({}, _.vm.data); _.render.apply(_, as); };                    			
 					_.vm.call = function(){_.call.apply(_.page.getModels(),arguments);};
 					_.vm.add = function(){_.addControl.apply(_,arguments);};
 					_.vm.desc = function(){_.desc();};

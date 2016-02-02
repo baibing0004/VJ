@@ -144,7 +144,7 @@
 					//完成类型名注入
 					_.vm.nodeName = _.nodeName;
 					//完成方法注入
-					_.vm.update = function(){_.render.apply(_,arguments);};
+					_.vm.update = function () { var as = Array.prototype.slice.call(arguments); as = V.getValue(as, [null]); as[0] = as[0] ? V.merge(_.vm.data, as[0], true) : V.merge({}, _.vm.data); _.render.apply(_, as); };
 					_.vm.call = function(){_.call.apply(_.parent.vms,arguments);};
 					_.vm.add = function(){_.addControl.apply(_,arguments);};
 					_.vm.desc = function(){_.desc();};
@@ -163,7 +163,7 @@
 			};
 			//处理控件下载完成后的操作
 			_.onLoad = function(node){
-				_.render();
+				_.render(_.vm.data);
 				_.call('load');
 			};
 			//在更新_.vm.data
@@ -172,12 +172,6 @@
 			};
 			//可以将数据更新到标签上
 			_.render = function(data){
-				if(data){
-					V.merge(_.vm.data,data,true);
-				} else {
-					data = V.merge({},_.vm.data);
-					//专门用于初始化操作
-				}
 				V.forC(data,function(key,value){
 					switch(key){
 						case 'attr':
@@ -278,7 +272,7 @@
 							break;
 						case 'valid':
 							V.merge(_.get(),_.fill(),true);
-							if(_.valid){_.valid(data.value || _.get().value,value);}
+							if (_.valid) {_.valid(data.value || _.get().value, value);} else if (value) value();
 							break;
 						case 'show':
 							_.vm.data.visible = true;
@@ -403,6 +397,7 @@
 					V.once(function(){
 						var val = _.events[name].apply(_.parent.vms,[_.vm.data,_.vm]);
 						if(val && val != {}){
+							V.merge(_.vm.data, val, true)
 							_.render(val);
 						}
 					});
@@ -550,7 +545,7 @@
 					//完成配置合并
 					_.vm.data = V.merge(_.params,V.getValue(_.vm.data,{}));
 					//完成方法注入
-					_.vm.update = function(){_.render.apply(_,arguments);};					
+					_.vm.update = function () { var as = Array.prototype.slice.call(arguments); as = V.getValue(as, [null]); as[0] = as[0] ? V.merge(_.vm.data, as[0], true) : V.merge({}, _.vm.data); _.render.apply(_, as); };                    			
 					_.vm.call = function(){_.call.apply(_.page.getModels(),arguments);};
 					_.vm.add = function(){_.addControl.apply(_,arguments);};
 					_.vm.desc = function(){_.desc();};
@@ -601,6 +596,7 @@
 					V.once(function(){
 						var val = _.events[name].apply(_.page.getModels(),[_.vm.data,_.vm]);
 						if(val && val != {}){
+							V.merge(_.vm.data,val, true)
 							_.render(val);
 						}
 					});

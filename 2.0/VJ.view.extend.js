@@ -42,10 +42,9 @@
                         case 'enable':
                             if (value) { _.input.removeAttr('disabled'); } else { _.input.attr('disabled', 'disabled'); }
                             break;
-                            break;
                         case 'text':
                         case 'value':
-                            _.input.val(value);
+                            if (value) _.input.val(value);
                             break;
                         case 'name':
                             _.input.attr('name', value);
@@ -267,7 +266,7 @@
         W.Form = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.Control, [path || '<form method="get" action=""></form>', vm || { data: { enctype: 'multipart/form-data'}}]]);
+                V.inherit.apply(_, [W.Control, [path || '<form method="get" action=""></form>', vm || { data: { enctype: 'multipart/form-data' } }]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -311,11 +310,14 @@
                             _.node.attr('enctype', value);
                             break;
                         case 'valid':
-                            if (true == value) {
-                                V.each(_.cons, function (v) {
+                            if (value) {
+                                var data = Array.prototype.slice.call(_.cons, 0);
+                                V.whileC2(function () { return data.shift(); }, function (v, next) {
                                     if (_.page.vms[v]) {
-                                        _.page.vms[v].update({ valid: true });
+                                        _.page.vms[v].update({ valid: next });
                                     }
+                                }, function () {
+                                    value.apply(null, []);
                                 });
                             }
                             break;

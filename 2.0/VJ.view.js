@@ -161,7 +161,7 @@
 				//必须覆盖这个方法否则_.node就是替换后的了
 				__.content = _.node.html();
 				__.replaceNode.apply(_,arguments);
-				_.node.html(__.content);
+				//_.node.html(__.content);
 			};
 			_.render = function(data){
 				data = __.render(data);

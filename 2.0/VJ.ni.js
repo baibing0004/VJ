@@ -161,12 +161,13 @@
 			_.hasData = function(key){
 				return key?(function(){
 					var v = _.get(key);
-					return v && v.length>0;
+					if(v) {for(var k in v) return true;}
+					return false;
 				})():(__.datas.length>0 && (function(){
 					var hasData = false;
 					V.each(__.datas,function(v){
-						if(!hasData && v && v.length>0){
-							hasData = true;
+						if(!hasData && v){
+							for(var k in v) hasData = true;
 						}
 					},null,true);
 					return hasData;

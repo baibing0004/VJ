@@ -465,7 +465,7 @@ if (top.location == location) {
 		V.encHtml = function (html) {
 			//20120328 白冰 只转换标点符号!    
 			//return encodeURIComponent(V.getValue(html, '').replace(/\r\n/g, ''));
-			return (V.getValue(html, '').replace(/\s/g, ' ').replace(/\r\n/g, '')).replace(new RegExp('~|!|@|#|\\$|%|\\^|;|\\*|\\(|\\)|_|\\+|\\{|\\}|\\||:|\"|\\?|`|\\-|=|\\[|\\]|\\\|;|\'|,|\\.|/|，|；', 'g'), function (a) { return encodeURIComponent(a); });
+			return (V.getValue(html, '').replace(/[\r\n]+/, '>v>j>').replace(/\s/, ' ').replace('>v>j>', '\r\n').replace(new RegExp('~|(\r\n)|!|@|#|\\$|%|\\^|;|\\*|\\(|\\)|_|\\+|\\{|\\}|\\||:|\"|\\?|`|\\-|=|\\[|\\]|\\\|;|\'|,|\\.|/|，|；', 'g'), function (a) { return encodeURIComponent(a); }));
 		};
 		//对字符串进行解码
 		V.decHtml = function (html) {

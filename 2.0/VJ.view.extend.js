@@ -62,6 +62,10 @@
                             _.input.attr('type', value);
                             delete data[key];
                             break;
+                        case 'maxlength':
+                            _.input.attr('maxlength', value);
+                            delete data[key];
+                            break;
                     }
                 });
                 return data;
@@ -132,7 +136,8 @@
                             if (V.getType(value) == 'string') {
                                 value = eval('(' + value + ')');
                             };
-                            if (V.userAgent.ie7) {
+
+                            if (V.userAgent.ie7 || V.userAgent.ie8) {
                                 V.forC(value, function (k, v) {
                                     var opn = document.createElement("OPTION");
                                     _.sel.get(0).appendChild(opn); //先追加
@@ -141,7 +146,10 @@
                                     }
                                     opn.innerText = k;
                                     opn.value = v;
-                                }, null, true);
+                                }, function () {
+                                    //神奇的Bug select重新填写需要改样式
+                                    V.once(function () { _.sel.css('display','none').css('display','block') });
+                                }, true);
                             } else {
                                 var sb = V.sb();
                                 V.forC(value, function (k, v) {

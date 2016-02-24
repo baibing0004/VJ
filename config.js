@@ -114,7 +114,7 @@
 			isInt:{type:'VJ.view.Regex',params:['/^[0-9]+$/g']},
 			isLetter:{type:'VJ.view.Regex',params:['/^[A-Za-z]+$/g']},
 			isPassword:{type:'VJ.view.Regex',params:['/^([a-zA-Z]|\\w){5,17}$/g']},
-			isRequired:{type:'VJ.view.Regex',params:['/^[\\S]+$/g']},
+            isRequired: { type: 'VJ.view.Regex', params: ['/^(\\s*\\S\\s*)+$/'] },
 			isChinese:{type:'VJ.view.Regex',params:['/^[\\u4e00-\\u9fa5]{0,}$/g']},
 			isEmail:{type:'VJ.view.Regex',params:['/^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$/g']},
 			isUrl:{type:'VJ.view.Regex',params:['/^http://([\\w-]+\\.)+[\\w-]+(/[\\w-./?%&=]*)?$/g']},

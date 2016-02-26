@@ -33,8 +33,8 @@
                 }, function () { __.onLoad(node); }, true);
             };
             _.fill = function () {
-                var value = _.input.val();
-                value = value == _.vm.data.default ? "" : value;
+                var value = $.trim(_.input.val());
+                value = value == _.vm.data.title ? "" : value;
                 return { text: value, value: value };
             };
             _.render = function (data) {
@@ -44,7 +44,7 @@
                         case 'enable':
                             if (value) { _.input.removeAttr('disabled'); } else { _.input.attr('disabled', 'disabled'); }
                             break;
-                        case 'default':
+                        case 'title':
                             if (value) {
                                 _.input.on('focus', function () { if (_.input.val() == value || _.input.text() == value) { _.input.val(''); } });
                                 _.input.on('blur', function () { if (_.input.val() == '' && _.input.text() == '') _.render({ value: value }); });
@@ -52,7 +52,7 @@
                             break;
                         case 'text':
                         case 'value':
-                            if (value) _.input.val(value); else if (_.vm.data.default) _.input.val(_.vm.data.default);
+                            if (value) _.input.val(value); else if (_.vm.data.title) _.input.val(_.vm.data.title);
                             break;
                         case 'name':
                             _.input.attr('name', value);

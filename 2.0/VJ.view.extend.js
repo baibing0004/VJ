@@ -52,7 +52,8 @@
                             break;
                         case 'text':
                         case 'value':
-                            if (value) _.input.val(value); else if (_.vm.data.title) _.input.val(_.vm.data.title);
+                            _.input.val(value);
+                            if (_.vm.data.title && !V.isValid(value)) _.input.val(_.vm.data.title);
                             break;
                         case 'name':
                             _.input.attr('name', value);

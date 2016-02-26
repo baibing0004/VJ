@@ -34,7 +34,7 @@
 				V.inherit.apply(_,[W.Control,[path || '<div class="p_RadioList"><ul></ul></div>',vm || {}]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
-				_.content = V.getValue(content,'<li><span>{key}:</span><span class="p_RadioList_li"><input name="{name}" type="radio" value="{value}"/></span></li>');
+				_.content = V.getValue(content,'<li><span class="p_RadioList_li"><input name="{name}" type="radio" value="{value}"/><span>{key}</span></span></li>');
 			}
 			_.fill = function(){
 				return {value:_.ul.find(':radio:checked').val()};
@@ -85,7 +85,7 @@
 				V.inherit.apply(_,[W.Control,[path || '<div class="p_CheckList"><ul></ul></div>',vm || {}]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
-				_.content = V.getValue(content,'<li><span>{key}:</span><span class="p_CheckList_li"><input name="{name}" type="checkbox" value="{value}"/></span></li>');
+				_.content = V.getValue(content,'<li><span class="p_CheckList_li"><input name="{name}" type="checkbox" value="{value}"/><span>{key}</span></span></li>');
 			}
 			_.fill = function(){
 				//需要兼容没有数据未创建时的错误

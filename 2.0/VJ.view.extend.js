@@ -3,7 +3,7 @@
         W.TextBox = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.Control, [path || '<span><span style="display:none;"></span><input type="text"></input></span>', vm || {}]]);
+                V.inherit.apply(_, [W.Control, [path || '<span><span style="display:none;"></span><input type="text"/></span>', vm || {}]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -33,7 +33,9 @@
                 }, function () { __.onLoad(node); }, true);
             };
             _.fill = function () {
-                return { text: _.input.val(), value: _.input.val() };
+                var value = _.input.val();
+                value = value == _.vm.data.default ? "" : value;
+                return { text: value, value: value };
             };
             _.render = function (data) {
                 data = __.render(data);
@@ -42,9 +44,15 @@
                         case 'enable':
                             if (value) { _.input.removeAttr('disabled'); } else { _.input.attr('disabled', 'disabled'); }
                             break;
+                        case 'default':
+                            if (value) {
+                                _.input.on('focus', function () { if (_.input.val() == value || _.input.text() == value) { _.input.val(''); } });
+                                _.input.on('blur', function () { _.render({ value: value }); });
+                            }
+                            break;
                         case 'text':
                         case 'value':
-                            if (value) _.input.val(value);
+                            if (value) _.input.val(value); else if (_.vm.data.default) _.input.val(_.vm.data.default);
                             break;
                         case 'name':
                             _.input.attr('name', value);
@@ -77,7 +85,7 @@
         W.RadioBox = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.TextBox, [path || '<span><span style="display:none;"></span><input type="radio"></input></span>', vm]]);
+                V.inherit.apply(_, [W.TextBox, [path || '<span><span style="display:none;"></span><input type="radio"/></span>', vm]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -100,7 +108,7 @@
         W.CheckBox = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.RadioBox, [path || '<span><span style="display:none;"></span><input type="checkbox"></input></span>', vm]]);
+                V.inherit.apply(_, [W.RadioBox, [path || '<span><span style="display:none;"></span><input type="checkbox"/></span>', vm]]);
             }
         };
         W.Select = function (path, vm) {
@@ -148,7 +156,7 @@
                                     opn.value = v;
                                 }, function () {
                                     //神奇的Bug select重新填写需要改样式
-                                    V.once(function () { _.sel.css('display','none').css('display','block') });
+                                    V.once(function () { _.sel.css('display', 'none').css('display', 'block') });
                                 }, true);
                             } else {
                                 var sb = V.sb();
@@ -177,7 +185,7 @@
         W.Hidden = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.Control, [path || '<input type="hidden"></input>', vm]]);
+                V.inherit.apply(_, [W.Control, [path || '<input type="hidden"/>', vm]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -217,7 +225,7 @@
         W.PasswordBox = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.TextBox, [path || '<span><span style="display:none;"></span><input type="password"></input></span>', vm]]);
+                V.inherit.apply(_, [W.TextBox, [path || '<span><span style="display:none;"></span><input type="password"/></span>', vm]]);
                 __.render = _.render;
             }
             _.render = function (data) {
@@ -236,7 +244,7 @@
         W.Button = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.TextBox, [path || '<span><span style="display:none;"></span><input type="button"></input></span>', vm]]);
+                V.inherit.apply(_, [W.TextBox, [path || '<span><span style="display:none;"></span><input type="button"/></span>', vm]]);
                 __.render = _.render;
             }
             _.fill = function () { return {}; };
@@ -261,13 +269,13 @@
         W.Submit = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.Button, [path || '<span><span style="display:none;"></span><input type="submit"></input></span>', vm]]);
+                V.inherit.apply(_, [W.Button, [path || '<span><span style="display:none;"></span><input type="submit"/></span>', vm]]);
             }
         };
         W.Reset = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.Button, [path || '<span><span style="display:none;"></span><input type="reset"></input></span>', vm]]);
+                V.inherit.apply(_, [W.Button, [path || '<span><span style="display:none;"></span><input type="reset"/></span>', vm]]);
             }
         };
         //todo 获取其validata对象与方法 进行同步验证
@@ -343,7 +351,7 @@
                             break;
                     }
                 }, function () {
-                   __.render(data);
+                    __.render(data);
                 });
                 return data;
             };

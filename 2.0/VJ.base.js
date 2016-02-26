@@ -307,8 +307,8 @@ if (top.location == location) {
 						break;
 				}
 			};
-			var _merge = function (aim, source) {
-				if (!(typeof (source) == 'object' && typeof (source.length) == 'undefined')) { return aim; }
+			var _merge = function (aim, source) {				
+				if (!(typeof (source) == 'object' && !V.isArray(source))) { return aim; }
 				for (var i in source) {
 					if (source[i] != undefined) {
 						if (!V.isValid(aim[i])) {
@@ -325,7 +325,7 @@ if (top.location == location) {
 									for (var i3 = 0, k = source[i][i3]; i3 < source[i].length; i3++, k = source[i][i3]) {
 										if (typeof (k.mergeIndex) == "number") {
 											hasmergeIndex = true;
-											if (aim[i].length < (i3 + 1)) {
+											if (aim[i].length < (k.mergeIndex + 1)) {
 												aim[i].push(k);
 											} else {
 												aim[i][i3] = _merge(aim[i][i3], k);
@@ -361,7 +361,7 @@ if (top.location == location) {
 					_ = _merge(_, argu[i2]);
 				return _;
 			}
-		};		
+		};
 	}
 	//自动判断获取userAgent状态
 	{

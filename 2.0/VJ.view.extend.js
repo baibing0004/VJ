@@ -47,7 +47,7 @@
                         case 'default':
                             if (value) {
                                 _.input.on('focus', function () { if (_.input.val() == value || _.input.text() == value) { _.input.val(''); } });
-                                _.input.on('blur', function () { _.render({ value: value }); });
+                                _.input.on('blur', function () { if (_.input.val() == '' && _.input.text() == '') _.render({ value: value }); });
                             }
                             break;
                         case 'text':

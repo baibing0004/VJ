@@ -518,6 +518,20 @@
 			//如何保证 当其没有上下监听事件时 能够正常的拖动
 			//制作横向滚动分屏的控件 和纵向滚动的控件
 			//建立数据库
+			//测试内部控件的内部事件是否能够收到onLoad事件 测试结果是可以
+			var CPanel = function(path,vm){
+				var _=this,__={};
+				{
+					VJ.inherit.apply(_,[VJ.view.Control,[path || "<div class='cpanel'><textbox id='txt' _='key:\"呵呵:\"'></textbox></div>",vm || {
+						data:{},
+						onLoad:function(D,I){console.log('cpanel onload');},
+						controls:{
+							txt:{data:{value:'测试用'},onLoad:function(D,I){console.log('cpanel txt onload');I.update({value:'谁有说收不到!?'});}},
+							txt2:{type:'textbox',data:{value:'测试用',type:'textbox'},onLoad:function(D,I){console.log('cpanel txt2 onload');I.update({value:'谁有说收不到!?'});}}
+						}
+					}]]);
+				}				
+			};
 			(function(V,M,$,cm){
 				new function(){
 					var _ = this,__ = {};
@@ -541,6 +555,9 @@
 							txt:{
 								type:'textbox',
 								data:{text:'hello world',visible:false,validate:{isNumber:'请输入数字'}},
+								onLoad:function(D,I){
+									console.log('txt onLoad');
+								},
 								onReady:function(data,self){
 									console.log('');
 									setTimeout(function(){self.update({visible:true});},2000);
@@ -562,9 +579,6 @@
 									return {key:'222'};
 									//return {key:'222'};
 								}
-							},
-							but:{
-								onClick:function(data,cons){console.log(cons);cons.txt.update({text:'点击收到!',valid:true});}
 							},
 							chk:{
 								data:{checked:true},onHover:function(data){
@@ -781,7 +795,8 @@
 						bpanel:{type:'BPanel',params:[
 							{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
 							'','',100,false]},
-						timer:{type:'window.YT.view.Timer',path: '../VJ/timer.js' }
+						timer:{type:'window.YT.view.Timer',path: '../VJ/timer.js' },
+						panel3:{type:'CPanel',params:[]}
 					}
 				}
 			}));			
@@ -834,6 +849,7 @@
 			<div style="background:blue;">B</div>
 			<div style="background:yellow;">C</div>
 		</div>
+		<panel3 _></panel3>
 		<!--
 		<div id='bp2' _="type:'scrollpanel',direction:'vol'" style="height:250px;width:300px;">
 			<div style="background:red;height:200px;">A1</div><div style="background:blue;height:100px;">B1</div><div style="background:yellow;height:300px;">C1</div>

@@ -407,7 +407,7 @@ if (top.location == location) {
 		(s = ua.match(/(android)|(linux)/)) ? (V.userAgent.android = true) : false;
 		(s = ua.match(/(iphone)|(mac)/)) ? (V.userAgent.iphone = true) : false;
 		V.userAgent.pc = !(V.userAgent.mobile || V.userAgent.pad);
-		for (var key in V.userAgent) { if (key!='pc' && key!='width' && key!='height' && V.getValue(V.userAgent[key], false)) { V.userAgent.name = key; } }
+		for (var key in V.userAgent) { if (key!='pc' && key!='width' && key!='height' && key!='refresh' && V.getValue(V.userAgent[key], false)) { V.userAgent.name = key; } }
 		console.log("VJ.userAgent:" + V.userAgent.name);
 		if (V.getValue(V.userAgent.ie, false)) {
 			var ver = V.userAgent.ie;

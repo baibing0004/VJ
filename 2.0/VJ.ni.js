@@ -696,19 +696,22 @@
 				{
 					__.params = V.getValue(params,{});
 					//缓存专用默认方法
-					_.setCommand = function(res,params){						
+					_.setCommand = function(res,params){					
 						params = V.merge(__.params,params);
-						/*if(res.setItem){
-							res.setItem(params.cacheKey,V.toJsonString({
-								data:params.cacheValue,
-								date:(params.timeout?new Date().add(params.timeout.interval,params.timeout.number).getTime():false)
-							}));
-						} else {*/
-							res[params.cacheKey] = V.toJsonString({
-								data:params.cacheValue,
-								date:(params.timeout?new Date().add(params.timeout.interval,params.timeout.number).getTime():false)
-							});
-						//}
+						//兼容localStorage不可用的状态
+						try {
+							/*if(res.setItem){
+								res.setItem(params.cacheKey,V.toJsonString({
+									data:params.cacheValue,
+									date:(params.timeout?new Date().add(params.timeout.interval,params.timeout.number).getTime():false)
+								}));
+							} else {*/
+								res[params.cacheKey] = V.toJsonString({
+									data:params.cacheValue,
+									date:(params.timeout?new Date().add(params.timeout.interval,params.timeout.number).getTime():false)
+								});
+							//}
+						}catch (error) {console.log('localStorage可能不被支持');}
 						return null;
 					};
 					//可以根据业务逻辑改为根据某个公共字段进行删除
@@ -725,7 +728,9 @@
 						/*if(res.getItem){
 							val = V.json(res.getItem(params.cacheKey));
 						} else {*/
+						if(res[params.cacheKey]){
 							val = V.json(res[params.cacheKey]);
+						}
 						//}						
 						if(val){
 							if(val.date){
@@ -747,7 +752,7 @@
 						if(!cmd){
 							cmd = cm.getConfigValue(_.KEY,name+'.Clear');
 							if(cmd){
-								ommand = V.getValue(cmd.command,_.clearCommand);
+								command = V.getValue(cmd.command,_.clearCommand);
 							}
 						}else{
 							command = V.getValue(cmd.command,_.cacheCommand);
@@ -773,6 +778,7 @@
 							var func = function(v,next){
 								cmd.command = v.name;
 								cmd.params = v.params;
+                                cmd.dbtype = v.dbtype;
 								var _func = v.func;
 								cmd.excute(_.result,function(data){
 									V.tryC(function(){
@@ -872,6 +878,7 @@
 							var func = function(v){
 								cmd.command = v.name;
 								cmd.params = v.params;
+                                cmd.dbtype = v.dbtype;
 								var _func = v.func;
 								cmd.excute(_.result,function(data){
 									V.tryC(function(){

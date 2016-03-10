@@ -205,7 +205,7 @@ if (top.location == location) {
 			if(funs.length>1){
 				var data = {},finalF = funs.length>0?funs.pop().func:null;
 				V.whileC2(function(){return funs.shift();},function(v,next){if(v){v.func.apply(null,[data,next]);}},function(){finalF.apply(null,[data])},false);
-			} else {if (funs.length > 0) funs[0].apply(null, [{}]);}
+			} else { if (funs.length > 0) { funs[0].func.apply(null, [{}]); }}
 		};
 	}	
 	//类处理

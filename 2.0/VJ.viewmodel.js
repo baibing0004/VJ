@@ -712,7 +712,13 @@
 						case 'title':
 							document.title = value;
 							if(data != _.vm.data) {delete data[key];}
-							break;						
+							break;
+						case 'close':
+							if(value == true){
+								$('body').empty();
+								window.close();
+							}
+							break;
 					}
 				});
 				return data;

@@ -52,8 +52,12 @@
                             break;
                         case 'text':
                         case 'value':
-                            _.input.val(value);
-                            if (_.vm.data.title && !V.isValid(value)) _.input.val(_.vm.data.title);
+                            if (false != value) {
+                                _.input.val(value);
+                                if (_.vm.data.title && !V.isValid(value)) _.input.val(_.vm.data.title);
+                            } else {
+                                _.input.val('');
+                            }
                             break;
                         case 'name':
                             _.input.attr('name', value);
@@ -298,8 +302,9 @@
                 var value = {};
                 if (_.cons)
                     V.each(_.cons, function (v) {
-                        if (_.page.vms[v]) {
-                            value[v] = _.page.vms[v].get().value;
+                        var vm = _.parent.vms[v] ? _.parent.vms[v] : _.page.vms[v];
+                        if (vm) {
+                            value[v] = vm.get().value;
                         }
                     }, null, true);
                 return { value: value };
@@ -322,16 +327,14 @@
                         case 'enctype':
                             _.node.attr('enctype', value);
                             break;
-                        case 'enctype':
-                            _.node.attr('enctype', value);
-                            break;
                         case 'valid':
                             if (value) {
                                 delete data.valid;
                                 var cons = Array.prototype.slice.call(_.cons, 0);
                                 V.whileC2(function () { return cons.shift(); }, function (v, next) {
-                                    if (_.page.vms[v]) {
-                                        _.page.vms[v].update({ valid: next });
+                                    var vm = _.parent.vms[v] ? _.parent.vms[v] : _.page.vms[v];
+                                    if (vm) {
+                                        vm.update({ valid: next });
                                     }
                                 }, function () {
                                     value.apply(null, []);
@@ -341,11 +344,12 @@
                         case 'value':
                             if (value) {
                                 V.each(_.cons, function (v) {
-                                    if (_.page.vms[v] && value[v]) {
-                                        if (_.page.vms[v].nodeName == 'fill') {
-                                            _.page.vms[v].update({ value: value });
+                                    var vm = _.parent.vms[v] ? _.parent.vms[v] : _.page.vms[v];
+                                    if (vm) {
+                                        if (vm.nodeName == 'fill') {
+                                            vm.update({ value: value ? value : {} });
                                         } else
-                                            _.page.vms[v].update({ value: value[v] });
+                                            vm.update({ value: value[v]?value[v]:'' });
                                     }
                                 });
                             }

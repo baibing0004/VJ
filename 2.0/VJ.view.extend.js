@@ -52,7 +52,7 @@
                             break;
                         case 'text':
                         case 'value':
-                            if (false != value) {
+                            if (typeof(value)!='boolean' && 'false' != (''+value).toLowerCase()) {
                                 _.input.val(value);
                                 if (_.vm.data.title && !V.isValid(value)) _.input.val(_.vm.data.title);
                             } else {

@@ -52,7 +52,7 @@
                             break;
                         case 'text':
                         case 'value':
-                            if (typeof(value)!='boolean' && 'false' != (''+value).toLowerCase()) {
+                            if (typeof (value) != 'boolean' && 'false' != ('' + value).toLowerCase() && 'undefined' !=(''+value).toLowerCase()) {
                                 _.input.val(value);
                                 if (_.vm.data.title && !V.isValid(value)) _.input.val(_.vm.data.title);
                             } else {
@@ -349,7 +349,7 @@
                                         if (vm.nodeName == 'fill') {
                                             vm.update({ value: value ? value : {} });
                                         } else
-                                            vm.update({ value: value[v]?value[v]:'' });
+                                            vm.update({ value: value[v] });
                                     }
                                 });
                             }

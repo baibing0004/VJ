@@ -102,13 +102,13 @@
 		{
 			//继承关系需要以后由Middler管理	
 			V.inherit.apply(_,[V.config.ConfigConvert,[]]);
-			__.scripts = {};			
-			__.loadScript = function(key){if(__.scripts[key]) {console.log(key+'代码已经注入')} else if(__.scripts._skey){console.log(__.scripts._skey+'已注册但是尚未有代码注入');} else __.scripts._skey=key;};
-			__.clearload = function(){delete __.scripts._skey;};
-			__.getScript = function(key){return __.scripts[key];};
-			//切记在代码中使用V.registScript的对象在被继承时必须使用middler重新获取类型方可继承
-			V.registScript = __.registScript = function(func){if(__.scripts._skey){var key = __.scripts._skey;delete __.scripts._skey;__.scripts[key]=func;}}
-			_.needConfig = true;
+			__.scripts = {};
+            __.loadScript = function (key) { if (__.scripts[key]) { console.log(key + '代码已经注入'); } else if (__.scripts._skey) { console.log(__.scripts._skey + '已注册但是尚未有代码注入'); } else __.scripts._skey = key; };
+            __.clearload = function () { delete __.scripts._skey; };
+            __.getScript = function (key) { return __.scripts[key]; };
+            //切记在代码中使用V.registScript的对象在被继承时必须使用middler重新获取类型方可继承
+			V.registScript = __.registScript = function (func) { if (__.scripts._skey) { var key = __.scripts._skey; delete __.scripts._skey; __.scripts[key] = func; } }
+            _.needConfig = true;
 			//生成参数管理器
 			__.convertParas = function(config,params,defParam,app,pcm){
 				var _ = this;
@@ -125,6 +125,10 @@
 								//paras.push(config.getValueByName(appName,name));
 								paras.push({ref:appName,name:name});
 							} else if(val.type){
+								var name = V.random()+'';
+								app[name] = __.convertContainer(config,val,defParam,app,pcm);
+								paras.push({ref:defParam.app,name:name});
+							} else if(val.path){
 								var name = V.random()+'';
 								app[name] = __.convertContainer(config,val,defParam,app,pcm);
 								paras.push({ref:defParam.app,name:name});
@@ -192,14 +196,16 @@
 				var method = V.getValue(v.method,defParam.method);
 				var path = V.getValue(v.path,defParam.path);
 				var host = V.getValue(v.host,defParam.host);
-				var type = ((V.isValid(v.type) && v.type.indexOf('\.')==0)?defParam.pack:'')+v.type;
-				if(type=='undefined' && !V.isValid(v.ref)) {
-					if(V.isValid(v.params)){
-						method="objects";
-					} else {
-						method = 'self';
-					}
-				}
+				var type = ((V.isValid(v.type) && v.type.indexOf('\.') == 0) ? defParam.pack : '') + v.type;
+                if (type == 'undefined' && !V.isValid(v.ref)) {
+                    if(V.isValid(v.path)) { 
+                        type = v.type = '' + V.random(); 
+                    } else if (V.isValid(v.params)) {
+                        method = "objects";
+                    } else {
+                        method = "self";
+                    }
+                }
 				var constructorparalength = V.getValue(v.constructorparalength,defParam.constructorparalength);
 				//使用Objects的默认配置对下传递 仅仅传递 path 和 pack
 				var para = __.convertParas(config,v.params,V.merge(defParam,{path:path,pack:defParam.pack,host:host}),app,pcm);
@@ -207,14 +213,15 @@
 					var _ = this;
 					_.getType = function(){
 						if(path) {
+							__.loadScript(type);
 							V.each(path.split(';'),function(v){
 								if(defParam.host && v.toLowerCase().indexOf('../')<0 && v.toLowerCase().indexOf('http://')<0){
 									v = defParam.host + v;
 								}
-								__.loadScript(type);
 								V.include(v);
-								__.clearload();
-							},null,true);
+							}, function () {
+							    __.clearload();
+							}, true);
 						}
 						var paras = para.getParas();
 						return __.getScript(type)?__.getScript(type):eval('('+type+')');
@@ -222,14 +229,15 @@
 					_.getValue = function(){
 						if(path) {
 							//以后可以修改 目前是有缓存的 path改为支持;号隔开的各个路径
+						    __.loadScript(type);
 							V.each(path.split(';'),function(v){
 								if(defParam.host && v.toLowerCase().indexOf('../')<0 && v.toLowerCase().indexOf('http://')<0){
 									v = defParam.host + v;
 								}
-								__.loadScript(type);
 								V.include(v);
-								__.clearload();
-							},null,true);
+							}, function () {
+							    __.clearload();
+							}, true);
 						}
 						var paras = para.getParas();
 						switch(method){
@@ -241,7 +249,6 @@
 								break;
 							default:
 							case 'constructor':
-								//return eval('(VJ.create('+type+',paras))');
 								return __.getScript(type)?V.create(__.getScript(type),paras):V.create2(type,paras);
 								break;
 							case 'bean':

@@ -263,14 +263,21 @@ if (top.location == location) {
 				this.prototype = _temp;
 			}
 		};
-		V.create = function(type,args){
-			var ret = {};
-			if(typeof(type)=='function'){
-				type.apply(ret,V.isArray(args)?args:[args]);
-			} else V.showException('请传入类定义');
-			return ret;
-			//return new function(){var _ = this;V.inherit.apply(_,[type,args]);}
-		};
+		V.create = function (type, args) {
+            if (typeof (type) == 'function') {
+                args = V.isArray(args) ? args : [args];
+                var ret = '(new type(';
+                if (V.isArray(args)) {
+                    for (var i in args) {
+                        ret += 'args[' + i + '],'
+                    }
+                    if (args.length > 0) {
+                        ret = ret.substr(0, ret.length - 1);
+                    }
+                }
+                return eval(ret + '))');
+            } else V.showException('请传入类定义');
+        };
 		V.create2 = function(type,args){
 			var ret = '(new '+type+'(';
 			if(V.isArray(args)){

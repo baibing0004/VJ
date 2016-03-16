@@ -102,6 +102,12 @@
 		{
 			//继承关系需要以后由Middler管理	
 			V.inherit.apply(_,[V.config.ConfigConvert,[]]);
+			__.scripts = {};			
+			__.loadScript = function(key){if(__.scripts[key]) {console.log(key+'代码已经注入')} else if(__.scripts._skey){console.log(__.scripts._skey+'已注册但是尚未有代码注入');} else __.scripts._skey=key;};
+			__.clearload = function(){delete __.scripts._skey;};
+			__.getScript = function(key){return __.scripts[key];};
+			//切记在代码中使用V.registScript的对象在被继承时必须使用middler重新获取类型方可继承
+			V.registScript = __.registScript = function(func){if(__.scripts._skey){var key = __.scripts._skey;delete __.scripts._skey;__.scripts[key]=func;}}
 			_.needConfig = true;
 			//生成参数管理器
 			__.convertParas = function(config,params,defParam,app,pcm){
@@ -205,11 +211,13 @@
 								if(defParam.host && v.toLowerCase().indexOf('../')<0 && v.toLowerCase().indexOf('http://')<0){
 									v = defParam.host + v;
 								}
+								__.loadScript(type);
 								V.include(v);
+								__.clearload();
 							},null,true);
 						}
 						var paras = para.getParas();
-						return eval('('+type+')');
+						return __.getScript(type)?__.getScript(type):eval('('+type+')');
 					};
 					_.getValue = function(){
 						if(path) {
@@ -218,7 +226,9 @@
 								if(defParam.host && v.toLowerCase().indexOf('../')<0 && v.toLowerCase().indexOf('http://')<0){
 									v = defParam.host + v;
 								}
+								__.loadScript(type);
 								V.include(v);
+								__.clearload();
 							},null,true);
 						}
 						var paras = para.getParas();
@@ -232,10 +242,10 @@
 							default:
 							case 'constructor':
 								//return eval('(VJ.create('+type+',paras))');
-								return V.create2(type,paras);
+								return __.getScript(type)?V.create(__.getScript(type),paras):V.create2(type,paras);
 								break;
 							case 'bean':
-								var val = eval('(new '+type+'())');
+								var val = __.getScript(type)?V.create(__.getScript(type),[]):eval('(new '+type+'())');
 								//bean设置出错
 								if(paras){
 									for(var i in paras){
@@ -255,9 +265,9 @@
 								}
 								return val;
 							case 'factory':
-								return eval('('+type+'.apply('+type+',paras))');
+								return __.getScript(type)?__.getScript(type).apply(__.getScript(type),paras):eval('('+type+'.apply('+type+',paras))');
 							case 'factorybean':
-								var val = eval('('+type+'.apply('+type+',paras))');							
+								var val = __.getScript(type)?__.getScript(type).apply(__.getScript(type),paras):eval('('+type+'.apply('+type+',paras))');						
 								if(paras){
 									var q = 0;
 									for(var i in paras){
@@ -278,7 +288,7 @@
 								}
 								return val;
 							case 'constructorbean':							
-								var val = V.create2(type,paras);
+								var val = __.getScript(type)?V.create(__.getScript(type),paras):V.create2(type,paras);
 								if(paras){
 									var q = 0;
 									for(var i in paras){

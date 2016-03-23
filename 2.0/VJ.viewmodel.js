@@ -790,6 +790,25 @@
 			_.save = function(name,data){};
 			_.clear = function(name){};
 		};
+		M.SessionDataResourceDecorator = function(){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[M.SessionDataResource,[]]);
+				__.res = Array.prototype.slice(arguments,0);
+				console.log(__.res);
+			}
+			_.load = function(name){
+				var val = undefined;
+				V.each(__.res,function(v){try{val = val?val:v.load(name);}catch(e){}},null,true);
+				return val;
+			};
+			_.save = function(name,data){
+				V.each(__.res,function(v){try{v.save(name,data);}catch(e){}});
+			};
+			_.clear = function(name){
+				V.each(__.res,function(v){try{v.clear(name);}catch(e){}});
+			};
+		};
 		//定义时必须说明cookie.js的位置
 		M.CookieDataResource = function(param){
 			var _ = this,__ = {};

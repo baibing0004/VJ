@@ -110,7 +110,7 @@
 			//验证 请注意双斜杠
 			ValidateManager:{type:'VJ.view.ValidateManager',mode:'static'},
 			Regex:{type:'VJ.view.Regex'},			
-			isNumber: { type: 'VJ.view.Regex', params: ['/^((.?)|([0-9]+\\.{0,1}[0-9]{0,2})$/g'] },
+			isNumber: { type: 'VJ.view.Regex', params: ['/^((.?)|([0-9]+\\.{0,1}[0-9]{0,2}))$/g'] },
             isInt: { type: 'VJ.view.Regex', params: ['/^((.?)|([0-9]+))$/g'] },
             isLetter: { type: 'VJ.view.Regex', params: ['/^((.?)|([A-Za-z]+))$/g'] },
             isPassword: { type: 'VJ.view.Regex', params: ['/^((.?)|(([a-zA-Z]|\\w){5,17}))$/g'] },

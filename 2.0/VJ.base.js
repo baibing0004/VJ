@@ -428,7 +428,7 @@ if (top.location == location) {
 			if (V.isDebug) {
 				var content = name;
 				if (V.isValid(e)) {
-					content += ("\r\nname:" + e.name + "\r\nmessage:" + e.message + (e.stack ? ("\r\nstack:" + e.stack + "\r\nfile:" + e.fileName + "\r\nlineNumber:" + e.lineNumber) : (V.userAgent.ie ? ("\r\ndescription:" + e.description) : "")));
+					content += ("\r\nname:" + e.name + "\r\nmessage:" + e.message + (e.stack ? ("\r\nstack:" + e.stack + (e.fileName?("\r\nfile:" + e.fileName):'') + (e.lineNumber?("\r\nlineNumber:" + e.lineNumber):'')) : (V.userAgent.ie ? ("\r\ndescription:" + e.description) : "")));
 				}
 				//V.alert('未捕获异常',content);
 				//alert('未捕获异常:' + content);

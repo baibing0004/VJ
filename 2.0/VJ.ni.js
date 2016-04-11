@@ -431,7 +431,8 @@
 			var _ = this,__= {};
 			{
 				V.inherit.apply(_,[N.NiDataFactory,[]]);
-				if(!WebSocket){
+				var ws = window.WebSocket || window.MozWebSocket;
+				if(!ws){
 					throw new Error(V.userAgent.name+'不支持WebSocket!');
 					return;
 				}
@@ -444,6 +445,7 @@
 						__.close = _.close;
 						__.conn = null;
 						__.datas = [];
+						__.senddatas = [];
 						__.calls = {};						
 						__.addData = function(data){
 							__.datas.push(data);
@@ -451,20 +453,20 @@
 						};
 						__.callback = function(){
 							if(__.datas.length>0){
-								V.whileC(function(){return __.datas.shift();},function(val){
+								V.each(__.datas,function(val){
 									if(typeof(val) == 'string'){
 										val = eval('('+val+')');
 									}
 									if(val.niid){
 										if(__.calls[val.niid]){
 											__.calls[val.niid].datas.push(val);
-											__.callfunc(val.niid);
-										}else{
+										} else {
 											__.calls[val.niid] = {datas:[],func:null};
 											__.calls[val.niid].datas.push(val);
 										}
+										__.callfunc(val.niid);
 									}else{
-										V.showException('未找到消息处理者'+V.json(val));
+										V.showException('未找到消息处理者'+(val));
 									}									
 								});
 							}
@@ -479,8 +481,13 @@
 							//默认conn是Open的
 							var val = {niid:index};
 							val[cmd.command] = cmd.params;
-							__.conn.send(V.toJsonString(val));
-							__.callfunc(index);
+							__.senddatas.push(V.toJsonString(val));
+							__.callsend();
+						};
+						__.callsend = function(){
+							if(_.isOpen){
+								V.each(__.senddatas,function(v){__.conn.send(v);});
+							}
 						};
 						__.callfunc = function(index){
 							var oCall = __.calls[index];
@@ -489,6 +496,7 @@
 									if(typeof(val) == 'string'){
 										val = eval('('+val+')');
 									}
+									delete val.niid;
 									oCall.func(val);
 								},function(){delete __.calls[index];});
 							}
@@ -496,21 +504,21 @@
 					}
 					_.open = function(){
 						if(!_.isOpen && !__.conn){
-							__.conn = new WebSocket(_.params.url);
-							__.conn.onopen = function(){__.open();};
+							__.conn = new ws(_.params.url);
+							__.conn.onopen = function(){__.open();__.callsend();};
 							__.conn.onclose = function(){__.close();__.conn = null;};
 							__.conn.onmessage = function(evt){
 								try {
-									if(evt.data){__.addDatas(evt.data);}
+									if(evt.data){__.addData(evt.data);}
 								} catch (e) {
 									V.showException('VJ.ni.NiSocketDataFactory.onmessage', e);
 								}	
 							};
 							__.conn.onerror = function(evt){
 								try {
-									__.isError = true;
+									_.isError = true;
 									__.addDatas(false);
-									V.showException('VJ.ni.NiSocketDataFactory.onerror'+evt.data);
+									V.showException('VJ.ni.NiSocketDataFactory.onerror:'+evt.data);
 								} catch (e) {
 									V.showException('VJ.ni.NiSocketDataFactory.onmessage', e);
 								}
@@ -536,7 +544,7 @@
 						V.inherit.apply(_,[N.NiDataCommand,[]]);
 					}
 					_.excute = function(result,func){
-						if(!_.connection || !_.connection.isError){
+						if(!_.connection || _.connection.isError){
 							V.showException('WebSocket连接失败');
 							if(func){func(false);}
 							return;
@@ -591,9 +599,9 @@
 										}
 									}
 									//特别地当回{close:true}时，关闭websocket
-									if(func){if(func(data).close) {__.conn.close();}}
+									if(func){var val = func(data);if(val && val.close) {__.conn.close();}}
 								} catch (e) {
-									V.showException('V._ajaxOption success方法', e);
+									V.showException('V.ni.NiSocketCommand invoke方法', e);
 									if(func){func(false);}
 								}							
 							});
@@ -602,7 +610,7 @@
 				};
 			}
 			_.createDBConnection = function(){return new __.SocketConnection();};
-			_.backDBConnection = function(conn){if(__.conn!=conn){if(conn.close && conn.isOpen){conn.close();}};};
+			_.backDBConnection = function(){console.log('back conn');};
 			_.createDBCommand = function(){return new __.SocketCommand();}			
 		};
 		//{name:'',version:'1.0',desc:'',size:2*1024*1024}

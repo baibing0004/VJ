@@ -1,0 +1,548 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="description" content="Add multi-touch gestures to your webpage.">
+    <title>VJ test</title>
+    <script src="2.0/ref/jquery-1.8.0.min.js" type="text/javascript"></script>
+	<script src="2.0/VJ.js" type="text/javascript"></script>
+	<script src="config.js" type="text/javascript"></script>
+	<script src="ni.js" type="text/javascript"></script>
+	<style type="text/css">		
+		.animate {transition: all 0.3s;-webkit-animation-timing-function:ease;}		
+	</style>
+	<script type="text/javascript">		
+		(function(V,M,$,cm,W){
+			//根据values自动添加反转动对象，而且根据用户的背景，旋转 同步反转内部的所有对象保证其的方向正确。
+			window.mappanel = function(middler,path,vm,limit,limitBack,lock){
+				var _ = this,__ = {};
+				{
+					V.inherit.apply(_,[W.Control,[path || '<div style="overflow:hidden;"><div style="display:none;"></div></div>',vm || {
+						onLeft:function(D,I){},
+						onRight:function(D,I){},
+						onTop:function(D,I){},
+						onDown:function(D,I){},
+						onScale1:function(D,I){},
+						onRotate:function(D,I){}
+					}]]);
+					__.onLoad = _.onLoad;
+					__.render = _.render;
+					__.hasRender = false;
+					__.status = {
+						panelid:V.random(),
+						transform:{
+							tx: 0, ty: 0,
+							scale: 1,
+							angle: 0,
+							rx: 0,
+							ry: 0,
+							rz: 0,
+							x:0,
+							y:0,
+							oangle:0,
+							oscale:1
+						},
+						callevent:{value:false},
+						limit:V.getValue(limit,0),
+						limitBack:V.getValue(limitBack,true),
+						lock:lock?lock:false,
+						startX:0,startY:0
+					};
+					_.status = __.status;
+					console.log(_.status);
+					__.moving = false;
+					_.am = function(node,data,timeout){
+						if(!__.status.lock && !__.moving) {
+							V.once(function(){
+								__.status.transform = V.merge(__.status.transform,data);
+								var value = V.format('translate3d({tx}px,{ty}px,0px) scale({scale},{scale}) rotate({angle}deg)',__.status.transform);
+								node.css('webkitTransform',value).css('mozTransform',value).css('transform',value);
+								__.moving = false;
+							}, timeout || (1000 / 60));
+							__.moving = true;
+						}
+					};
+				}
+				//事件处理
+				_.onLoad = function(node){
+					node.removeClass('animate');
+					_.panel = node.find('div:first');
+					_.children  = _.panel.siblings();
+					//if(_.children.length==0) return;
+					_.length = _.children.length;					
+					_.value = Math.max(0,Math.min(_.children.length,parseInt(_.value)));
+					_.children.css('position','relative');
+					_.children.addClass('noactive');
+					_.panel.append(_.children);
+					V.forC(_.events,function(k,v){
+						switch(k.toLowerCase()){
+							case 'up':
+								V.merge(__.status,{
+									vol:true,
+									up:true
+								},true);
+								break;
+							case 'down':
+								V.merge(__.status,{
+									vol:true,
+									down:true
+								},true);
+								break;
+							case 'upout':
+								V.merge(__.status,{
+									vol:true,
+									upout:true
+								},true);
+								break;
+							case 'downout':
+								V.merge(__.status,{
+									vol:true,
+									downout:true
+								},true);
+								break;
+							case 'left':
+								V.merge(__.status,{
+									hor:true,
+									left:true
+								},true);
+								break;
+							case 'right':
+								V.merge(__.status,{
+									hor:true,
+									right:true
+								},true);
+								break;
+							case 'leftout':
+								V.merge(__.status,{
+									hor:true,
+									leftout:true
+								},true);
+								break;			
+							case 'rightout':
+								V.merge(__.status,{
+									hor:true,
+									rightout:true
+								},true);
+								break;
+							case 'scale':
+								V.merge(__.status,{
+									pinch:true
+								},true);
+								break;
+							case 'rotate':
+								V.merge(__.status,{
+									rotate:true
+								},true);
+								break;
+							case 'dblclick':
+								V.merge(__.status,{
+									dblclick:true
+								},true);
+							default:
+								_.bindEvent(node,k,v);
+								break;
+						}
+					},function(){node.attr('panelid',__.status.panelid);__.status.panelaction=(function(){
+						var ret = [];
+						if(__.status.vol){ret.push('vol');}
+						if(__.status.hor){ret.push('hor');}
+						if(__.status.pinch){ret.push('pinch');}
+						if(__.status.rotate){ret.push('rotate');}
+						if(__.status.dblclick){ret.push('dblclick');}
+						return ret;
+					})(); node.attr('panelaction',__.status.panelaction.join(','));__.onLoad(node);});
+				};
+				_.fill = function(){return {};};
+				_.render = function(data){
+					data = __.render(data);
+					V.forC(data,function(k,v){
+						switch(k.toLowerCase()){
+							case 'width':
+								_.node.width(v);
+								break;
+							case 'height':
+								_.node.height(v);
+								break;
+						}
+					},null,true);
+					_.panel.show();
+					if(!__.hasRender){
+						__.document = $(document);
+						__.hasRender = true;
+						//当物理控件的相关事务返回真时，启动提前终止的动画操作
+						__.finalMove = false;
+						__.mc = new Hammer.Manager(_.node[0]);
+						//最终动画方法和事件应该以便后面的控件自己控制移动和回滚的动画
+						//应该允许后面的继承控件自己控制
+						//事件的触发应该有阀值，在超出阀值时触发事件 并引发或者不引发回滚						
+						__.mc.add(new Hammer.Pan({ threshold: 0, pointers: 0 }));						
+						//__.mc.add(new Hammer.Swipe({velocity:0.6})).recognizeWith(__.mc.get('pan'));						
+						if(__.status.rotate || __.status.pinch){
+							__.mc.add(new Hammer.Rotate({threshold:0})).recognizeWith(__.mc.get('pan'));
+						} 
+						if(__.status.pinch){
+							__.mc.add(new Hammer.Pinch({threshold:0})).recognizeWith([__.mc.get('pan'), __.mc.get('rotate')]);
+						}
+						if(__.status.dblclick){
+							__.mc.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
+						}
+						//__.mc.add(new Hammer.Tap());swipeleft swiperight swipeup swipedown 
+						__.mc.on(V.format("panleft panright panup pandown {pinorrot} {doubleclick}",{
+								//hor:(__.status.hor?'panleft panright':''),
+								//vol:(__.status.vol?'panup pandown':''),
+								pinorrot:__.status.rotate?'rotatestart rotatemove rotateend rotate':(__.status.pinch?'pinchstart pinchmove pinchend':''),
+								doubleclick:__.status.dblclick?'doubletap':''}),
+							function(ev) {
+								//开始就有一个panelid 判断发生的target是否有panelid 如果有panelid且不是自己则不处理这个事情，否则处理这个事情（解决同向的滚动问题）
+								//修改为只要其定义的事件集合不包含我们的事件集合就可以处理
+								//需要过滤掉panelid相等但是不是本身的
+								var parent = ev.target.hasAttribute('panelid')?$(ev.target):$(ev.target).parents('[panelid]:first');
+								parent = parent.length>0?parent:null;
+								if(parent && parent.attr('panelid') ==__.status.panelid){							
+									switch(ev.type){
+										case 'panright':
+										case 'panleft':
+										case 'swiperight':
+										case 'swipeleft':
+											if($.inArray('hor',__.status.panelaction)<0) {
+												parent = $(parent).parents('[panelid]:first');
+												parent = parent.length>0?parent:null;
+											};
+											break;
+										case 'panup':
+										case 'pandown':
+										case 'swipeup':
+										case 'swipedown':
+											if($.inArray('vol',__.status.panelaction)<0) {
+												parent = $(parent).parents('[panelid]:first');
+												parent = parent.length>0?parent:null;
+											};
+											break;
+										case 'pinchstart':
+										case 'pinchmove':
+										case 'pinchin':
+										case 'pinchout':
+										case 'pinchend':
+											if($.inArray('pinch',__.status.panelaction)<0) {
+												parent = $(parent).parents('[panelid]:first');
+												parent = parent.length>0?parent:null;
+											};
+											break;
+										case 'rotatestart':
+										case 'rotatemove':
+										case 'rotateend':
+										case 'rotate':
+											if($.inArray('rotate',__.status.panelaction)<0) {
+												parent = $(parent).parents('[panelid]:first');
+												parent = parent.length>0?parent:null;
+											};
+											break;
+										case 'doubletap':								
+											if($.inArray('dblclick',__.status.panelaction)<0) {
+												parent = $(parent).parents('[panelid]:first');
+												parent = parent.length>0?parent:null;
+											};
+											break;
+									}
+								}							
+								if(parent && parent.attr('panelid') !=__.status.panelid && parent.attr('panelaction') !=''){
+									var action = parent.attr('panelaction').split(',');
+									switch(ev.type){
+										case 'panright':
+										case 'panleft':
+										case 'swiperight':
+										case 'swipeleft':
+											if($.inArray('hor',action)>=0) return;
+											break;
+										case 'panup':
+										case 'pandown':
+										case 'swipeup':
+										case 'swipedown':
+											if($.inArray('vol',action)>=0) return;
+											break;
+										case 'pinchstart':
+										case 'pinchmove':
+										case 'pinchin':
+										case 'pinchout':
+										case 'pinchend':
+											if($.inArray('pinch',action)>=0) return;
+											break;
+										case 'rotatestart':
+										case 'rotatemove':
+										case 'rotateend':
+										case 'rotate':
+											if($.inArray('rotate',action)>=0) return;
+											break;
+										case 'doubletap':											
+											if($.inArray('dblclick',action)>=0) return;
+											break;
+									}									
+								}
+								if(!__.finalMove){
+									//这里会出现闪烁，除非立即设定现在的位置 按理说finalMove应保护最终动画的完成
+									_.node.removeClass('animate').find('.animate').removeClass('animate');
+									switch(ev.type){
+										case 'panright':
+										case 'swiperight':										
+											if(__.status.hor && !__.rotating && !__.finalMove){
+												__.status.lastAction = 'right';
+												__.finalMove = false ||	_.onRight(ev,__.status);
+											} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
+												//改为以一个固定的起始点+位移为处理方法 这样可以避免移动加倍的问题。
+												if(__.status.startX == 0) __.status.startX = __.document.scrollLeft();
+												__.document.scrollLeft(Math.max(__.status.startX-ev.deltaX,0));
+											}
+											break;
+										case 'panleft':	
+										case 'swipeleft':
+											if(__.status.hor && !__.rotating && !__.finalMove){
+												__.status.lastAction = 'left';											
+												__.finalMove = false ||	_.onLeft(ev,__.status);
+											} else if(!__.status.hor && document.body.clientWidth < document.body.scrollWidth){
+												if(__.status.startX == 0) __.status.startX = __.document.scrollLeft();
+												__.document.scrollLeft(Math.min(__.status.startX-ev.deltaX,document.body.scrollWidth - document.body.clientWidth));
+											}
+											break;
+										case 'panup':
+										case 'swipeup':																
+											if(__.status.vol && !__.rotating && !__.finalMove){
+												__.status.lastAction = 'up';							
+												__.finalMove = false ||	_.onUp(ev,__.status);
+											} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
+												if(__.status.startY == 0) __.status.startY = __.document.scrollTop();
+												__.document.scrollTop(Math.max(__.status.startY-ev.deltaY,document.body.scrollHeight - document.body.clientHeight));
+											}
+											break;
+										case 'pandown':
+										case 'swipedown':	
+											if(__.status.vol && !__.rotating && !__.finalMove){
+												__.status.lastAction = 'down';			
+												__.finalMove = false ||	_.onDown(ev,__.status);
+											} else if(!__.status.vol && window.screen.availHeight < document.body.scrollHeight){
+												if(__.status.startY == 0) __.status.startY = __.document.scrollTop();
+												__.document.scrollTop(Math.min(__.status.startY-ev.deltaY,document.body.scrollHeight));
+											}
+											break;
+										case 'pinchstart':
+											__.rotating = true;
+										case 'pinchmove':
+											__.finalMove = false ||	_.onScale(ev,__.status);
+											break;
+										case 'pinchin':
+										case 'pinchout':
+											__.status.lastAction = 'scale';
+											__.scale = ev.scale;
+											break;
+										case 'pinchend':									
+											//__.rotating = false;
+											break;
+										case 'rotate':
+										case 'rotatestart':
+										case 'rotatemove':
+											__.rotating = true;
+											//完成一个panel基础版本 其事件类应该可以由子类触发 完成一个hswiperpanel版本 完成一个上下移动的SPA初级模块
+											__.status.lastAction = 'rotate';
+											__.finalMove = false || _.onRotate(ev,__.status);
+											if(__.pinch){__.status.scale = ev.scale};
+											break;
+										case 'rotateend':
+											__.status.transform.oangle = __.status.transform.angle;
+											break;
+									}
+									if(__.status.callevent.value) _.onFinal(__.status);	
+									//仅处理还原
+									if(__.finalMove){
+										V.once(function(){
+											__.rotating = false;
+											_.onBackAnimate(_.node,__.status);										
+											__.status.callevent.value = false;
+											V.once(function(){__.finalMove = false;},300);
+										},100);
+									}
+								}
+							});
+							__.mc.on("hammer.input", function(ev) {
+								if(ev.isFinal && !__.finalMove) {
+									V.once(function(){
+										__.rotating = false;
+										//保留当前状态
+										_.onBackAnimate(_.node,__.status);
+										if(__.status.callevent.value) _.onFinal(__.status);
+										__.status.callevent.value = false;
+										V.once(function(){__.finalMove = false;},300);
+									},100);
+								}
+							});
+						/*
+						__.mc.on("swipe", onSwipe);
+						__.mc.on("tap", onTap);
+						*/
+					}
+					return data;
+				};
+				
+				//以方便继承类覆盖并执行动画
+				_.onLeft = function(ev,e){
+					if(_.lock) return;				
+					__.distance = Math.abs(ev.deltaX);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
+					var x = e.transform.x+ev.deltaX;
+					//未超出边界时可以移动
+					e.callevent.value=true;
+					if(x < -(_.children.width()+e.limit-_.node.width())) {return e.limitBack;} else {_.am(_.panel,{tx:x});}
+				};
+				_.onRight = function(ev,e){
+					if(_.lock) return;
+					__.distance = Math.abs(ev.deltaX);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance);					
+					var x = e.transform.x+ev.deltaX;
+					e.callevent.value=true;
+					if(x > e.limit){return e.limitBack;} else {_.am(_.panel,{tx:x});}
+				};
+				_.onUp = function(ev,e){
+					if(_.lock) return;
+					__.distance = Math.abs(ev.deltaY);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
+					var y = e.transform.y+ev.deltaY;
+					e.callevent.value = true;
+					if(y < -(_.children.height()+e.limit-_.node.height())) {return e.limitBack;} else {_.am(_.panel,{ty:y});}
+				};
+				_.onDown = function(ev,e){
+					if(_.lock) return;
+					__.distance = Math.abs(ev.deltaY);//Math.max(Math.abs(ev.velocity*ev.deltaTime),ev.distance)
+					var y = e.transform.y+ev.deltaY;
+					e.callevent.value = true;
+					if(y > e.limit) {return e.limitBack;} else {_.am(_.panel,{ty:y});}
+				};
+				_.onScale = function(ev,e){
+					if(_.lock) return;
+					var s = (e.transform.oscale + ev.scale)/2;
+					if(s>=0.5 && s<2) _.am(_.panel,{scale:s}); else return e.limitBack;
+					e.callevent.value = true;
+				};
+				_.onRotate = function(ev,e){
+					if(_.lock) return;
+					_.call('rotate2',{e:ev});
+					var angle = (e.transform.oangle+ev.rotation)%360;
+					_.am(_.panel,{angle:angle,scale:e.pinch?ev.scale:1});
+					e.callevent.value = true;
+				};
+				//最终执行动画并触发事件缓冲100毫秒发生			
+				_.onBackAnimate = function(node,e){
+					//判断是否超出边界，并根据超出边界的方式进行还原 未超出边界的记录当前位置 _.node.width()-_.children.width() 0,_.node.height() - _.children.height() 0
+					var ret = {
+						tx:Math.min(0,Math.max(_.node.width() - _.children.width(),e.transform.tx)),
+						ty:Math.min(0,Math.max(_.node.height() - _.children.height(),e.transform.ty)),
+						scale:Math.min(2,Math.max(0.5,e.transform.scale))
+					};
+					var outofrange = (ret.tx!=e.transform.tx || ret.ty!=e.transform.ty || ret.scale!=e.transform.scale);
+					V.merge(__.status.transform,{x:ret.tx,y:ret.ty,tx:ret.tx,ty:ret.ty,oangle:e.transform.angle,oscale:e.transform.scale},true);
+					if(outofrange)
+					V.once(function(){						
+						//等待1秒是希望在触发事件更新Index之后再处理动画才能合理显示 rotate3d({rx},{ry},{rz},{angle}deg)
+						var value = V.format('translate3d({tx}px,{ty}px,0px) scale({scale},{scale}) rotate({angle}deg)',e.transform);
+						_.panel.addClass('animate').css('webkitTransform',value).css('mozTransform',value).css('transform',value).show();
+					},10);
+				};
+				//最后触发的事件
+				_.onFinal = function(e){
+					var event = V.merge({},e.transform);
+					switch(e.lastAction){
+						case 'left':		
+							if(e.leftout){
+								_.call('leftout');
+							}
+							else
+								_.call('left',{e:event});
+							break;	
+						case 'right':		
+							if(e.rightout){
+								_.call('rightout');
+							}
+							else
+								_.call('right',{e:event});
+							break;										
+						case 'up':
+							if(e.upout){
+								_.call('upout');
+							}
+							else
+								_.call('up',{e:event});
+							break;										
+						case 'down':		
+							if(e.downout){
+								_.call('downout');
+							}
+							else
+								_.call('down',{e:event});
+							break;
+						case 'scale':										
+							_.call('scale',{e:event});
+							break;							
+						case 'rotate':
+							if(e.pinch){
+								if(e.scale != 1) {_.call('scale',{e:event});}
+							}
+							_.call('rotate',{e:event});
+							break;
+					}
+				};
+			};
+			new function(){
+				var _=this,__={};
+				{
+					cm = V.merge(cm,{
+						Middler:{
+							'VESH.view':{											
+								map:{type:'mappanel',path:'hammer.min.js',params:[{middler:true},"",{},100,true,false]}
+							}
+						}
+					});
+					V.inherit.apply(_,[M.Page,[cm,{
+						panel:{
+							onLoad:function(D,I){},
+							onRotate:function(D,self){
+								this.fill.update({value:D.e});
+								//$('#panel2').css('webkitTransform','rotate3d(0,0,0,'+(-1*D.angle)+'deg)');
+							},
+							onRotate2:function(D,self){
+								this.fill.update({value:D.e});
+								//$('#panel2').css('webkitTransform','rotate3d(0,0,0,'+(-1*D.angle)+'deg)');
+							},
+							onScale1:function(D,self){
+								this.fill.update({value:D.e});
+							},
+							onLeft:function(D,I){this.fill.update({value:D.e});},
+							onRight:function(D,I){this.fill.update({value:D.e});},
+							onUp:function(D,I){this.fill.update({value:D.e});},
+							onDown:function(D,I){this.fill.update({value:D.e});}
+						},
+						panel2:{
+							
+						},
+						page:{
+							data:{
+								title:'测试页面aa'
+							},
+							onStart:function(D,I){
+								console.log('start');
+								V.isDebug = true;
+								//V.tryC(function(){I.v.middler.getObjectByAppName('VESH.view','map')});
+							}							
+						}
+					}]]);
+				}
+			};
+		})(VJ,VJ.viewmodel,jQuery,window.top.config,VJ.view);
+	</script>	
+</head>
+<body>
+	<div id="panel" style="width:300px;height:300px;background:yellow;" _="type:'map'">
+		<div id="panel2" style="width:900px;height:900px;position:relative;background:url('abc.jpg');overflow:hidden;">&nbsp;
+		</div>
+	</div>
+	<div id="fill" style="height:90px;bottom:0px;position:fixed;overflow:hidden;" _="type:'fill'">
+		angle:{angle}&nbsp;&nbsp;scale:{scale}&nbsp;&nbsp;rotation:{rotation}&nbsp;&nbsp;deltaX:{deltaX}&nbsp;&nbsp;deltaY:{deltaY}&nbsp;&nbsp;center:{x}:{y}
+	</div>
+</body>
+</html>
+ 

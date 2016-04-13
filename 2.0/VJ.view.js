@@ -390,7 +390,7 @@
 					__.mc.on(V.format("panleft panright panup pandown {pinorrot} {doubleclick}",{
 							//hor:(__.status.hor?'panleft panright':''),
 							//vol:(__.status.vol?'panup pandown':''),
-							pinorrot:__.status.rotate?'rotatestart rotatemove rotateend':(__.status.pinch?'pinchstart pinchmove pinchend':''),
+							pinorrot:__.status.rotate?'rotatestart rotatemove rotateend rotate':(__.status.pinch?'pinchstart pinchmove pinchend':''),
 							doubleclick:__.status.dblclick?'doubletap':''}),
 						function(ev) {
 							//开始就有一个panelid 判断发生的target是否有panelid 如果有panelid且不是自己则不处理这个事情，否则处理这个事情（解决同向的滚动问题）
@@ -428,6 +428,7 @@
 											parent = parent.length>0?parent:null;
 										};
 										break;
+									case 'rotate':
 									case 'rotatestart':
 									case 'rotatemove':
 									case 'rotateend':							
@@ -466,6 +467,7 @@
 									case 'pinchend':
 										if($.inArray('pinch',action)>=0) return;
 										break;
+									case 'rotate':
 									case 'rotatestart':
 									case 'rotatemove':
 									case 'rotateend':											
@@ -534,6 +536,7 @@
 									case 'pinchend':									
 										__.rotating = false;
 										break;
+									case 'rotate':
 									case 'rotatestart':
 										__.rotating = true;
 									case 'rotatemove':
@@ -595,7 +598,7 @@
 			_.onScale = function(ev,e){
 				if(Math.abs(ev.scale-1)<e.limit) _.am(_.node,{scale:ev.scale});
 				else {e.callevent.value = true;}};
-			_.onRotate = function(ev,e){_.am(_.node,{angle:ev.angle,scale:e.pinch?ev.scale:1});e.callevent.value = true;};
+			_.onRotate = function(ev,e){_.am(_.node,{angle:ev.rotation,scale:e.pinch?ev.scale:1});e.callevent.value = true;};
 			//最终执行动画并触发事件缓冲100毫秒发生			
 			_.onBackAnimate = function(node,e){
 				V.merge(e.transform,{tx:0,ty:0,scale:1,angle:0,rx:0,ry:0,rz:0,startX:0,startY:0},true);

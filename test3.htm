@@ -230,10 +230,10 @@
 												parent = parent.length>0?parent:null;
 											};
 											break;
-										case 'rotate':
 										case 'rotatestart':
 										case 'rotatemove':
-										case 'rotateend':							
+										case 'rotateend':
+										case 'rotate':
 											if($.inArray('rotate',__.status.panelaction)<0) {
 												parent = $(parent).parents('[panelid]:first');
 												parent = parent.length>0?parent:null;
@@ -269,10 +269,10 @@
 										case 'pinchend':
 											if($.inArray('pinch',action)>=0) return;
 											break;
-										case 'rotate':
 										case 'rotatestart':
 										case 'rotatemove':
-										case 'rotateend':											
+										case 'rotateend':
+										case 'rotate':
 											if($.inArray('rotate',action)>=0) return;
 											break;
 										case 'doubletap':											
@@ -296,7 +296,7 @@
 											}
 											break;
 										case 'panleft':	
-										case 'swipeleft':								
+										case 'swipeleft':
 											if(__.status.hor && !__.rotating && !__.finalMove){
 												__.status.lastAction = 'left';											
 												__.finalMove = false ||	_.onLeft(ev,__.status);
@@ -346,11 +346,9 @@
 											__.status.lastAction = 'rotate';
 											__.finalMove = false || _.onRotate(ev,__.status);
 											if(__.pinch){__.status.scale = ev.scale};
-											alert(ev.rotation);
-											//_.call('rotate2',V.merge({e:ev},{e:{centerX:ev.center.x,centerY:ev.center.y}}));
 											break;
 										case 'rotateend':
-											__.rotating = false;
+											__.status.transform.oangle = __.status.transform.angle;
 											break;
 									}
 									if(__.status.callevent.value) _.onFinal(__.status);	
@@ -423,11 +421,8 @@
 				};
 				_.onRotate = function(ev,e){
 					if(_.lock) return;
+					_.call('rotate2',{e:ev});
 					var angle = (e.transform.oangle+ev.rotation)%360;
-					console.log(ev);
-					alert(angle);
-					//var center = V.format('{x} {y}',ev.center);
-					//_.panel.css('transform-origin',center).css('-ms-transform-origin',center).css('-webkit-transform-origin',center).css('-moz-transform-origin',center).css('-o-transform-origin',center);
 					_.am(_.panel,{angle:angle,scale:e.pinch?ev.scale:1});
 					e.callevent.value = true;
 				};
@@ -509,6 +504,10 @@
 								this.fill.update({value:D.e});
 								//$('#panel2').css('webkitTransform','rotate3d(0,0,0,'+(-1*D.angle)+'deg)');
 							},
+							onRotate2:function(D,self){
+								this.fill.update({value:D.e});
+								//$('#panel2').css('webkitTransform','rotate3d(0,0,0,'+(-1*D.angle)+'deg)');
+							},
 							onScale1:function(D,self){
 								this.fill.update({value:D.e});
 							},
@@ -542,7 +541,7 @@
 		</div>
 	</div>
 	<div id="fill" style="height:90px;bottom:0px;position:fixed;overflow:hidden;" _="type:'fill'">
-		angle:{angle}&nbsp;&nbsp;scale:{scale}&nbsp;&nbsp;x:{centerX}&nbsp;&nbsp;y:{centerY}&nbsp;&nbsp;rotation:{rotation}&nbsp;&nbsp;o:{y}
+		angle:{angle}&nbsp;&nbsp;scale:{scale}&nbsp;&nbsp;rotation:{rotation}&nbsp;&nbsp;deltaX:{deltaX}&nbsp;&nbsp;deltaY:{deltaY}&nbsp;&nbsp;center:{x}:{y}
 	</div>
 </body>
 </html>

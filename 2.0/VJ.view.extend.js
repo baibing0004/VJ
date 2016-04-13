@@ -34,11 +34,12 @@
             };
             _.fill = function () {
                 var value = $.trim(_.input.val());
-                value = value == _.vm.data.title ? "" : value;
+                value = (value == _.vm.data.title || value == _.vm.data.error) ? "" : value;
                 return { text: value, value: value };
             };
             _.render = function (data) {
                 data = __.render(data);
+                _.input.off('focus').on('focus', function () { if (_.input.val() == _.vm.data.error || _.input.text() == _.vm.data.error) { _.input.val(''); } });
                 V.forC(data, function (key, value) {
                     switch (key) {
                         case 'enable':
@@ -46,13 +47,13 @@
                             break;
                         case 'title':
                             if (value) {
-                                _.input.on('focus', function () { if (_.input.val() == value || _.input.text() == value) { _.input.val(''); } });
-                                _.input.on('blur', function () { if (_.input.val() == '' && _.input.text() == '') _.render({ value: value }); });
+                                _.input.off('focus').on('focus', function () { if (_.input.val() == value || _.input.text() == value || _.input.val() == _.vm.data.error || _.input.text() == _.vm.data.error) { _.input.val(''); } });
+                                _.input.off('blur').on('blur', function () { if (_.input.val() == '' && _.input.text() == '') _.render({ value: value }); });
                             }
                             break;
                         case 'text':
                         case 'value':
-                            if (typeof (value) != 'boolean' && 'false' != ('' + value).toLowerCase() && 'undefined' !=(''+value).toLowerCase()) {
+                            if (typeof (value) != 'boolean' && 'false' != ('' + value).toLowerCase() && 'undefined' != ('' + value).toLowerCase()) {
                                 _.input.val(value);
                                 if (_.vm.data.title && !V.isValid(value)) _.input.val(_.vm.data.title);
                             } else {
@@ -287,7 +288,7 @@
         W.Form = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.Control, [path || '<form method="get" action=""></form>', vm || { data: { enctype: 'multipart/form-data' } }]]);
+                V.inherit.apply(_, [W.Control, [path || '<form method="get" action=""></form>', vm || { data: { enctype: 'multipart/form-data'}}]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -303,7 +304,7 @@
                 if (_.cons)
                     V.each(_.cons, function (v) {
                         var vm = _.parent.vms[v] ? _.parent.vms[v] : _.page.vms[v];
-                        if (vm) {
+                        if (vm && vm.nodeName != 'fill') {
                             value[v] = vm.get().value;
                         }
                     }, null, true);

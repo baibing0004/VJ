@@ -11,8 +11,10 @@
 			'ajaxtest1.Set':{command:function(res,params){res[params.cacheKey] = params.cacheValue;不写即使用默认值},dbtype:'json',params:{timeout1:{interval:'s',number:50}},template:'template2'},
 			sqlinsert:{command:'create table if not exists table1(name Text,message text,time integer);insert into table1 values(?,?,?);',dbtype:'json',params:{data:[]},template:'sqltemp'},
 			sqlselect:{command:'select * from table1;',dbtype:'json',params:{data:[]},template:'sqltemp'},
-			sqlselect2:{command:'select * from table1 where name=?',dbtype:'json',params:{data:[]},template:'sqltemp'}		
-			Name1:{command:'',params:{},dbtype:'json/tjson',template:'仅在Middler中调用NiMultiTemplateDecorator时启用'}
+			sqlselect2:{command:'select * from table1 where name=?',dbtype:'json',params:{data:[]},template:'sqltemp'},		
+			Name1:{command:'',params:{},dbtype:'json/tjson',template:'仅在Middler中调用NiMultiTemplateDecorator时启用'},
+			wstest1: { command: 'abc.json', dbtype: 'json', params: {}, template: 'ws' },
+			wstest2: { command: 'bcd.json?_n=MT, dbtype: 'json', params: {}, template: 'ws' }
 		}
 	*/
 	/*
@@ -427,184 +429,223 @@
 			_.createDBConnection = function(){return new __.ObjectConnection();};
 		};
 		//webSocket {url:''}  totest
-		N.NiSocketDataFactory = function(){
-			var _ = this,__= {};
-			{
-				V.inherit.apply(_,[N.NiDataFactory,[]]);
-				if(!WebSocket){
-					throw new Error(V.userAgent.name+'不支持WebSocket!');
-					return;
-				}
-				__.SocketConnection = function(){
-					var _ = this,__ = {};
-					{ 
-						V.inherit.apply(_,[N.NiDataConnection,[]]);
-						_.params = V.merge({url:''},_.params);
-						__.open = _.open;
-						__.close = _.close;
-						__.conn = null;
-						__.datas = [];
-						__.calls = {};						
-						__.addData = function(data){
-							__.datas.push(data);
-							__.callback();
-						};
-						__.callback = function(){
-							if(__.datas.length>0){
-								V.whileC(function(){return __.datas.shift();},function(val){
-									if(typeof(val) == 'string'){
-										val = eval('('+val+')');
-									}
-									if(val.niid){
-										if(__.calls[val.niid]){
-											__.calls[val.niid].datas.push(val);
-											__.callfunc(val.niid);
-										}else{
-											__.calls[val.niid] = {datas:[],func:null};
-											__.calls[val.niid].datas.push(val);
-										}
-									}else{
-										V.showException('未找到消息处理者'+V.json(val));
-									}									
-								});
-							}
-						};
-						__.addCalls = function(cmd,func){
-							var index = V.random();
-							if(!__.calls[index]){
-								__.calls[index]={datas:[],func:func};
-							} else {
-								__.calls[index].func = func;
-							}
-							//默认conn是Open的
-							var val = {niid:index};
-							val[cmd.command] = cmd.params;
-							__.conn.send(V.toJsonString(val));
-							__.callfunc(index);
-						};
-						__.callfunc = function(index){
-							var oCall = __.calls[index];
-							if(oCall && oCall.datas.length>0 && oCall.func){								
-								V.whileC(function(){return oCall.datas.shift();},function(val){
-									if(typeof(val) == 'string'){
-										val = eval('('+val+')');
-									}
-									oCall.func(val);
-								},function(){delete __.calls[index];});
-							}
-						};
-					}
-					_.open = function(){
-						if(!_.isOpen && !__.conn){
-							__.conn = new WebSocket(_.params.url);
-							__.conn.onopen = function(){__.open();};
-							__.conn.onclose = function(){__.close();__.conn = null;};
-							__.conn.onmessage = function(evt){
-								try {
-									if(evt.data){__.addDatas(evt.data);}
-								} catch (e) {
-									V.showException('VJ.ni.NiSocketDataFactory.onmessage', e);
-								}	
-							};
-							__.conn.onerror = function(evt){
-								try {
-									__.isError = true;
-									__.addDatas(false);
-									V.showException('VJ.ni.NiSocketDataFactory.onerror'+evt.data);
-								} catch (e) {
-									V.showException('VJ.ni.NiSocketDataFactory.onmessage', e);
-								}
-							};
-						}
-					};
-					_.close = function(){						
-						__.conn.close();
-					};
-					_.invoke = function(cmd,func){
-						//如何区分Insert还是select						
-						try {				
-							__.addCalls(cmd,func);
-						} catch (e) {
-							V.showException('V._ajaxOption success方法', e);
-							if(func){func(false);}
-						}						
-					}
-				};
-				__.SocketCommand = function(){
-					var _ = this,__ = {};
-					{
-						V.inherit.apply(_,[N.NiDataCommand,[]]);
-					}
-					_.excute = function(result,func){
-						if(!_.connection || !_.connection.isError){
-							V.showException('WebSocket连接失败');
-							if(func){func(false);}
-							return;
-						} else {
-							_.connection.invoke(_,function(data){
-								try {
-									var hasFalse = false;
-									switch (typeof (data)) {
-										case "string":
-											data = data.replace(/[\r\n]+/g,'');
-											if (data.replace(/^(\[+\]+)/g, '').length === 0) {
-												hasFalse = true;
-											} else {
-												hasFalse = (data.toLowerCase().indexOf('[false') >= 0?
-													(data.toLowerCase().indexOf('[false:') >= 0?(function(){
-														var _data = data.toLowerCase().match(/\[false:[^\]]+\]/g);
-														if(_data && _data.length>0){
-															return _data[0].substr(7,_data[0].length-8);
-														} else return true;
-													})():true):
+		N.NiSocketDataFactory = function () {
+            var _ = this, __ = {};
+            {
+                V.inherit.apply(_, [N.NiDataFactory, []]);
+                var ws = window.WebSocket || window.MozWebSocket;
+                if (!ws) {
+
+                    throw new Error(V.userAgent.name + '不支持WebSocket!');
+                    return;
+                }
+                __.SocketConnection = function () {
+                    var _ = this, __ = {};
+                    {
+                        V.inherit.apply(_, [N.NiDataConnection, []]);
+                        _.params = V.merge({ url: '', veshurl: '' }, _.params);
+                        __.open = _.open;
+                        __.close = _.close;
+                        __.conn = null;
+                        __.datas = [];
+                        __.senddatas = [];
+                        __.calls = {};
+                        //处理接受
+                        __.addData = function (data) {
+                            __.datas.push(data);
+                            __.callback();
+                        };
+                        __.callback = function () {
+                            if (__.datas.length > 0) {
+                                V.whileC(function () { return __.datas.shift(); }, function (val) {
+                                    if (typeof (val) == 'string') {
+                                        val = eval('(' + val + ')');
+                                    }
+                                    if (val._id && val.response) {
+                                        if (__.calls[val._id]) {
+                                            __.calls[val._id].datas.push(val.response);
+                                        } else {
+                                            __.calls[val._id] = { datas: [], func: null, index: val._id };
+                                            __.calls[val._id].datas.push(val.response);
+                                        }
+                                        __.callfunc(val._id);
+                                    } else {
+                                        V.showException('未找到消息处理者' + V.toJsonString(val));
+
+                                    }
+                                });
+                            }
+                        };
+                        __.callfunc = function (index) {
+                            var oCall = __.calls[index];
+                            if (oCall && oCall.datas.length > 0 && oCall.func) {
+                                V.whileC(function () { return oCall.datas.shift(); }, function (val) {
+                                    oCall.func(val, oCall.index);
+                                }, function () { //delete __.calls[index]; 
+                                });
+                            }
+                        };
+                        //处理发送
+                        __.addCalls = function (cmd, func) {
+                            var index = cmd.params._id ? cmd.params._id : V.random();
+
+                            if (!__.calls[index]) {
+                                __.calls[index] = { datas: [], func: func, index: index };
+                            } else if(cmd.params._id) {                            
+                                delete cmd.params._id;
+
+                            } else {
+                                __.calls[index].func = func;
+                            }
+                            //默认conn是Open的
+                            var val = { _id: index, request: {} };
+                            val.request[cmd.command] = cmd.params;
+                            __.senddatas.push(V.toJsonString(val));
+                            __.callsend();
+                        };
+                        __.callsend = function () {
+                            if (_.isOpen) {
+                                V.each(__.senddatas, function (v) { __.conn.send(v); });
+                            }
+                        };
+                    }
+                    _.open = function () {
+                        if (!_.isOpen && !__.conn) {
+                            __.conn = new ws(_.params.url);
+                            __.conn.onopen = function () { __.open(); __.conn.send(V.toJsonString({ cookies: document.cookie })); __.callsend(); };
+                            __.conn.onclose = function () { __.close(); __.conn = null; };
+                            __.conn.onmessage = function (evt) {
+                                try {
+                                    if (evt.data) { __.addData(evt.data); }
+                                } catch (e) {
+                                    V.showException('VJ.ni.NiSocketDataFactory.onmessage', e);
+                                }
+                            };
+                            __.conn.onerror = function (e) {
+                                try {
+                                    if (!_.isError && (e.currentTarget.readyState == 2 || e.currentTarget.readyState == 3) && _.params.veshurl) {
+                                        //连接失败 尝试调用veshurl 开启websocket
+                                        V.ajax({
+                                            url: _.params.veshurl, jsonp: _.params.jsonp, data: {},
+                                            success: function (data, status) {
+                                                try {
+                                                    _.open();
+                                                    //重新尝试一次连接
+                                                } catch (e) {
+                                                    V.showException('V._ajaxOption success方法', e);
+                                                }
+                                            }, error: function (request, status, error) {
+                                                V.showException('V._ajaxOption error方法 status:' + status, error);
+                                                if (func) { func(false); }
+                                            }
+                                        });
+                                    } else {
+                                        __.addData(false);
+                                    }
+                                    _.isError = true;
+                                    __.conn = null;
+
+
+                                    V.showException('VJ.ni.NiSocketDataFactory.onerror:' + V.toJsonString(e));
+                                } catch (e) {
+                                    V.showException('VJ.ni.NiSocketDataFactory.onerror', e);
+                                }
+                            };
+                        }
+                    };
+                    _.close = function () {
+                        __.conn.close();
+                    };
+                    _.invoke = function (cmd, func) {
+                        //如何区分新发起的会话 还是 旧有的会话			
+
+                        try {
+                            __.addCalls(cmd, func);
+                        } catch (e) {
+                            V.showException('V._ajaxOption success方法', e);
+                            if (func) { func(false); }
+                        }
+                    }
+                };
+                __.SocketCommand = function () {
+                    var _ = this, __ = {};
+                    {
+                        V.inherit.apply(_, [N.NiDataCommand, []]);
+                    }
+                    _.excute = function (result, func) {
+                        if (!_.connection || _.connection.isError) {
+                            V.showException('WebSocket连接失败');
+                            if (func) { func(false); }
+                            return;
+                        } else {
+                            _.connection.invoke(_, function (data, _id) {
+                                try {
+                                    var hasFalse = false;
+                                    switch (typeof (data)) {
+                                        case "string":
+                                            data = data.replace(/[\r\n]+/g, '');
+                                            if (data.replace(/^(\[+\]+)/g, '').length === 0) {
+                                                hasFalse = true;
+                                            } else {
+                                                hasFalse = (data.toLowerCase().indexOf('[false') >= 0 ?
+													(data.toLowerCase().indexOf('[false:') >= 0 ? (function () {
+													    var _data = data.toLowerCase().match(/\[false:[^\]]+\]/g);
+													    if (_data && _data.length > 0) {
+													        return _data[0].substr(7, _data[0].length - 8);
+													    } else return true;
+													})() : true) :
 													false);
-											} 
-											if(!hasFalse){
-												//如何判断tjson
-												data = eval('('+data.replace(/[\r\n]+/g,'')+')');	
-											}
-											break;		
-									case "object":
-										if(data){
-											$(data).each(function (i, v) {
-												v=v+'';
-												hasFalse = (hasFalse || v == 'False' || v == 'false');
-											});
-										} else hasFalse = true;
-										break;							
-									case 'undefined':
-									default:
-										V.showException('V.NiSocketDataCommand success方法 name:typeof错误 type:' + (data));
-										hasFalse = true;
-										break;
-									}            
-									if(hasFalse){
-										data = false;
-									} else {
-										switch(_.dbtype){
-											default:
-											case 'json':
-												break;
-											case 'tjson':
-												data = V.evalTJson(data);
-												break;
-										}
-									}
-									//特别地当回{close:true}时，关闭websocket
-									if(func){if(func(data).close) {__.conn.close();}}
-								} catch (e) {
-									V.showException('V._ajaxOption success方法', e);
-									if(func){func(false);}
-								}							
-							});
-						}
-					};					
-				};
-			}
-			_.createDBConnection = function(){return new __.SocketConnection();};
-			_.backDBConnection = function(conn){if(__.conn!=conn){if(conn.close && conn.isOpen){conn.close();}};};
-			_.createDBCommand = function(){return new __.SocketCommand();}			
-		};
+                                            }
+                                            if (!hasFalse) {
+                                                //如何判断tjson
+
+                                                data = eval('(' + data.replace(/[\r\n]+/g, '') + ')');
+                                            }
+                                            break;
+                                        case "object":
+                                            if (data) {
+                                                $(data).each(function (i, v) {
+                                                    v = v + '';
+                                                    hasFalse = (hasFalse || v == 'False' || v == 'false');
+                                                });
+                                            } else hasFalse = true;
+                                            break;
+                                        case 'undefined':
+                                        default:
+                                            V.showException('V.NiSocketDataCommand success方法 name:typeof错误 type:' + (data));
+                                            hasFalse = true;
+                                            break;
+                                    }
+                                    if (hasFalse) {
+                                        data = false;
+                                    } else {
+                                        switch (_.dbtype) {
+                                            default:
+                                            case 'json':
+                                                break;
+                                            case 'tjson':
+                                                data = V.evalTJson(data);
+                                                break;
+                                        }
+                                    }
+                                    //特别地当回{close:true}时，关闭websocket
+                                    result._id = _id;
+                                    if (func) { var val = func(data, _id); if (val && val.close) { __.conn.close(); } }
+                                } catch (e) {
+                                    V.showException('V.ni.NiSocketCommand invoke方法', e);
+
+                                    if (func) { func(false); }
+                                }
+                            });
+                        }
+                    };
+                };
+            }
+            _.createDBConnection = function () { return new __.SocketConnection(); };
+            _.backDBConnection = function () { console.log('back conn'); };
+
+            _.createDBCommand = function () { return new __.SocketCommand(); }
+        };
 		//{name:'',version:'1.0',desc:'',size:2*1024*1024}
 		N.NiSqliteDataFactory = function(){
 			var _ = this,__= {};

@@ -253,7 +253,7 @@
 						{timeout:{interval:'s',number:50}}
 					]},
 					ws:{type:'.NiTemplate',mode:'instance',params:[
-						{type:'.NiStaticDataResource',params:[{ref:'socket'},{url:'ws://localhost:8181',dbtype:'json'}]},
+						{type:'.NiStaticDataResource',params:[{ref:'socket'},{url:'ws://localhost:8181',dbtype:'json',veshurl:'http://www.baibing.com/Module/start.ws'}]},
 						{ref:'cm'}
 					]}
 				}
@@ -361,7 +361,7 @@
 		}
 	</script>
 	<script type="text/javascript">
-		if(true){
+		if(false){
 			//验证子控件是可行的
 			var APanel = function(panel,path,vm){
 				var _ = this,__ = {};

@@ -509,13 +509,15 @@
                             }
                         };
                     }
+                    
                     _.open = function () {
                         if (!_.isOpen && !__.conn) {
                             __.conn = new ws(_.params.url);
                             __.conn.onopen = function () { __.open(); __.conn.send(V.toJsonString({ cookies: document.cookie })); __.callsend(); };
-                            __.conn.onclose = function () { __.close(); __.conn = null; };
+                            __.conn.onclose = function () { __.close(); __.conn = null;if(_.params.reopen) V.once(_.open,1000); };
                             __.conn.onmessage = function (evt) {
                                 try {
+                                    console.log(evt.data);
                                     if (evt.data) { __.addData(evt.data); }
                                 } catch (e) {
                                     V.showException('VJ.ni.NiSocketDataFactory.onmessage', e);
@@ -529,6 +531,8 @@
                                             url: _.params.veshurl, jsonp: _.params.jsonp, data: {},
                                             success: function (data, status) {
                                                 try {
+                                                    console.log("--------------------------------------------");
+                                                    console.log(data);
                                                     _.open();
                                                     //重新尝试一次连接
                                                 } catch (e) {
@@ -544,8 +548,6 @@
                                     }
                                     _.isError = true;
                                     __.conn = null;
-
-
                                     V.showException('VJ.ni.NiSocketDataFactory.onerror:' + V.toJsonString(e));
                                 } catch (e) {
                                     V.showException('VJ.ni.NiSocketDataFactory.onerror', e);
@@ -554,6 +556,7 @@
                         }
                     };
                     _.close = function () {
+						_.params.reopen = false;
                         __.conn.close();
                     };
                     _.invoke = function (cmd, func) {

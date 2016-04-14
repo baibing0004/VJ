@@ -70,7 +70,7 @@
 						params = V.merge(cmd.params,V.getValue(params,{}));
 						template = cmd.template;
 					}
-					_.lstCmd.push({name:command,params:params,func:func,template:template,key:name,dbtype:V.getValue(cmd.dbtype,"tjson")});
+					_.lstCmd.push({name:command,params:params,func:func,template:template,key:name,dbtype:(cmd && cmd.dbtype)?cmd.dbtype:"tjson"});
 				};
 				_._excute = function(){
 					var _cms = _.lstCmd;
@@ -479,7 +479,7 @@
                         __.callfunc = function (index) {
                             var oCall = __.calls[index];
                             if (oCall && oCall.datas.length > 0 && oCall.func) {
-                                V.whileC(function () { return oCall.datas.shift(); }, function (val) {
+                                V.whileC(function () { return oCall.datas.shift(); }, function (val) {									
                                     oCall.func(val, oCall.index);
                                 }, function () { //delete __.calls[index]; 
                                 });
@@ -488,12 +488,10 @@
                         //处理发送
                         __.addCalls = function (cmd, func) {
                             var index = cmd.params._id ? cmd.params._id : V.random();
-
                             if (!__.calls[index]) {
                                 __.calls[index] = { datas: [], func: func, index: index };
                             } else if(cmd.params._id) {                            
-                                delete cmd.params._id;
-
+                                //delete cmd.params._id;
                             } else {
                                 __.calls[index].func = func;
                             }
@@ -505,7 +503,7 @@
                         };
                         __.callsend = function () {
                             if (_.isOpen) {
-                                V.each(__.senddatas, function (v) { __.conn.send(v); });
+                                V.whileC(function(){return __.senddatas.shift()}, function (v) { __.conn.send(v); });
                             }
                         };
                     }
@@ -516,7 +514,7 @@
                             __.conn.onopen = function () { __.open(); __.conn.send(V.toJsonString({ cookies: document.cookie })); __.callsend(); };
                             __.conn.onclose = function () { __.close(); __.conn = null;if(_.params.reopen) V.once(_.open,1000); };
                             __.conn.onmessage = function (evt) {
-                                try {
+                                try {									
                                     console.log(evt.data);
                                     if (evt.data) { __.addData(evt.data); }
                                 } catch (e) {
@@ -560,8 +558,7 @@
                         __.conn.close();
                     };
                     _.invoke = function (cmd, func) {
-                        //如何区分新发起的会话 还是 旧有的会话			
-
+                        //如何区分新发起的会话 还是 旧有的会话	
                         try {
                             __.addCalls(cmd, func);
                         } catch (e) {
@@ -601,8 +598,7 @@
                                             }
                                             if (!hasFalse) {
                                                 //如何判断tjson
-
-                                                data = eval('(' + data.replace(/[\r\n]+/g, '') + ')');
+                                                data = eval('(' + data.replace(/[\r\n]+/g, '').replace(/\\"/g,'"') + ')');
                                             }
                                             break;
                                         case "object":
@@ -619,9 +615,14 @@
                                             hasFalse = true;
                                             break;
                                     }
+									if(result.firstregist) result.firstregist = false;
                                     if (hasFalse) {
                                         data = false;
-                                    } else {
+                                    } else if(data._regist) {
+										//声明注册完成
+										result.firstregist = true;
+										data = false;
+									}  else {
                                         switch (_.dbtype) {
                                             default:
                                             case 'json':
@@ -636,7 +637,6 @@
                                     if (func) { var val = func(data, _id); if (val && val.close) { __.conn.close(); } }
                                 } catch (e) {
                                     V.showException('V.ni.NiSocketCommand invoke方法', e);
-
                                     if (func) { func(false); }
                                 }
                             });

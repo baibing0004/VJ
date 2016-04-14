@@ -462,9 +462,9 @@
 				} else {
 					_.controls.slice(0,_.controls.length);
 					var vs = _.vs;
-					V.forC(vs,function(k,v){V.tryC(function(){$(v).remove();});});
+					V.forC(vs, function (k, v) {V.tryC(function () {v.node.remove();});},null,true);
 					_.vs = {};
-					V.forC(_.vms,function(k,v){delete _.vms[k];});
+					V.forC(_.vms,function(k,v){delete _.vms[k];},null,true);
 				}
 			};
 		};

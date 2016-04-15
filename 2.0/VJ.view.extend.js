@@ -47,7 +47,7 @@
                             break;
                         case 'title':
                             if (value) {
-                                _.input.off('focus').on('focus', function () { if (_.input.val() == value || _.input.text() == value || _.input.val() == _.vm.data.error || _.input.text() == _.vm.data.error) { _.input.val(''); } });
+                                _.input.off('mousedown').on('mousedown', function () { console.log('focus'); if (_.input.val() == value || _.input.text() == value || _.input.val() == _.vm.data.error || _.input.text() == _.vm.data.error) { _.input.val(''); } });
                                 _.input.off('blur').on('blur', function () { if (_.input.val() == '' && _.input.text() == '') _.render({ value: value }); });
                             }
                             break;
@@ -288,7 +288,7 @@
         W.Form = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.Control, [path || '<form method="get" action=""></form>', vm || { data: { enctype: 'multipart/form-data'}}]]);
+                V.inherit.apply(_, [W.Control, [path || '<form method="get" action=""></form>', vm || { data: { enctype: 'multipart/form-data' } }]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }

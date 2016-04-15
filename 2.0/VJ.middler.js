@@ -361,7 +361,7 @@
 								};
 								_.setValue = function(v){
 									if(v.dispose){
-										V.tryC(function(){v.dispose();});
+										V.tryC(v.dispose);
 									}
 								};
 							};

@@ -849,9 +849,7 @@
 													cacheValue:data
 												});
 											_cmd.excute(_.result,function(data){
-												V.tryC(function(){
-													try{cacheres.backDBConnection(_conn);}catch(e){}												
-												});
+												V.tryC(function(){cacheres.backDBConnection(_conn);});
 											});
 										}
 									}
@@ -949,9 +947,7 @@
 													cacheValue:data
 												});
 											_cmd.excute(_.result,function(data){
-												V.tryC(function(){
-													try{cacheres.backDBConnection(_conn);}catch(e){}												
-												});
+												V.tryC(function(){cacheres.backDBConnection(_conn);});
 											});
 										}
 									}

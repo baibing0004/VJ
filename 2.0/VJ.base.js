@@ -436,11 +436,7 @@ if (top.location == location) {
 				//throw e;
 			}
 		};
-		V.tryC = function (func,finalF) {
-			try {
-				return func();
-			} catch (e) { V.showException('', e);if(finalF){finalF();} }
-		};
+		V.tryC = function (func) {try{func();} catch (e) { V.showException('', e);}};
 		var start = null;
 		V.watch = function(restart){
 			if(!start || restart){

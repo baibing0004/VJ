@@ -174,6 +174,9 @@
 			_.render = function(data){
 				V.forC(data,function(key,value){
 					switch(key){
+						case 'dispose':
+							if(value) _.dispose();
+							break;
 						case 'attr':
 							V.forC(value,function(key2,value2){_.node.attr(key2,value2);},function(){});
 							break;
@@ -424,7 +427,7 @@
 			_.onClearError = function(){_.call('clearerror');};
 			//用于说明正确信息
 			_.onSuccess = function(){delete _.get().isError;_.call('success')};
-			_.dispose = function(){};
+			_.dispose = function(){V.tryC(function(){_.call('dispose');_.clearControl();});_.node.remove();};
 			_.addControl = function(node,v){
 				if(!_.controls){
 					_.controls = [];
@@ -449,23 +452,20 @@
 				delete _.vms[id];
 				if(_.vs[id]){
 					var val = _.vs[id];
-					_.controls = $.grep(_.controls,function(v,i){return v!=val;});
-					V.tryC(function(){_.vs[id].remove();});
 					delete _.vs[id];
+					_.controls = $.grep(_.controls,function(v,i){return v!=val;});
+					if(val) val.dispose();
+					//V.tryC(function(){_.vs[id].node.remove();});
 				}
 			};
 			_.clearControl = function(){
-				if(!_.controls){
-					_.controls = [];
-					_.vs = {};
-					_.vms = {};_.models = _.vms;
-				} else {
-					_.controls.slice(0,_.controls.length);
-					var vs = _.vs;
-					V.forC(vs, function (k, v) {V.tryC(function () {v.node.remove();});},null,true);
-					_.vs = {};
-					V.forC(_.vms,function(k,v){delete _.vms[k];},null,true);
-				}
+				if(_.controls){
+					var vs=_.vs
+					var div = $('<div style="display:none;"></div>').appendTo(window.document.body);
+					_.node.children().appendTo(div);
+					V.forC(vs,function(k,v){v.dispose();},function(){div.remove();});
+				}	
+				_.controls = [];_.vs = {};_.vms = {};_.models = _.vms;
 			};
 		};
 	}
@@ -534,6 +534,7 @@
 				_.controls = [];		
 				__.render = _.render;
 				__.onLoad = _.onLoad;
+				__.dispose = _.dispose;
 			}
 			//一般调用M.Page对象都比较特殊
 			_.bind = function(page){
@@ -576,7 +577,7 @@
 				_.session = page.session;
 				_.config = page.config;
 			}
-			_.dispose = function(){_.call('dispose');_.session.updateAll();};
+			_.dispose = function(){_.session.updateAll();_.call('dispose');_.clearControl();$('body').empty();window.close();};
 			//用于重载触发方式
 			_.ready = function(func){
 				$(function(){func();_.bindControl(_.node);});
@@ -668,23 +669,20 @@
 				delete _.vm.vms[id];
 				if(_.vs[id]){
 					var val = _.vs[id];
-					_.controls = $.grep(_.controls,function(v,i){return v!=val;});
-					V.tryC(function(){_.vs[id].remove();});
 					delete _.vs[id];
+					_.controls = $.grep(_.controls,function(v,i){return v!=val;});
+					if(val) val.dispose();
+					//V.tryC(function(){_.vs[id].node.remove();});
 				}
 			};
 			_.clearControl = function(){
-				if(!_.controls){
-					_.controls = [];
-					_.vs = {};
-					_.vms = {};_.models = _.vms;
-				} else {
-					_.controls.slice(0,_.controls.length);
-					var vs = _.vs;
-					V.forC(vs,function(k,v){V.tryC(function(){$(v).remove();});});
-					_.vs = {};
-					V.forC(_.vm.vms,function(k,v){delete _.vm.vms[k];});
-				}
+				if(_.controls){
+					var vs=_.vs
+					var div = $('<div style="display:none;"></div>').appendTo(window.document.body);
+					_.node.children().appendTo(div);
+					V.forC(vs,function(k,v){v.dispose();},function(){div.remove();},true);
+				}	
+				_.controls = [];_.vs = {};_.vm.vms = {};_.models = _.vm.vms;				
 			};
 			_.onLoad = function(node){
 				V.forC(_.events,function(k,v){
@@ -714,10 +712,7 @@
 							if(data != _.vm.data) {delete data[key];}
 							break;
 						case 'close':
-							if(value == true){
-								$('body').empty();
-								window.close();
-							}
+							_.dispose();
 							break;
 					}
 				});

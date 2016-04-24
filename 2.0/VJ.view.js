@@ -882,7 +882,8 @@
 						_.hor = true;
 						delete _.events.up;
 						delete _.events.down;
-						_.panel.css('height','100%');//.css('display','flex');						
+						_.panel.css('height','100%');
+                        if(_.children.width()) _.panel.width(_.children.width());//.css('display','flex');					
 						_.children.css('height','100%').css('float','left');
 						break;
 				}

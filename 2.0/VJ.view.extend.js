@@ -39,7 +39,6 @@
             };
             _.render = function (data) {
                 data = __.render(data);
-                _.input.off('focus').on('focus', function () { if (_.input.val() == _.vm.data.error || _.input.text() == _.vm.data.error) { _.input.val(''); } });
                 V.forC(data, function (key, value) {
                     switch (key) {
                         case 'enable':
@@ -47,9 +46,11 @@
                             break;
                         case 'title':
                             if (value) {
-                                _.input.off('mousedown').on('mousedown', function () { console.log('focus'); if (_.input.val() == value || _.input.text() == value || _.input.val() == _.vm.data.error || _.input.text() == _.vm.data.error) { _.input.val(''); } });
+								_.input.focus(function () {if (_.input.val() == value || _.input.text() == value || _.input.val() == _.vm.data.error || _.input.text() == _.vm.data.error) { _.input.val(''); } });
                                 _.input.off('blur').on('blur', function () { if (_.input.val() == '' && _.input.text() == '') _.render({ value: value }); });
-                            }
+                            } else {
+								_.input.off('blur').off('focus').focus(function () { if (_.input.val() == _.vm.data.error || _.input.text() == _.vm.data.error) { _.input.val(''); } });
+							}
                             break;
                         case 'text':
                         case 'value':
@@ -284,7 +285,6 @@
                 V.inherit.apply(_, [W.Button, [path || '<span><span style="display:none;"></span><input type="reset"/></span>', vm]]);
             }
         };
-        //todo 获取其validata对象与方法 进行同步验证
         W.Form = function (path, vm) {
             var _ = this, __ = {};
             {
@@ -362,186 +362,119 @@
                 return data;
             };
         };
-        //构建时需要swiper.js	
-        /*2016-1-18 被pagePanel取代	
-        W.SwiperPanel = function(path,vm){
-        var _ = this,__ = {};
-        {
-        V.inherit.apply(_,[W.Control,[path || '<div class="swiper-container"></div>',vm || {}]]);
-        __.onLoad = _.onLoad;
-        __.render = _.render;
-        _.params = {direction:'horizontal',loop:false,simulateTouch:true};				
-        }
-        _.onLoad = function(node){				
-        V.forC(_.events,function(k,v){
-        switch(k){
-        case 'change':
-        _.params.onSlideChangeEnd = function(){_.call('change');};
-        break;
-        default:
-        _.bindEvent(node,k,v);
-        break;
-        }
-        });
-        __.onLoad(node);
-        };
-        _.fill = function(){
-        return {value:_.swiper?_.swiper.activeIndex:undefined};
-        };
-        _.render = function(data){
-        var needRB = false;
-        data = __.render(data);
-        if(!_.swiper){
-        var child = _.node.children().addClass('swiper-slide');
-        _.node.append('<div class="swiper-wrapper"></div>');				
-        _.wrapper = _.node.find('.swiper-wrapper');
-        _.wrapper.append(child);					
-        }
-        _.params.simulateTouch = true;
-        V.forC(data,function(k,v){				
-        switch(k.toLowerCase()){
-        case 'visible':
-        if(v && _.swiper){
-        _.swiper.onResize();
-        }
-        break;
-        case 'direction':
-        needRB = true;
-        _.params.direction = v;
-        switch(v){
-        case 'vertical':
-        _.node.attr('panelaction','vol');
-        break;
-        case 'horizontal':
-        _.node.attr('panelaction','hor');
-        }
-        break;
-        case 'autoplay':
-        needRB = true;
-        if(v){
-        _.params = V.merge(_.params,{
-        autoplayDisableOnInteraction : false,
-        autoplay:true==v?3000:parseInt(v+'')
-        });
-        } else {
-        _.params = V.merge(_.params,{
-        autoplayDisableOnInteraction : true,
-        autoplay:0
-        });							
-        }
-        break;
-        case 'loop':		
-        needRB = true;			
-        if('true'==(v+'').toLowerCase()){
-        _.params = V.merge(_.params,{
-        freeMode : false,
-        freeModeSticky : false,
-        freeModeMomentumRatio:0,
-        loop:true
-        });
-        } else {
-        _.params = V.merge(_.params,{
-        freeMode : true,
-        freeModeSticky : true,
-        freeModeMomentumRatio:0,
-        loop:false
-        });								
-        }
-        break;
-        case 'scrollbar':
-        needRB = true;
-        if('true'==(v+'').toLowerCase()){
-        if(_.node.find('div.swiper-scrollbar').length==0){
-        _.node.append('<div class="swiper-scrollbar"></div>');
-        }
-        _.params.scrollbar = _.node.find('div.swiper-scrollbar')[0];								
-        _.params.simulateTouch = false;
-        } else if(_.node.find('div.swiper-scrollbar').length>0){
-        _.node.find('div.swiper-scrollbar').remove();
-        delete _.params.scrollbar;
-        }							
-        break;
-        case 'effect':
-        needRB = true;
-        switch((v+'').toLowerCase()){
-        case 'true':
-        _.params.effect = 'fade';
-        break;
-        case 'false':
-        delete _.params.effect;
-        break;
-        case 'cube':
-        case 'coverflow':
-        _.params.effect = (v+'').toLowerCase();
-        break;
-        }							
-        break;
-        case 'buttons':
-        needRB = true;
-        if('true'==(v+'').toLowerCase()){
-        if(_.node.find('div.swiper-button-prev').length==0){
-        _.node.append('<div class="swiper-button-prev"></div><div class="swiper-button-next"></div>');
-        }
-        _.params = V.merge(_.params,{
-        prevButton:_.node.find('div.swiper-button-prev')[0],
-        nextButton:_.node.find('div.swiper-button-next')[0],
-        simulateTouch:false
-        });
-        } else if(_.node.find('div.swiper-button-prev').length>0){
-        _.node.find('div.swiper-button-prev').remove();
-        _.node.find('div.swiper-button-next').remove();
-        delete _.params.prevButton;
-        delete _.params.nextButton;
-        }							
-        break;
-        case 'pagination':
-        needRB = true;
-        if('true'==(v+'').toLowerCase()){
-        if(_.node.find('div.swiper-pagination').length==0){
-        _.node.append('<div class="swiper-pagination"></div>');
-        }
-        _.params = V.merge(_.params,{
-        pagination :_.node.find('div.swiper-pagination')[0],
-        paginationClickable:true,
-        simulateTouch:false
-        });
-        } else if(_.node.find('div.swiper-pagination').length>0){
-        _.node.find('div.swiper-pagination').remove();
-        delete _.params.pagination;
-        delete _.params.paginationClickable;
-        }							
-        break;
-        case 'touch':
-        needRB = true;
-        if('true'==(v+'').toLowerCase()){								
-        _.params.simulateTouch=true;
-        _.params.onlyExternal = false;
-        } else {															
-        _.params.simulateTouch=false;
-        _.params.onlyExternal = true;
-        }		
-        break;
-        case 'value':
-        if(_.swiper){
-        _.swiper.slideTo(v);
-        } else {
-        _.params.initialSlide = v;
-        }
-        break;
-        }
-        },function(){
-        if(needRB){
-        if(_.swiper){
-        _.swiper.destroy(true);
-        _.swiper = null;
-        }
-        if(!Swiper) {throw new Error('请更新config.js中SwiperPanel节点对Swiper.js引用');}
-        _.swiper = new Swiper(_.node[0],V.merge({},_.params));
-        }					
-        });
-        return data;
-        };
-        };
-        */
+        W.Router = function (path, vm) {
+            var _ = this, __ = {};
+            {
+                V.inherit.apply(_, [W.Panel, [path || '<div style="display:none;"></div>', vm || { data: { showaction:'fadeInRight',hideaction:'fadeOutRight'}}]]);
+                __.render = _.render;
+                __.onLoad = _.onLoad;
+				__.addDesc('Router:');
+				__.addDesc('\t负责提供SPA条件下的页面的前进和后退转换与大小统一设置允许定义 showaction与hideaction作为显示隐藏动画 而且默认显示第一个页面并调用其Active事件和canActive属性 isActive属性，Resize事件 ');
+				__.addDesc('属性:');
+				__.addDesc('\tshowaction:config中定义的show动画');
+				__.addDesc('\thideaction:config中定义的hide动画');
+				__.addDesc('\tnext:按照顺序进行下一个canActive的控件 当输入id时按照ID进行切换');
+				__.addDesc('\tprev:按照顺序回滚上一个canActive的控件 当输入id时按照ID进行寻找如果属于子控件，而且历史上访问过子控件那么将子控件之后的历史全部删除，如果子控件已经canActive为真且切换至子控件，否则只删除记录不切换');
+				__.addDesc('\tsize:设置控件的高宽，并通知内部控件');
+				__.addDesc('事件:');
+				__.addDesc('\tonChange:不论前进还是后退更新当前value（子控件ID）值');
+				__.addDesc('附加给内部子控件的事件:');
+				__.addDesc('\tActive:触发内部控件的事件，并设置其isActive属性为真');
+				__.addDesc('\tonInactive:触发内部控件的事件，并设置其isActive属性为假');
+				__.addDesc('\tonResize:触发内部控件的事件，并设置其width,height,size属性');
+				__.addDesc('附加给内部子控件的属性:');
+				__.addDesc('\tcanActive:为真时不可被重新设置到');
+            }
+            _.onLoad = function (node) {
+                V.forC(_.events, function (k, v) { 
+					switch(k.toLowerCase()){
+						case 'change':
+							break;
+						default:
+						_.bindEvent(node, k, v);
+					}
+				}, function () { __.onLoad(node); }, true);
+				__.cons = [];
+				__.vms = {};
+				__.his = [];
+                node.children('[_]').each(function (i, v) {
+					var id = $(v).attr('id');
+					var vm = _.parent.vms[v] ? _.parent.vms[v] : _.page.vms[v];
+                    __.cons.push(id);
+					__.vms[id] = vm;
+					vm.data.canActive = V.getValue(vm.data.canActive,true);
+					vm.data.isActive = false;
+                });
+				if(__.cons.length>0) _.vm.data.next = __.cons[0];
+            };
+            _.render = function (data) {
+                V.forC(data, function (key, value) {
+                    switch (key) {
+                        case 'next':
+							if(value){
+								if(!(__.vms[value] && value!=_.vm.data.value)) {
+									value=null;									
+									//自动切换下一个
+									var hasfind = false;
+									for(var i=0;i<__.cons.length;i++){
+										if(hasfind && V.getValue(__.vms[__.cons[i]].canActive,true)){
+											value = __.cons[i];
+											i = __.cons.length;
+										} else if(__.cons[i] == _.vm.data.value){
+											hasfind = true;
+										}
+									}
+								}
+								if(value){
+									__.his.push[value];
+									__.vms[_.vm.data.value].update({hide:_.vm.data.hideaction});
+									__.vms[_.vm.data.value].call('inactive');
+									__.vms[value].update({show:_.vm.data.showaction,isActive:true});
+									__.vms[value].call('active');
+									_.call('change',{value:value});
+								}
+							}							
+                            break;
+                        case 'prev':							
+							if(value){
+								if(!(__.vms[value] && value!=_.vm.data.value)) {
+									value = null;
+									V.whileC(function(){return value == null ?__.his.pop():null;},function(v){
+										if(V.getValue(__.vms[v].data.canActive,true)) value = v;
+									},null,true);
+								} else {
+									//查看是否历史上有前置，如果有需要删除掉所有前置历史
+									var hasfind = false;									
+									var his = Array.prototype.slice.call(__.his, 0);
+									V.whileC(function(){return !hasfind?his.pop():null;},function(v){
+										if(v==value) {hasfind == true;__.his=his;}
+									},null,true);
+									if(!hasfind || !V.getValue(__.vms[value].data.canActive,true)) value = null;
+								}
+								if(value){
+									__.vms[_.vm.data.value].update({hide:_.vm.data.hideaction});
+									__.vms[_.vm.data.value].call('inactive');
+									__.vms[value].update({show:_.vm.data.showaction,isActive:true});
+									__.vms[value].call('active');
+									_.call('change',{value:value});
+								}
+							}
+                            break;
+                        case 'size':
+							if(value && value.width && value.height){
+								_.node.attr('width', value.width);							
+								_.node.attr('height', value.height);
+								_.node.children().attr('width', value.width);						
+								_.node.children().attr('height', value.height);
+								V.each(__.cons,function(v){__.vms[v].call('resize',{size:value});});
+							}
+                            break;
+                    }
+                }, function () {
+                    __.render(data);
+                });
+                return data;
+            };
+        };        
     }
 })(VJ, jQuery, VJ.view, VJ.viewmodel);

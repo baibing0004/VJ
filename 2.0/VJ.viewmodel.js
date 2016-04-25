@@ -79,7 +79,7 @@
 			this.go = function(node,func){
 				if(V.isValid(__.css)){
 					node = $(node);
-					node.css('-webkit-animation',css).css('-webkit-animation-play-state','running').css('-moz-animation',css).css('-moz-animation-play-state','running').css('-o-animation',css).css('-o-animation-play-state','running');
+					node.css('animation',css).css('-webkit-animation',css).css('-webkit-animation-play-state','running').css('-moz-animation',css).css('-moz-animation-play-state','running').css('-o-animation',css).css('-o-animation-play-state','running');
 					{
 						node.one('webkitAnimationEnd',function(){
 							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');

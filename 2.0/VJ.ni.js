@@ -511,11 +511,12 @@
                     _.open = function () {
                         if (!_.isOpen && !__.conn) {
                             __.conn = new ws(_.params.url);
-                            __.conn.onopen = function () { __.open(); __.conn.send(V.toJsonString({ cookies: document.cookie })); __.callsend(); };
+                            __.conn.onopen = function () { _.isError=false;__.open(); __.conn.send(V.toJsonString({ cookies: document.cookie })); __.callsend(); };
                             __.conn.onclose = function () { __.close(); __.conn = null;if(_.params.reopen) V.once(_.open,1000); };
                             __.conn.onmessage = function (evt) {
-                                try {									
-                                    console.log(evt.data);
+                                try {				
+                                    //console.log(evt.data);
+                                    _.isError = false;
                                     if (evt.data) { __.addData(evt.data); }
                                 } catch (e) {
                                     V.showException('VJ.ni.NiSocketDataFactory.onmessage', e);
@@ -558,7 +559,7 @@
                         __.conn.close();
                     };
                     _.invoke = function (cmd, func) {
-                        //如何区分新发起的会话 还是 旧有的会话	
+                        //如何区分新发起的会话 还是 旧有的会话	res._id res.firstregist
                         try {
                             __.addCalls(cmd, func);
                         } catch (e) {

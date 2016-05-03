@@ -18,8 +18,8 @@
 			reset:{type:'.Reset',path:'../../VJ/2.0/VJ.view.extend.js'},
 			form:{type:'.Form',path:'../../VJ/2.0/VJ.view.extend.js'},
 			box:{type:'.Box'},
-			radiolist:{type:'.RadioList'},
-			checklist:{type:'.CheckList'},
+			radiolist:{type:'.RadioList',path:'../../VJ/2.0/VJ.view.extend.js'},
+			checklist:{type:'.CheckList',path:'../../VJ/2.0/VJ.view.extend.js'},
 			swiperpanel:{type:'.SwiperPanel',path:'swiper3.07.min.css;animate.min.css;swiper3.07.jquery.min.js;swiper.animate1.0.2.min.js;../../VJ/2.0/VJ.view.extend.js'},
 			fill:{type:'.FillControl'},
 			history:{type:'.History'},
@@ -184,7 +184,12 @@
 				{type:'.NiStaticDataResource',params:[{ref:'objresource'},{resource:window.sessionStorage}]},
 				{ref:'cm'},
 				{timeout:{interval:'s',number:50}}
-			]}
+			]},
+            ws: {
+                type: '.NiTemplate', mode: 'instance', params: [
+                { type: '.NiStaticDataResource', params: [{ ref: 'wsfactory' }, { url: 'ws://localhost:8181', dbtype: 'json', veshurl: '../../Module/home/WS.ws',reopen:true }] },
+                { ref: 'cm' }]
+            }
 		}
 	}
 };

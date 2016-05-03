@@ -189,6 +189,119 @@
                 _._animate(name, _.sel, func);
             };
         };
+		
+		W.RadioList = function(path,content,vm){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.Control,[path || '<div class="p_RadioList"><ul></ul></div>',vm || {}]]);
+				__.onLoad = _.onLoad;
+				__.render = _.render;
+				_.content = V.getValue(content,'<li><span class="p_RadioList_li"><input name="{name}" type="radio" value="{value}"/><span>{key}</span></span></li>');
+			}
+			_.fill = function(){
+				return {value:_.ul.find(':radio:checked').val()};
+			};
+			_.onLoad = function(node){
+				_.ul = node.find('ul');
+				_.vm.data.name = V.getValue(_.vm.data.name,'radio');
+				V.forC(_.events,function(k,v){
+					_.bindEvent(node,k,v);
+				},function(){__.onLoad(node);});
+			};			
+			_.render = function(data){
+				data = __.render(data);
+				var setValue = function(value){					
+					V.setChecked(_.ul.find(":radio:checked"),false);
+					V.setChecked(_.ul.find(':radio[value="'+value+'"]'),true);
+				};
+				V.forC(data,function(k,v){
+					switch(k){
+						case 'values':
+							var sb = V.sb();
+							V.forC(v,function(k,v2){
+								sb.appendFormat(_.content,{key:k,value:v2,name:_.vm.data.name});
+							},function(){
+								_.ul.empty().append(sb.toString());sb.clear();sb=null;
+								if(_.vm.data.value){
+									setValue(_.vm.data.value);
+								}
+							});
+							break;
+						case 'value':
+							setValue(v);
+							break;
+						case 'name':
+							_.node.find(":radio").attr('name',v);
+							break;
+					}
+				});
+				return data;
+			};						
+			_.animate = function(name,func){
+				_._animate(name,_.ul,func);
+			};
+		};
+		W.CheckList = function(path,content,vm){
+			var _ = this,__ = {};
+			{
+				V.inherit.apply(_,[W.Control,[path || '<div class="p_CheckList"><ul></ul></div>',vm || {}]]);
+				__.onLoad = _.onLoad;
+				__.render = _.render;
+				_.content = V.getValue(content,'<li><span class="p_CheckList_li"><input name="{name}" type="checkbox" value="{value}"/><span>{key}</span></span></li>');
+			}
+			_.fill = function(){
+				//需要兼容没有数据未创建时的错误
+				return  _.ul.children().length>0?{value:(function(){
+					var ret = [];
+					_.ul.find(':checkbox:checked').each(function(i,v){
+						ret.push($(v).val());
+					});
+					return ret.join(',');
+				})()}:{};
+			};
+			_.onLoad = function(node){
+				_.ul = node.find('ul');
+				_.vm.data.name = V.getValue(_.vm.data.name,'check');
+				V.forC(_.events,function(k,v){
+					_.bindEvent(node,k,v);
+				},function(){__.onLoad(node);});
+			};			
+			_.render = function(data){
+				data = __.render(data);
+				var setValue = function(value){
+					value = V.getValue(value+'','');
+					V.setChecked(_.ul.find(":checkbox:checked"),false);
+					V.each(value.split(','),function(v){V.setChecked(_.ul.find(':checkbox[value="'+v+'"]'),true);});
+				};
+				//未能更简单实现list与value方法之间异步处理的问题。
+				V.forC(data,function(k,v){
+					switch(k){
+						case 'values':
+							var sb = V.sb();
+							V.forC(v,function(k,v2){
+								sb.appendFormat(_.content,{key:k,value:v2,name:_.vm.data.name});
+							},function(){
+								_.ul.empty().append(sb.clear());sb=null;
+								if(_.vm.data.value){
+									setValue(_.vm.data.value);
+								}
+							});
+							break;
+						case 'value':
+							setValue(v);
+							break;
+						case 'name':
+							_.node.find(":checkbox").attr('name',v);
+							break;
+					}
+				});
+				return data;
+			};			
+			_.animate = function(name,func){
+				_._animate(name,_.sel,func);
+			};
+		};
+		//todo file
         W.Hidden = function (path, vm) {
             var _ = this, __ = {};
             {

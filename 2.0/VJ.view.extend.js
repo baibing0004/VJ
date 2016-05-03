@@ -188,12 +188,11 @@
             _.animate = function (name, func) {
                 _._animate(name, _.sel, func);
             };
-        };
-		
+        };		
 		W.RadioList = function(path,content,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<div class="p_RadioList"><ul></ul></div>',vm || {}]]);
+				V.inherit.apply(_,[W.Control,[path || '<span class="p_RadioList"><span></span><ul></ul></span>',vm || {}]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
 				_.content = V.getValue(content,'<li><span class="p_RadioList_li"><input name="{name}" type="radio" value="{value}"/><span>{key}</span></span></li>');
@@ -202,6 +201,7 @@
 				return {value:_.ul.find(':radio:checked').val()};
 			};
 			_.onLoad = function(node){
+				_.title = node.find('span:first');
 				_.ul = node.find('ul');
 				_.vm.data.name = V.getValue(_.vm.data.name,'radio');
 				V.forC(_.events,function(k,v){
@@ -216,6 +216,9 @@
 				};
 				V.forC(data,function(k,v){
 					switch(k){
+						case 'key':
+							_.title.html(v);
+							break;
 						case 'values':
 							var sb = V.sb();
 							V.forC(v,function(k,v2){
@@ -244,7 +247,7 @@
 		W.CheckList = function(path,content,vm){
 			var _ = this,__ = {};
 			{
-				V.inherit.apply(_,[W.Control,[path || '<div class="p_CheckList"><ul></ul></div>',vm || {}]]);
+				V.inherit.apply(_,[W.Control,[path || '<div class="p_CheckList"><span></span><ul></ul></div>',vm || {}]]);
 				__.onLoad = _.onLoad;
 				__.render = _.render;
 				_.content = V.getValue(content,'<li><span class="p_CheckList_li"><input name="{name}" type="checkbox" value="{value}"/><span>{key}</span></span></li>');
@@ -260,6 +263,7 @@
 				})()}:{};
 			};
 			_.onLoad = function(node){
+				_.title = node.find('span:first');
 				_.ul = node.find('ul');
 				_.vm.data.name = V.getValue(_.vm.data.name,'check');
 				V.forC(_.events,function(k,v){
@@ -276,6 +280,9 @@
 				//未能更简单实现list与value方法之间异步处理的问题。
 				V.forC(data,function(k,v){
 					switch(k){
+						case 'key':
+							_.title.html(v);
+							break;
 						case 'values':
 							var sb = V.sb();
 							V.forC(v,function(k,v2){

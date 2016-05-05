@@ -1,0 +1,34 @@
+﻿ul.p_list_contain li
+{
+    list-style: none;
+    height: 40px;
+    line-height: 40px;
+    padding: 5px;
+}
+
+ul.p_list_contain li span.p_list_left
+{
+    float: left;
+}
+ul.p_list_contain li span.p_list_right
+{
+    float: right;
+}
+
+ul.p_list_contain li.p_list_Name
+{
+    max-width: 10rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+ul.p_list_contain li.p_li_odd
+{
+    /*background-color:rgb(255,255,255);*/
+    background-color: rgb(219,242,255);
+}
+ul.p_list_contain li.p_li_even
+{
+}
+.p_list_contain li.active {
+    border: 1px solid red;
+}

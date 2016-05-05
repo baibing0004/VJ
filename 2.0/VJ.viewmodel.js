@@ -822,6 +822,21 @@
 				var data = {};
 				if(val) {
 					var args = decodeURIComponent(val).replace(/\+/g, ' ').split('&'); // parse out name/value pairs separated via &
+					if(args.length==1 && args[0].indexOf("{")==0){
+						return eval("("+args[0]+")");
+					}else{
+						// split out each name=value pair
+						for (var i = 0; i < args.length; i++) {
+							var pair = args[i].split('=');
+							var name = decodeURIComponent(pair[0]);
+
+							var value = (pair.length == 2)
+								? decodeURIComponent(pair[1])
+								: name;
+							data[name] = value;
+						}
+						return data;
+					}
 					// split out each name=value pair
 					for (var i = 0; i < args.length; i++) {
 						var pair = args[i].split('=');
@@ -845,7 +860,7 @@
 					default:
 					case 'object':
 					case 'Object':
-						$.cookie(name,$.param(V.getValue(data,{})),__.param);
+						$.cookie(name,V.encHtml(V.toJsonString(V.getValue(data,{}))),__.param);
 						break;
 				}
 			};

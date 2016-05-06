@@ -1,0 +1,77 @@
+﻿<HEAD> 
+
+<TITLE> JS获取p相对坐标</TITLE> 
+
+<script type="text/javascript">
+
+function getX(obj){ 
+
+var parObj=obj; 
+
+var left=obj.offsetLeft; 
+
+while(parObj=parObj.offsetParent){ 
+
+left+=parObj.offsetLeft; 
+
+} 
+
+return left; 
+
+} 
+
+function getY(obj){ 
+
+var parObj=obj; 
+
+var top=obj.offsetTop; 
+
+while(parObj = parObj.offsetParent){ 
+
+top+=parObj.offsetTop; 
+
+} 
+
+return top; 
+
+} 
+
+function DisplayCoord(event){ 
+
+var top,left,op; 
+
+op=document.getElementById("demo"); 
+
+top=getY(op); 
+
+left=getX(op); 
+
+document.getElementById("mp_x").innerHTML = (event.clientX-left+document.documentElement.scrollLeft)+"px"; 
+
+document.getElementById("mp_y").innerHTML = (event.clientY-top+document.documentElement.scrollTop)+"px"; 
+
+} 
+
+</script> 
+
+</HEAD> 
+
+<BODY style="margin:40px;" mce_style="margin:40px;"> 
+
+<p style="background-color:#000000;color:#0011FF;width:300px;height:300px;position:absolute;top:80px;left:90px;margin:0px; border:0px;" id="demo" onmousemove="DisplayCoord(event)"> 
+
+我是p,经测试,有2PX的误差... 
+
+</p> 
+
+当前鼠标坐标为： 
+
+X：<span id="mp_x"></span> 
+
+Y：<span id="mp_y"></span> 
+
+</body> 
+
+</BODY> 
+
+</HTML> 

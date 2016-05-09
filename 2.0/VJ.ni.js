@@ -33,6 +33,8 @@
 			var _ = this,__={};
 			{
 				V.inherit.apply(_,[V.config.Config,[]]);
+				__.getValue = _.getValue;
+			    _.getValue = function () { var ret = __.getValue.apply(this, arguments); ret.merge = V.getValue(ret.merge, V.merge); return ret; };
 			}
 		};
 		N.NiDataConfigConvert = function(){
@@ -67,7 +69,7 @@
 					var template = "";
 					if(cmd){						
 						command = cmd.command;
-						params = V.merge(cmd.params,V.getValue(params,{}));
+						params = cmd.merge(cmd.params,V.getValue(params,{}));
 						template = cmd.template;
 					}
 					_.lstCmd.push({name:command,params:params,func:func,template:template,key:name,dbtype:(cmd && cmd.dbtype)?cmd.dbtype:"tjson"});
@@ -806,7 +808,7 @@
 							_.lstCmd2[index] = {
 								name:command,
 								key:name,
-								params:V.merge(_.lstCmd[_.lstCmd.length-1].params,{cacheKey:V.hash(name+'.Set.'+V.toJsonString(_.lstCmd[_.lstCmd.length-1].params))})
+								params:cmd.merge(_.lstCmd[_.lstCmd.length-1].params,{cacheKey:V.hash(name+'.Set.'+V.toJsonString(_.lstCmd[_.lstCmd.length-1].params))})
 							}
 						}
 					}
@@ -845,7 +847,7 @@
 											var _cmd = cacheres.getDBCommand();
 											_cmd.connection = _conn;
 											_cmd.command = V.getValue(_nicmd.command,_.setCommand);
-											_cmd.params = V.merge(_nicmd.params,cmd.params,{
+											_cmd.params = _nicmd.merge(_nicmd.params,cmd.params,{
 													cacheKey:V.hash(v.key+'.Set.'+V.toJsonString(cmd.params)),
 													cacheValue:data
 												});
@@ -905,7 +907,7 @@
 			var _ = this, __ = {};
 			{
 				__.lazyExp = V.getValue(params.lazyExp,function(p){return true;});
-				params = VJ.merge({},params);
+				params = V.merge({},params);
 				if(params && params.lazyExp) {delete params.lazyExp;}
 				V.inherit.apply(_,[N.NiTemplateDecorator,[res,cacheres,cm,params]]);
 				
@@ -943,7 +945,7 @@
 											var _cmd = cacheres.getDBCommand();
 											_cmd.connection = _conn;
 											_cmd.command = V.getValue(_nicmd.command,_.setCommand);
-											_cmd.params = V.merge(_nicmd.params,cmd.params,{
+											_cmd.params = _nicmd.merge(_nicmd.params,cmd.params,{
 													cacheKey:V.hash(v.key+'.Set.'+V.toJsonString(cmd.params)),
 													cacheValue:data
 												});

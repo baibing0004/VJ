@@ -34,7 +34,7 @@
 			{
 				V.inherit.apply(_,[V.config.Config,[]]);
 				__.getValue = _.getValue;
-			    _.getValue = function () { var ret = __.getValue.apply(this, arguments); ret.merge = V.getValue(ret.merge, V.merge); return ret; };
+			    _.getValue = function () { var ret = __.getValue.apply(this, arguments); if(ret) {ret.merge = V.getValue(ret.merge, V.merge);} return ret; };
 			}
 		};
 		N.NiDataConfigConvert = function(){

@@ -488,22 +488,22 @@
                 V.inherit.apply(_, [W.Panel, [path || '<div style="display:none;"></div>', vm || { data: { showaction:'fadeInRight',hideaction:'fadeOutRight'}}]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
-				__.addDesc('Router:');
-				__.addDesc('\t负责提供SPA条件下的页面的前进和后退转换与大小统一设置允许定义 showaction与hideaction作为显示隐藏动画 而且默认显示第一个页面并调用其Active事件和canActive属性 isActive属性，Resize事件 ');
-				__.addDesc('属性:');
-				__.addDesc('\tshowaction:config中定义的show动画');
-				__.addDesc('\thideaction:config中定义的hide动画');
-				__.addDesc('\tnext:按照顺序进行下一个canActive的控件 当输入id时按照ID进行切换');
-				__.addDesc('\tprev:按照顺序回滚上一个canActive的控件 当输入id时按照ID进行寻找如果属于子控件，而且历史上访问过子控件那么将子控件之后的历史全部删除，如果子控件已经canActive为真且切换至子控件，否则只删除记录不切换');
-				__.addDesc('\tsize:设置控件的高宽，并通知内部控件');
-				__.addDesc('事件:');
-				__.addDesc('\tonChange:不论前进还是后退更新当前value（子控件ID）值');
-				__.addDesc('附加给内部子控件的事件:');
-				__.addDesc('\tActive:触发内部控件的事件，并设置其isActive属性为真');
-				__.addDesc('\tonInactive:触发内部控件的事件，并设置其isActive属性为假');
-				__.addDesc('\tonResize:触发内部控件的事件，并设置其width,height,size属性');
-				__.addDesc('附加给内部子控件的属性:');
-				__.addDesc('\tcanActive:为真时不可被重新设置到');
+				_.addDesc('Router:');
+				_.addDesc('\t负责提供SPA条件下的页面的前进和后退转换与大小统一设置允许定义 showaction与hideaction作为显示隐藏动画 而且默认显示第一个页面并调用其Active事件和canActive属性 isActive属性，Resize事件 ');
+				_.addDesc('属性:');
+				_.addDesc('\tshowaction:config中定义的show动画');
+				_.addDesc('\thideaction:config中定义的hide动画');
+				_.addDesc('\tnext:按照顺序进行下一个canActive的控件 当输入id时按照ID进行切换');
+				_.addDesc('\tprev:按照顺序回滚上一个canActive的控件 当输入id时按照ID进行寻找如果属于子控件，而且历史上访问过子控件那么将子控件之后的历史全部删除，如果子控件已经canActive为真且切换至子控件，否则只删除记录不切换');
+				_.addDesc('\tsize:设置控件的高宽，并通知内部控件');
+				_.addDesc('事件:');
+				_.addDesc('\tonChange:不论前进还是后退更新当前value（子控件ID）值');
+				_.addDesc('附加给内部子控件的事件:');
+				_.addDesc('\tActive:触发内部控件的事件，并设置其isActive属性为真');
+				_.addDesc('\tonInactive:触发内部控件的事件，并设置其isActive属性为假');
+				_.addDesc('\tonResize:触发内部控件的事件，并设置其width,height,size属性');
+				_.addDesc('附加给内部子控件的属性:');
+				_.addDesc('\tcanActive:为真时不可被重新设置到');
             }
             _.onLoad = function (node) {
                 V.forC(_.events, function (k, v) { 

@@ -1,8 +1,6 @@
 ﻿(function (V, W, $) {
-    window.Atel = V.getValue(window.Atel, { view: {} });
-    var Y = Atel.view;
     //实现按照columns{列值:{name:'列名',input:checkbox/radiobox}}为基本填充规则的列定义
-    Y.Tree = function (path, vm) {
+    V.registScript(function (path, vm) {
         var _ = this, __ = {};
         {
             V.inherit.apply(_, [W.Control, [V.getValue(path, '<ul class="ztree"></ul>'), V.getValue(vm, {
@@ -22,6 +20,7 @@
                     onRightClick: function (e, id, json, flag) { },   //处理为菜单事件  
                     onClick: function (e, id, json, clickFlag) { json.clickFlag = clickFlag; _.call('click', { value: json }) },
                     onExpand: function (e, id, json) {
+                        _.vm.data.value = null;
                         _.call('expand', { value: json });
                     }
                 },
@@ -65,15 +64,18 @@
         };
         //_.fill = function () { return { value: _.tree ? _.tree.getSelectedNodes() : null} }; //todo 
         _.render = function (data) {
-            data = __.render(data);
             V.forC(data, function (k, v) {
                 switch (k.toLowerCase()) {
                     case 'values':
                         var pnode = data.pnode ? data.pnode : null;
+                        console.log(pnode);
                         V.tryC(function () { _.tree.addNodes(pnode, v); });
+                        console.log(pnode);
                         break;
                 }
+            }, function () {
+                data = __.render(data);
             });
         }
-    };
+    });
 })(VJ, VJ.view, jQuery);

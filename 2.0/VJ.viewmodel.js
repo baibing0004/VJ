@@ -177,8 +177,11 @@
 						case 'dispose':
 							if(value) _.dispose();
 							break;
+						case 'css':
+							V.forC(value,function(k,v){_.node.css(k,v);});
+                            break;
 						case 'attr':
-							V.forC(value,function(key2,value2){_.node.attr(key2,value2);},function(){});
+							V.forC(value,function(k,v){_.node.attr(k,v);});
 							break;
 						case 'enable':
 							if(value){_.node.removeAttr('disabled');}else{_.node.attr('disabled','disabled');}
@@ -286,7 +289,7 @@
 							_.animate(value,function(){_.node.hide();_.vm.data.visible = false;});
 							break;
 						case 'desc':
-							_.desc();
+							if(value) _.desc();
 							break;
 					}
 				});
@@ -687,10 +690,10 @@
 			_.onLoad = function(node){
 				V.forC(_.events,function(k,v){
 					switch(k){
-						case 'resize':
+						case 'size':
 							$(window).resize(function(){
 								V.userAgent.refresh();
-								_.call('resize',{
+								_.call('size',{
 									height:V.userAgent.height,
 									width:V.userAgent.width
 								});

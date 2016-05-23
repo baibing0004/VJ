@@ -254,13 +254,14 @@
             }
             _.fill = function () {
                 //需要兼容没有数据未创建时的错误
-                return _.ul.children().length > 0 ? { value: (function () {
-                    var ret = [];
-                    _.ul.find(':checkbox:checked').each(function (i, v) {
-                        ret.push($(v).val());
-                    });
-                    return ret.join(',');
-                })()
+                return _.ul.children().length > 0 ? {
+                    value: (function () {
+                        var ret = [];
+                        _.ul.find(':checkbox:checked').each(function (i, v) {
+                            ret.push($(v).val());
+                        });
+                        return ret.join(',');
+                    })()
                 } : {};
             };
             _.onLoad = function (node) {
@@ -494,9 +495,11 @@
                 _.addDesc('属性:');
                 _.addDesc('\tshowaction:config中定义的show动画');
                 _.addDesc('\thideaction:config中定义的hide动画');
-                _.addDesc('\tnext:按照顺序进行下一个canActive的控件 当输入id时按照ID进行切换');
-                _.addDesc('\tprev:按照顺序回滚上一个canActive的控件 当输入id时按照ID进行寻找如果属于子控件，而且历史上访问过子控件那么将子控件之后的历史全部删除，如果子控件已经canActive为真且切换至子控件，否则只删除记录不切换');
-                _.addDesc('\tsize:设置控件的高宽，并通知内部控件');
+                _.addDesc('\tnext:按照顺序进行下一个canActive的控件 当输入id时按照ID进行切换,并通知内部子控件的Active事件');
+                _.addDesc('\tprev:按照顺序回滚上一个canActive的控件 当输入id时按照ID进行寻找如果属于子控件，而且历史上访问过子控件那么将子控件之后的历史全部删除，如果子控件已经canActive为真且切换至子控件，否则只删除记录不切换。并通知内部子控件的Active事件');
+                _.addDesc('\tsize:设置控件的高宽，并通知内部控件onSize事件');
+                _.addDesc('\tvalues:清理内部控件，重新addControl内部控件，设置其隐藏状态，并自动设置其size属性和第一个控件的active事件');
+                _.addDesc('\taddvalues:addControl新内部控件，并自动设置其size和第一个可用控件的active事件');
                 _.addDesc('事件:');
                 _.addDesc('\tonChange:不论前进还是后退更新当前value（子控件ID）值');
                 _.addDesc('附加给内部子控件的事件:');
@@ -515,21 +518,24 @@
                             _.bindEvent(node, k, v);
                     }
                 }, function () { __.onLoad(node); }, true);
+                _.reload(node);
+                if (__.cons.length > 0) _.vm.data.next = __.cons[0];
+            };
+            _.reload = function (node) {
                 __.cons = [];
                 __.vms = {};
                 __.his = [];
                 node.children().each(function (i, v) {
-                    var id = $(v).attr('id');
+                    var id = $(v).hide().attr('id');
                     if (id) {
-                        var vm = _.parent.vms[id] ? _.parent.vms[id] : _.page.vms[id];
+                        var vm = _.vms[id] ? _.vms[id] : (_.parent.vms[id] ? _.parent.vms[id] : _.page.vms[id]);
                         if (vm) {
                             __.cons.push(id);
                             __.vms[id] = vm;
                             V.merge(vm, { canActive: (vm.data && vm.data.canActive) || true, isActive: false }, true);
-                        } else { V.showException("不是VJ控件，自动隐藏"); $(v).hide(); }
-                    } else { V.showException('没有找到id,自动隐藏'); $(v).hide(); }
+                        } else { V.showException("不是VJ控件，自动隐藏"); }
+                    } else { V.showException('没有找到id,自动隐藏'); }
                 });
-                if (__.cons.length > 0) _.vm.data.next = __.cons[0];
             };
             _.render = function (data) {
                 V.forC(data, function (key, value) {
@@ -584,7 +590,7 @@
                                 if (value) {
                                     __.vms[_.vm.data.value].update({ hide: _.vm.data.hideaction, isActive: false });
                                     __.vms[_.vm.data.value].call('inactive');
-                                    __.vms[value].update({ show: _.vm.data.showaction, isActive: true });
+                                    __.vms[value].update({ showaction: _.vm.data.showaction, isActive: true });
                                     __.vms[value].call('active');
                                     _.call('change', { value: value });
                                 }
@@ -598,6 +604,25 @@
                                 _.node.children().height(value.height);
                                 V.each(__.cons, function (v) { __.vms[v].call('size', { size: value }); });
                             }
+                            break;
+                        case 'clear':
+                            V.forC(__.vms, function (k2,v2) { v2.dispose(); });
+                            __.cons = [];
+                            __.vms = {};
+                            __.his = [];
+                            break;
+                        case 'addvalues':
+                        case 'values':
+                            if (key.toLowerCase() == 'values') {
+                                V.forC(__.vms, function (k2, v2) { v2.dispose(); });
+                            }
+                            V.each(value, function (v2) {
+                                v2.onActive = v2.onActive ? v2.onActive : function (D, I) { I.update({ show: D.showaction }); };
+                                _.addControl(null, v2);
+                            }, function () {
+                                _.reload(_.node);
+                                if (__.cons.length > 0) _.render({ size: _.vm.data.size, next: __.cons[0] });
+                            })
                             break;
                     }
                 }, function () {

@@ -391,17 +391,18 @@
 					var obj = _.middler.getObjectByAppName(W.APP,'ValidateManager');
 					if(obj){obj.validate(_,input);}
 				}
-			};
+			};			
 			_.call = function(name,param){
 				//所有的事件调用全部采用异步调用方式 V.once
-				if(param){
-					V.merge(_.vm.data,param,true);
-				}
 				V.merge(_.vm.data,_.fill(),V.getValue(param,{}),true);
+				if(param){
+				    param = V.merge(_.vm.data,param);
+				}
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){
-						var val = _.events[name].apply(_.parent.vms,[_.vm.data,_.vm]);
+					    var val = _.events[name].apply(_.parent.vms, [param, _.vm]);
+					    V.merge(_.vm.data,V.getValue(param, {}), true);
 						if(val && val != {}){
 							V.merge(_.vm.data, val, true)
 							_.render(val);
@@ -589,19 +590,21 @@
 			};
 			//用于覆盖引起页面布局改变
 			_.onReady = function(){
-			};			
+			};
+
 			_.call = function(name,param){
 				//所有的事件调用全部采用异步调用方式 V.once
-				if(param){
-					V.merge(_.vm.data,param,true);
-				}
 				V.merge(_.vm.data,_.fill(),V.getValue(param,{}),true);
+				if(param){
+				    param = V.merge(_.vm.data,param);
+				}
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){
-						var val = _.events[name].apply(_.page.getModels(),[_.vm.data,_.vm]);
+					    var val = _.events[name].apply(_.parent.getModels(), [param, _.vm]);
+					    V.merge(_.vm.data,V.getValue(param, {}), true);
 						if(val && val != {}){
-							V.merge(_.vm.data,val, true)
+							V.merge(_.vm.data, val, true)
 							_.render(val);
 						}
 					});

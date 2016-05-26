@@ -392,7 +392,7 @@
 					if(obj){obj.validate(_,input);}
 				}
 			};			
-			_.call = function(name,param){
+			_.call = function(name,param,imme){
 				//所有的事件调用全部采用异步调用方式 V.once				
 			    param = V.getValue(param, {});
 				V.merge(_.vm.data,_.fill(),param,true);
@@ -400,8 +400,8 @@
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){
-					    var val = _.events[name].apply(_.parent.vms, [param, _.vm]);
-					    V.merge(_.vm.data,V.getValue(param, {}), true);
+					    var val = _.events[name].apply(_.parent.vms, [imme?param:_.vm.data, _.vm]);
+                        if(imme) V.merge(_.vm.data,param, true);
 						if(val && val != {}){
 							V.merge(_.vm.data, val, true)
 							_.render(val);
@@ -591,16 +591,16 @@
 			_.onReady = function(){
 			};
 
-			_.call = function(name,param){
+			_.call = function(name,param,imme){
 				//所有的事件调用全部采用异步调用方式 V.once				
 			    param = V.getValue(param, {});
 				V.merge(_.vm.data,_.fill(),param,true);
 				param = V.merge(_.vm.data, param);
 				name = name.toLowerCase();
 				if(_.events[name]){
-					V.once(function(){
-					    var val = _.events[name].apply(_.parent.getModels(), [param, _.vm]);
-					    V.merge(_.vm.data,V.getValue(param, {}), true);
+					V.once(function(){						
+					    var val = _.events[name].apply(_.parent.getModels(), [imme?param:_.vm.data, _.vm]);
+                        if(imme) V.merge(_.vm.data,param, true);
 						if(val && val != {}){
 							V.merge(_.vm.data, val, true)
 							_.render(val);

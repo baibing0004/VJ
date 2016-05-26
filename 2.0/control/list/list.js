@@ -3,7 +3,7 @@
         var _ = this, __ = {};
         {
 
-            V.inherit.apply(_, [W.Control, [path || '<ul class="p_list_contain"></ul>', vm || { data: { columns: {}, nodata: '没有找到任何数据', key: '' } }]]);
+            V.inherit.apply(_, [W.Control, [path || '<ul class="p_list_contain"></ul>', vm || { data: { columns: {}, nodata: '没有找到任何数据', key: ''}}]]);
             __.values = [];
             __.onLoad = _.onLoad;
             __.render = _.render;
@@ -36,7 +36,7 @@
                 }
             }, function () { __.onLoad(node) });
         };
-        _.fill = function () { return { ids: (function () { var sb = []; _.body.find(':checked[value]').each(function (i, v) { sb.push(v.getAttribute('value')); }); return sb.join(';'); })() } };
+        _.fill = function () { return { ids: (function () { var sb = []; _.body.find(':checked[value]').each(function (i, v) { sb.push(v.getAttribute('value')); }); return sb.join(';'); })()} };
         _.render = function (data) {
             data = __.render(data);
             var rebuild = false;
@@ -68,13 +68,15 @@
                                 _.body.children('li').hover(
                                     function (e) {
                                         var _this = $(this).addClass('p_list_hover');
-                                        var li = $(_this.parents('li[data-index]').get(0));
-                                        _.call('hover', { e: e, hover: true, value: __.values[li.attr('data-index')], vid: _this.attr('vid') || _this.val() || _this.attr('href'), name: _this.attr('name') })
+                                        var li = _this;
+                                        _this = _this.find('.click:first');
+                                        _.call('hover', { e: e, hover: true, value: __.values[li.attr('data-index')], vid: _this.attr('vid') || _this.val() || _this.attr('href'), name: _this.attr('name') }, true);
                                     },
                                     function (e) {
                                         var _this = $(this).removeClass('p_list_hover');
-                                        var li = $(_this.parents('li[data-index]').get(0));
-                                        _.call('hover', { e: e, hover: false, value: __.values[li.attr('data-index')], vid: _this.attr('vid') || _this.val() || _this.attr('href'), name: _this.attr('name') })
+                                        var li = _this;
+                                        _this = _this.find('.click:first');
+                                        _.call('hover', { e: e, hover: false, value: __.values[li.attr('data-index')], vid: _this.attr('vid') || _this.val() || _this.attr('href'), name: _this.attr('name') }, true);
                                     }
                                 );
                                 sb = null;

@@ -393,11 +393,10 @@
 				}
 			};			
 			_.call = function(name,param){
-				//所有的事件调用全部采用异步调用方式 V.once
-				V.merge(_.vm.data,_.fill(),V.getValue(param,{}),true);
-				if(param){
-				    param = V.merge(_.vm.data,param);
-				}
+				//所有的事件调用全部采用异步调用方式 V.once				
+			    param = V.getValue(param, {});
+				V.merge(_.vm.data,_.fill(),param,true);
+				param = V.merge(_.vm.data, param);
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){
@@ -593,11 +592,10 @@
 			};
 
 			_.call = function(name,param){
-				//所有的事件调用全部采用异步调用方式 V.once
-				V.merge(_.vm.data,_.fill(),V.getValue(param,{}),true);
-				if(param){
-				    param = V.merge(_.vm.data,param);
-				}
+				//所有的事件调用全部采用异步调用方式 V.once				
+			    param = V.getValue(param, {});
+				V.merge(_.vm.data,_.fill(),param,true);
+				param = V.merge(_.vm.data, param);
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){

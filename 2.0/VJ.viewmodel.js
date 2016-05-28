@@ -444,7 +444,7 @@
 				obj.page = _.page;
 				_.controls.push(obj);
 				var key = V.getValue(v.id,V.random());
-				if(_.vs[key]){V.showException('控件id为'+id+'的子控件已经存在，请更换id名');return;}
+				if(_.vs[key]){V.showException('控件id为'+key+'的子控件已经存在，请更换id名');return;}
 				node.attr('id',key);
 				_.vs[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
@@ -663,7 +663,7 @@
 				obj.page = _;
 				_.controls.push(obj);				
 				var key = V.getValue(v.id,V.random());
-				if(_.vs[key]){V.showException('控件id为'+id+'的控件已经存在，请更换id名');return;}
+				if(_.vs[key]){V.showException('控件id为'+key+'的控件已经存在，请更换id名');return;}
 				_.vs[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
 				_.vm.vms[key]=v;

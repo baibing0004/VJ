@@ -3,7 +3,7 @@
         var _ = this, __ = {};
         {
             __.id = 'video_' + V.random();
-            V.inherit.apply(_, [W.Control, [path || ' <div class="video_box" style="width:20000px;height:20000px;"><video id="' + __.id + '" class="video-js vjs-default-skin" autobuffer="autobuffer" preload="auto" oncontextmenu="return false" style="width:100%;height:auto;"></video></div>', vm || { data: { controls: false, inaction: 'fadeIn', outaction: 'fadeOut'}}]]);
+            V.inherit.apply(_, [W.Control, [path || ' <div class="video_box" style="width:20000px;height:20000px;"><video id="' + __.id + '" class="video-js vjs-default-skin" autobuffer="autobuffer" preload="auto" oncontextmenu="return false" style="width:100%;height:auto;"></video></div>', vm || { data: { controls: false, inaction: 'fadeIn', outaction: 'fadeOut' } }]]);
             __.onLoad = _.onLoad;
             __.render = _.render;
             _.addDesc('video 初级');
@@ -45,15 +45,23 @@
             });
         };
         _.change = function (first) {
+            var fun = function () {
+                var data = _.vm.data.values[__.curIndex];
+                V.once(function () {
+                    var ret = { src: data.src, poster: data.poster, play: true };
+                    if (!first) ret.show = _.vm.data.inaction;
+                    _.render(ret);
+                }, first ? 1 : 600);
+            };
             if (!first) {
-                _.render({ hide: _.vm.data.outaction });
-            }
-            var data = _.vm.data.values[__.curIndex];
-            V.once(function () {
-                var ret = { src: data.src, poster: data.poster, play: true };
-                if (!first) ret.show = _.vm.data.inaction;
-                _.render(ret);
-            }, first ? 1 : 600);
+                //_.render({ hide: _.vm.data.outaction });
+                _.animate(_.vm.data.outaction, function () {
+                    _.node.hide();
+                    _.vm.data.visible = false;
+                    fun();
+                });
+            } else
+                fun();
         }
         _.render = function (data) {
             if (__.play)

@@ -78,30 +78,31 @@
 			__.css = V.getValue(css,'');
 			this.go = function(node,func){
 				if(V.isValid(__.css)){
-					node = $(node);
-					node.css('animation',css).css('-webkit-animation',css).css('-webkit-animation-play-state','running').css('-moz-animation',css).css('-moz-animation-play-state','running').css('-o-animation',css).css('-o-animation-play-state','running');
+					node = $(node);      
+                    var _f = func		
 					{
-						node.one('webkitAnimationEnd',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('webkitAnimationEnd').on('webkitAnimationEnd',function(){
+                            node.off('animationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s();};
 						});
-						node.one('mozAnimationEnd',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('mozAnimationEnd').on('mozAnimationEnd',function(){
+                            node.off('animationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
-						node.one('MSAnimationEnd',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('MSAnimationEnd').on('MSAnimationEnd',function(){
+                            node.off('MSAnimationEnd').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
-						node.one('oanimationend',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('oanimationend').on('oanimationend',function(){
+                            node.off('oanimationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
-						node.one('animationend',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('animationend').on('animationend',function(){
+                            node.off('animationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
 					}
+                    node.css('animation',css).css('-webkit-animation',css).css('-webkit-animation-play-state','running').css('-moz-animation',css).css('-moz-animation-play-state','running').css('-o-animation',css).css('-o-animation-play-state','running');
 				}
 			};
 		};

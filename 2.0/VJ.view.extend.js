@@ -537,11 +537,31 @@
                     } else { V.showException('没有找到id,自动隐藏'); }
                 });
             };
+            _.change = function (value) {
+                if (value) {
+                    if (_.vm.data.value) {
+                        __.vms[_.vm.data.value].update({ hide: _.vm.data.hideaction, isActive: false });
+                        __.vms[_.vm.data.value].call('inactive');
+                    }
+                    if (__.vms[value]) {
+                        __.vms[value].update({ showaction: _.vm.data.showaction, isActive: true });
+                        __.vms[value].call('active');
+                    } else {
+
+                    }
+                    _.call('change', { value: value, visible: true });
+                }
+            };
             _.render = function (data) {
                 V.forC(data, function (key, value) {
                     switch (key.toLowerCase()) {
+                        case 'value':
+                            __.his.push(value);
+                            _.change(value);
+                            break;
                         case 'next':
                             if (value) {
+                                if (value == _.vm.data.value) return;
                                 if (!(__.vms[value] && value != _.vm.data.value)) {
                                     value = null;
                                     //自动切换下一个
@@ -555,24 +575,13 @@
                                         }
                                     }
                                 }
-                                if (value) {
-                                    __.his.push(value);
-                                    if (_.vm.data.value) {
-                                        __.vms[_.vm.data.value].update({ hide: _.vm.data.hideaction, isActive: false });
-                                        __.vms[_.vm.data.value].call('inactive');
-                                    }
-                                    if (__.vms[value]) {
-                                        __.vms[value].update({ showaction: _.vm.data.showaction, isActive: true });
-                                        __.vms[value].call('active');
-                                    } else {
-
-                                    }
-                                    _.call('change', { value: value, visible: true });
-                                }
+                                __.his.push(value);
+                                _.change(value);
                             }
                             break;
                         case 'prev':
                             if (value) {
+                                if (value == _.vm.data.value) return;
                                 if (__.vms[value] && value != _.vm.data.value) {
                                     //查看是否历史上有前置，如果有需要删除掉所有前置历史
                                     var hasfind = false;
@@ -587,13 +596,7 @@
                                         if (V.getValue(__.vms[v].data.canActive, true)) value = v;
                                     }, null, true);
                                 }
-                                if (value) {
-                                    __.vms[_.vm.data.value].update({ hide: _.vm.data.hideaction, isActive: false });
-                                    __.vms[_.vm.data.value].call('inactive');
-                                    __.vms[value].update({ showaction: _.vm.data.showaction, isActive: true });
-                                    __.vms[value].call('active');
-                                    _.call('change', { value: value });
-                                }
+                                _.change(value);
                             }
                             break;
                         case 'size':
@@ -606,23 +609,39 @@
                             }
                             break;
                         case 'clear':
-                            V.forC(__.vms, function (k2,v2) { v2.dispose(); });
-                            __.cons = [];
-                            __.vms = {};
-                            __.his = [];
+                            V.forC(__.vms, function (k2, v2) {
+                                _.removeControl(k2);
+                            }, function () {
+                                __.cons = [];
+                                __.vms = {};
+                                __.his = [];
+                                delete _.vm.data.value;
+                            });
                             break;
                         case 'addvalues':
                         case 'values':
-                            if (key.toLowerCase() == 'values') {
-                                V.forC(__.vms, function (k2, v2) { v2.dispose(); });
-                            }
-                            V.each(value, function (v2) {
-                                v2.onActive = v2.onActive ? v2.onActive : function (D, I) { I.update({ show: D.showaction }); };
-                                _.addControl(null, v2);
-                            }, function () {
-                                _.reload(_.node);
-                                if (__.cons.length > 0) _.render({ size: _.vm.data.size, next: __.cons[0] });
-                            })
+                            V.next(function (data, next) {
+                                if (key.toLowerCase() == 'values') {
+                                    V.forC(__.vms, function (k2, v2) {
+                                        _.removeControl(k2);
+                                    }, function () {
+                                        __.cons = [];
+                                        __.vms = {};
+                                        __.his = [];
+                                        delete _.vm.data.value;
+                                        next();
+                                    });
+                                } else next();
+                            }, function (data, next) {
+                                V.each(value, function (v2) {
+                                    v2.onActive = v2.onActive ? v2.onActive : function (D, I) { I.update({ show: D.showaction }); V.once(function () { I.call('showed'); }, 500); };
+                                    v2.onInActive = v2.onInActive ? v2.onInActive : function (D, I) { V.once(function () { I.call('hided'); }, 500); };
+                                    _.addControl(null, v2);
+                                }, function () {
+                                    _.reload(_.node);
+                                    if (__.cons.length > 0) _.render({ size: _.vm.data.size, value: __.cons[0] });
+                                })
+                            });
                             break;
                     }
                 }, function () {

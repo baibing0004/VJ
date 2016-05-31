@@ -702,6 +702,11 @@
 								});
 							});
 							break;
+						case 'wheel':
+							var wheelEvent = "onwheel" in document.createElement("div") ? "wheel" : document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll";
+							//todo 兼容版本
+							node[0].addEventListener(wheelEvent, function (e) { _.call('wheel',{e:e}) }, false);
+						break;
 						default:
 							_.bindEvent(node,k,v);
 							break;

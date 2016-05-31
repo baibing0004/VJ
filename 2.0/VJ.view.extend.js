@@ -542,6 +542,7 @@
                     if (_.vm.data.value) {
                         __.vms[_.vm.data.value].update({ hide: _.vm.data.hideaction, isActive: false });
                         __.vms[_.vm.data.value].call('inactive');
+                        console.log(__.vms[_.vm.data.value]);
                     }
                     if (__.vms[value]) {
                         __.vms[value].update({ showaction: _.vm.data.showaction, isActive: true });
@@ -635,7 +636,6 @@
                             }, function (data, next) {
                                 V.each(value, function (v2) {
                                     v2.onActive = v2.onActive ? v2.onActive : function (D, I) { I.update({ show: D.showaction }); V.once(function () { I.call('showed'); }, 500); };
-                                    v2.onInActive = v2.onInActive ? v2.onInActive : function (D, I) { V.once(function () { I.call('hided'); }, 500); };
                                     _.addControl(null, v2);
                                 }, function () {
                                     _.reload(_.node);

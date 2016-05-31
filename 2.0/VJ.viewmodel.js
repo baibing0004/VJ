@@ -704,8 +704,8 @@
 							break;
 						case 'wheel':
 							var wheelEvent = "onwheel" in document.createElement("div") ? "wheel" : document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll";
-							//todo 兼容版本
-							node[0].addEventListener(wheelEvent, function (e) { _.call('wheel',{e:e}) }, false);
+							//todo 兼容版本 判断为向下
+							node[0].addEventListener(wheelEvent, function (e) { _.call('wheel',{e:e,isDown:e.wheelDelta < 0}) }, false);
 						break;
 						default:
 							_.bindEvent(node,k,v);

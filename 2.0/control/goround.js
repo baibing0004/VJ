@@ -3,7 +3,7 @@
         var _ = this, __ = {};
         {
 
-            V.inherit.apply(_, [W.Control, [path || "<div></div>", vm || { data: { inaction: 'fadeInUp', outaction: 'fadeOutUp', waitsecends: 0.4 } }]]);
+            V.inherit.apply(_, [W.Control, [path || "<div></div>", vm || { data: { inaction: 'fadeInUp', outaction: 'fadeOutUp', waitsecends: 0.4}}]]);
             __.onLoad = _.onLoad;
             __.render = _.render;
             __.replaceNode = _.replaceNode;
@@ -62,13 +62,12 @@
                     var li = $(_this.find('div[data-index]').get(0));
                     _this = _this.find('.click:first');
                     _.call('hover', { e: e, value: _.vm.data.values[li.attr('data-index')], vid: _this.attr('vid') || _this.val() || _this.attr('href'), name: _this.attr('name'), hover: false });
-                    __.canstart = true;
-                    __.start();
+                    __.resume();
                 });
                 __.onLoad(node)
             });
         };
-        _.fill = function () { return { ids: (function () { var sb = []; _.body.find(':checked[value]').each(function (i, v) { sb.push(v.getAttribute('value')); }); return sb.join(';'); })() } };
+        _.fill = function () { return { ids: (function () { var sb = []; _.body.find(':checked[value]').each(function (i, v) { sb.push(v.getAttribute('value')); }); return sb.join(';'); })()} };
         _.render = function (data) {
             data = __.render(data);
             var rebuild = false;
@@ -94,7 +93,11 @@
             });
         }
         __.stop = function () { __.canstart = false; };
-        __.start = function (isstart) {
+        __.resume = function () {
+            __.canstart = true;
+            __.start(false, true);
+        };
+        __.start = function (isstart, isresume) {
             if (!__.canstart) return;
             if (isstart) __.index = 0;
             var data = _.vm.get();
@@ -111,10 +114,12 @@
                     });
                 }
                 if (_.node.children().length > 1) {
-                    _._animate(data.outaction, _.node.children().slice(0, _.node.children().length - 1), function () {
-                        _.node.children().slice(0, _.node.children().length - 1).each(function (i, v) { $(v).hide().remove(); });
-                        fun();
-                    });
+                    V.once(function () {
+                        _._animate(data.outaction, _.node.children().slice(0, _.node.children().length - 1), function () {
+                            _.node.children().slice(0, _.node.children().length - 1).each(function (i, v) { $(v).hide().remove(); });
+                            fun();
+                        });
+                    }, isresume ? data.waitsecends * 1000 : 1);
                 } else fun();
             }
         };

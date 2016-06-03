@@ -78,30 +78,31 @@
 			__.css = V.getValue(css,'');
 			this.go = function(node,func){
 				if(V.isValid(__.css)){
-					node = $(node);
-					node.css('animation',css).css('-webkit-animation',css).css('-webkit-animation-play-state','running').css('-moz-animation',css).css('-moz-animation-play-state','running').css('-o-animation',css).css('-o-animation-play-state','running');
+					node = $(node);      
+                    var _f = func		
 					{
-						node.one('webkitAnimationEnd',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('webkitAnimationEnd').on('webkitAnimationEnd',function(){
+                            node.off('animationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s();};
 						});
-						node.one('mozAnimationEnd',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('mozAnimationEnd').on('mozAnimationEnd',function(){
+                            node.off('animationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
-						node.one('MSAnimationEnd',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('MSAnimationEnd').on('MSAnimationEnd',function(){
+                            node.off('MSAnimationEnd').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
-						node.one('oanimationend',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('oanimationend').on('oanimationend',function(){
+                            node.off('oanimationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
-						node.one('animationend',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('animationend').on('animationend',function(){
+                            node.off('animationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
 					}
+                    node.css('animation',css).css('-webkit-animation',css).css('-webkit-animation-play-state','running').css('-moz-animation',css).css('-moz-animation-play-state','running').css('-o-animation',css).css('-o-animation-play-state','running');
 				}
 			};
 		};
@@ -444,7 +445,7 @@
 				obj.page = _.page;
 				_.controls.push(obj);
 				var key = V.getValue(v.id,V.random());
-				if(_.vs[key]){V.showException('控件id为'+id+'的子控件已经存在，请更换id名');return;}
+				if(_.vs[key]){V.showException('控件id为'+key+'的子控件已经存在，请更换id名');return;}
 				node.attr('id',key);
 				_.vs[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
@@ -663,7 +664,7 @@
 				obj.page = _;
 				_.controls.push(obj);				
 				var key = V.getValue(v.id,V.random());
-				if(_.vs[key]){V.showException('控件id为'+id+'的控件已经存在，请更换id名');return;}
+				if(_.vs[key]){V.showException('控件id为'+key+'的控件已经存在，请更换id名');return;}
 				_.vs[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
 				_.vm.vms[key]=v;
@@ -701,6 +702,11 @@
 								});
 							});
 							break;
+						case 'wheel':
+							var wheelEvent = "onwheel" in document.createElement("div") ? "wheel" : document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll";
+							//todo 兼容版本 判断为向下
+							node[0].addEventListener(wheelEvent, function (e) { _.call('wheel',{e:e,isDown:e.wheelDelta < 0}) }, false);
+						break;
 						default:
 							_.bindEvent(node,k,v);
 							break;

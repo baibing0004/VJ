@@ -2,9 +2,13 @@
     V.registScript(function (path, vm) {
         var _ = this, __ = {};
         {
-			//¼òÀúÒ»¸ö»ù´¡µÄ3DObject¶ÔÏó£¬ÔÊĞí¶¨ÒåÆäposition scale rotate move¶¯»­µÈµÈ
-            V.inherit.apply(_, [W.Control, [path || "<div style='display:none;'></div>", vm || { data: {
-			} }]]);
+			//ç®€å†ä¸€ä¸ªåŸºç¡€çš„3DObjectå¯¹è±¡ï¼Œå…è®¸å®šä¹‰å…¶position scale rotate moveåŠ¨ç”»ç­‰ç­‰
+            V.inherit.apply(_, [W.Control, [path || "<div style='display:none;'></div>", vm || {
+				data: {
+
+					Material: { type: 'line', side: 0, transparent: false, colors: [{ rgb: 0xeeeeee, opacity: 1.0 }, { rgb: 0xcccccc, opacity: 1.0 }] }
+				}
+			}]]);
 			_.is3D = true;
 			__.obj = null;
             __.onLoad = _.onLoad;
@@ -13,17 +17,18 @@
 			__.removeControl = _.removeControl;
 			__.clearControl = _.clearControl;
 			__.dispose == _.dispose;
-            _.addDesc('three 3D»ù´¡¿Ø¼ş');
-            _.addDesc('ÊôĞÔ:');
-            _.addDesc('\tposition {x,y,z}·½Î»');
-            _.addDesc('\tscale ·Å´óËõĞ¡');			
-            _.addDesc('\trotate Ğı×ª');
-            _.addDesc('\tmesh ²ÄÖÊ');
-            _.addDesc("¶¨Òå:");
+            _.addDesc('three 3DåŸºç¡€æ§ä»¶');
+            _.addDesc('å±æ€§:');
+            _.addDesc('\tposition {x,y,z}æ–¹ä½');
+            _.addDesc('\tscale æ”¾å¤§ç¼©å°');
+            _.addDesc('\trotate æ—‹è½¬');
+            _.addDesc('\tMaterial æè´¨ type phongé‡‘å±/Lambertæš—å…‰/BasicåŸºç¡€/ç±»å‹ï¼Œside 0æ­£é¢ï¼Œ1èƒŒé¢ï¼Œ2ä¸¤é¢,transparent:falseæ˜¯å¦é€æ˜,color:{rgb:0xfff,opacity:1.0},files:[""]');
+            _.addDesc('\tbasic æè´¨ debug:çº¿æ¡†æ¨¡å¼');
+            _.addDesc("å®šä¹‰:");
             _.addDesc("\tthreeobject: { path: '../../Scripts/ref/three.js;../../Scripts/module/part/tobj.js;' }");
         }
         _.onLoad = function (node) {
-			if(!_.parent.is3D) throw new Error('ThreeObject±ØĞëÔËĞĞÔÚThreeMovieÖĞ');
+			if (!_.parent.is3D) throw new Error('ThreeObjectå¿…é¡»è¿è¡Œåœ¨ThreeMovieä¸­');
 			_.scene = _.parent.scene;
 			_.obj = null;
             V.forC(_.events, function (k, v) {
@@ -43,39 +48,90 @@
                         break;
                 }
             }, function () {
-				__.onLoad(node);				
+				__.onLoad(node);
             });
         };
-		_.create = function(data){
+		_.create = function (data) {
 			//todo
 		};
         _.render = function (data) {
-			if(_.obj ==  null) {
+			if (_.obj == null) {
 				_.obj = _.create(data);
 				_.parent.scene.add(_.obj);
 				_.parent.redraw();
 			} else
-            V.forC(data, function (k, v) {
-                switch (k.toLowerCase()) {
-                    default:
-						break;
-                }
-            },function(){
-				//__.render(data);
-			});
+				V.forC(data, function (k, v) {
+					switch (k.toLowerCase()) {
+						case 'material':
+							var data = {
+								side: (function () {
+									switch (v.side) {
+										default:
+										case 0:
+											return THREE.FrontSide;
+										case 1:
+											return THREE.BackSide;
+										case 2:
+											return THREE.DoubleSide;
+									}
+								})(),
+								transparent:v.transparent,
+								needUpdate:true,
+								color:v.color?v.color.rgb:0,
+								opacity:v.color?v.color.opacity:1,
+								perPixel:true,
+								map:(function () {
+									V.each(v.files,function (v2) {
+										THREE.ImageUtils.loadTexture(v2);
+									},true)
+								})()
+							};
+							delete v.side;
+							delete v.transparent;
+							delete v.needUpdate;
+							delete v.color;
+							V.merge(data,v,true);
+							switch (v.toLowerCase()) {
+								default:
+								case 'basic':
+									if(data.debug) {data.wireframe = true;data.wireframeLinecap='round';data.wireframeLinewidth=2;}
+									__.meterial = new THREE.MeshBasicMaterial(data);
+									break;
+								case 'line':
+									data.vertexColors= true;
+									__.material = new THREE.LineBasicMaterial(data);
+									break;
+								case 'lambert':
+									//ambient,emissive ä¸¤ä¸ªå¯è§ä¸ä¸å¯è§å…‰æº
+									__.meterial = new THREE.MeshBasicMaterial(data);
+									break;
+								case 'phong':
+									v = V.merge({ shininess: 30, specular: v.color.rgb, color: v.color.rgb }, v);
+									__.meterial = new THREE.MeshPhongMaterial(v);
+									break;
+							}
+							break;
+						case '':
+							break;
+						default:
+							break;
+					}
+				}, function () {
+					//__.render(data);
+				});
         };
-		_.dispose = function(){
-			V.tryC(function(){_.call('dispose');if(_.obj){_.parent.scene.remove(_.obj);_.parent.redraw();}});_.node.remove();};
+		_.dispose = function () {
+			V.tryC(function () { _.call('dispose'); if (_.obj) { _.parent.scene.remove(_.obj); _.parent.redraw(); } }); _.node.remove();
 		};
-		//¶¯Ì¬Ìí¼Ó¿Ø¼şµ½Ö¸¶¨Î»ÖÃ Èç¹û²»Ö¸¶¨ÄÇÃ´»áÌí¼Óµ½×îºó
-		_.addControl = function(){
-			V.showException('tobj ²»ÔÊĞíaddControl');
+		//åŠ¨æ€æ·»åŠ æ§ä»¶åˆ°æŒ‡å®šä½ç½® å¦‚æœä¸æŒ‡å®šé‚£ä¹ˆä¼šæ·»åŠ åˆ°æœ€å
+		_.addControl = function () {
+			V.showException('tobj ä¸å…è®¸addControl');
 		};
-		_.removeControl = function(){
-			V.showException('tobj ²»ÔÊĞíremoveControl');
+		_.removeControl = function () {
+			V.showException('tobj ä¸å…è®¸removeControl');
 		};
-		_.clearControl = function(){
-			V.showException('tobj ²»ÔÊĞíclearControl');
+		_.clearControl = function () {
+			V.showException('tobj ä¸å…è®¸clearControl');
 		};
 	});
 })(VJ, VJ.view, jQuery);

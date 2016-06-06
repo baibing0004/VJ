@@ -1,0 +1,16 @@
+CACHE MANIFEST 
+#version 1.9.7
+CACHE:  
+http://cache.baibing.com/VJ/test1.htm
+http://cache.baibing.com/VJ/test2.htm
+http://cache.baibing.com/VJ/2.0/ref/jquery.cookie.js
+http://cache.baibing.com/VJ/2.0/ref/jquery-1.8.0.min.js
+http://cache.baibing.com/VJ/2.0/VJ.min.js
+http://cache.baibing.com/VJ/2.0/VJ.view.extend.js
+http://cache.baibing.com/VJ/config.js
+http://cache.baibing.com/VJ/ni.js
+http://cache.baibing.com/favicon.ico
+NETWORK:   
+   * 
+FALLBACK: 
+#/html5/ /404.html   

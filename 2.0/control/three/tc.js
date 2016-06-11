@@ -7,13 +7,15 @@
 				data: {
 					scene: {},
 					stats: true,
-					lights: [{ type: 'Directional', position: { x: 0, y: 0, z: 0 }, color: { rgb: 0xFFFFFF, opacity: 1.0 } }],
-					camera: { type: 'Perspective', size: { width: V.userAgent.width, height: V.userAgent.height }, angle: 60, near: 1, far: 10000, position: { x: 0, y: 0, z: 0 }, look: { x: 0, y: 0, z: 0 }, up: 'y' },
+					size: { width: V.userAgent.width, height: V.userAgent.height },
+					lights: [{ type: 'Ambient', color: { rgb: 0xffffff, opacity: 1 }, position: { x: 100, y: 100, z: 200 } }],
+					camera: { type: 'Perspective', size: { width: V.userAgent.width, height: V.userAgent.height }, angle: 60, near: 1, far: 10000, rotate: { x: 0, y: 0, z: 0 }, position: { x: 0, y: 0, z: 0 }, look: { x: 0, y: 0, z: 0 }, up: 'y' },
 					render: { type: 'WebGL', antialias: true, precision: 2, hasShadow: true, background: { rgb: 0xFFFFFF, opacity: 1.0 } },
 				}
 			}, V.getValue(vm, {}))]]);
 			_.is3D = true;
-			_.objs = {};
+			_.objs = { count: 0 };
+			_.camera = null;
             __.onLoad = _.onLoad;
             __.render = _.render;
 			__.addControl = _.addControl;
@@ -86,6 +88,7 @@
 				var canvas = e.target;
 				var loc = __.getPointOnCanvas(canvas, x, y);
 				_.call(name, { e: e, D2Position: loc });
+				//進行3D視線撲捉最上層的3D对象 判断vid 找到物理控件进行事件触发
 				var obj = _.objectFromMouse(x, y);
 				if (obj.obj)
 					switch (name.toLowerCase()) {
@@ -107,6 +110,10 @@
 								__.objhover = obj.object.vid;
 								obj.obj.call('hover', { e: e, hover: true, D2Position: loc, D3Position: obj.point });
 							}
+							obj.obj.call('mousemove', { e: e, hover: true, D2Position: loc, D3Position: obj.point });
+							break;
+						case 'mousewheel':
+							//todo;
 							break;
 					}
 				else if (__.objhover) {
@@ -134,37 +141,39 @@
 				return { x: eltx, y: elty };
 			};
 			_.objectFromMouse = function (pagex, pagey) {
-				// Translate page coords to element coords
-				var offset = $(__.renderer.domElement).offset();
-				//转换为div坐标
-				var eltx = pagex - offset.left;
-				var elty = pagey - offset.top;
+				if (__.renderer) {
+					// Translate page coords to element coords
+					var offset = $(__.renderer.domElement).offset();
+					//转换为div坐标
+					var eltx = pagex - offset.left;
+					var elty = pagey - offset.top;
 
-				//转换为相机视野坐标
-				var vpx = (eltx / _.node[0].offsetWidth) * 2 - 1;
-				var vpy = -(elty / _.node[0].offsetHeight) * 2 + 1;
+					//转换为相机视野坐标
+					var vpx = (eltx / _.node[0].offsetWidth) * 2 - 1;
+					var vpy = -(elty / _.node[0].offsetHeight) * 2 + 1;
 
-				var vector = new THREE.Vector3(vpx, vpy, 0.5);
+					var vector = new THREE.Vector3(vpx, vpy, 0.5);
 
-				_.projector.unprojectVector(vector, _.camera);
-				//生成视界射线
-				var ray = new THREE.Raycaster(_.camera.position, vector.sub(_.camera.position).normalize(), _.camera.near, _.camera.far);
-				//获取到相交的对象
-				var intersects = ray.intersectObjects(_.scene.children, true);
-				ray = null;
-				if (intersects.length > 0) {
-					var i = 0;
-					while (!intersects[i].object.visible) {
-						i++;
+					_.projector.unprojectVector(vector, _.camera);
+					//生成视界射线
+					var ray = new THREE.Raycaster(_.camera.position, vector.sub(_.camera.position).normalize(), _.camera.near, _.camera.far);
+					//获取到相交的对象
+					var intersects = ray.intersectObjects(_.scene.children, true);
+					ray = null;
+					if (intersects.length > 0) {
+						var i = 0;
+						while (!intersects[i].object.visible) {
+							i++;
+						}
+						var intersected = intersects[i];
+						//var mat = new THREE.Matrix4().getInverse(intersected.object.matrixWorld);
+						//var point = mat.multiplyVector3(intersected.point);
+						if (intersected)
+							return (_.findObjectFromIntersected(intersected.object, intersected.point, intersected.face ? intersected.face.normal : null, intersected));
+					} else {
+						return { object: null, point: null, normal: null, source: null };
 					}
-					var intersected = intersects[i];
-					//var mat = new THREE.Matrix4().getInverse(intersected.object.matrixWorld);
-					//var point = mat.multiplyVector3(intersected.point);
-					if (intersected)
-						return (_.findObjectFromIntersected(intersected.object, intersected.point, intersected.face.normal, intersected));
-				} else {
-					return { object: null, point: null, normal: null, source: null };
-				}
+				} else return {};
 			};
 			_.findObjectFromIntersected = function (object, point, normal, source) {
 				if (object.vid) {
@@ -185,13 +194,15 @@
 				obj.castShadow = true;
 				obj.receiveShadow = true;
 			}
+			//视线捕捉时使用
 			obj.vid = V.getValue(obj.vid, V.random());
 			_.objs[obj.vid] = d3o;
+			_.objs.count++;
 			_.scene.add(obj);
 			_.redraw();
 		};
 		_.redraw = function () {
-			if (__.renderer && _.scene && _.camera) {
+			if (__.renderer && _.scene && _.camera && _.objs.count > 0) {
 				__.renderer.render(_.scene, _.camera);
 			}
 		};
@@ -261,34 +272,55 @@
 						__.renderer.setClearColor(v.background.rgb, v.background.opacity);
 						break;
 					case 'camera':
-						switch (V.getValue(v.type, 'Perspective').toLowerCase()) {
-							case 'orthographic':
-								//视角,宽高比,近处near和远处far的阀值设置 如果对象因为视角比例超出边界那么就不会显示了
-								_.camera = new THREE.OrthographicCamera(v.left, v.right, v.top, v.bottom, v.near, v.far);
-								break;
-							case 'perspective':
-							default:
-								//视角,宽高比,近处near和远处far的阀值设置 如果对象因为视角比例超出边界那么就不会显示了
-								_.camera = new THREE.PerspectiveCamera(v.angle, data.size.width / data.size.height, v.near, v.far);
-								break;
-						}
-						if (_.camera.position.set)
-							_.camera.position.set(v.position.x, v.position.y, v.position.z);
-						else
-							V.merge(_.camera.position, v.position, true);
-						switch (v.up.toLowerCase()) {
-							case 'x':
-								V.merge(_.camera.up, { x: 1, y: 0, z: 0 }, true);
-								break;
-							case 'y':
-								V.merge(_.camera.up, { x: 0, y: 1, z: 0 }, true);
-								break;
-							case 'z':
-							default:
-								V.merge(_.camera.up, { x: 0, y: 0, z: 1 }, true);
-								break;
-						}
-						_.camera.lookAt(v.look);
+						if (_.camera == null)
+							switch (V.getValue(v.type, 'Perspective').toLowerCase()) {
+								case 'orthographic':
+									//视角,宽高比,近处near和远处far的阀值设置 如果对象因为视角比例超出边界那么就不会显示了
+									_.camera = new THREE.OrthographicCamera(data.size.width / - 2, data.size.width / 2, data.size.height / 2, data.size.height / - 2, v.near, v.far);
+									break;
+								case 'perspective':
+								default:
+									//视角,宽高比,近处near和远处far的阀值设置 如果对象因为视角比例超出边界那么就不会显示了
+									_.camera = new THREE.PerspectiveCamera(v.angle, data.size.width / data.size.height, v.near, v.far);
+									break;
+							}
+						V.forC(v, function (k2, v2) {
+							switch (k2.toLowerCase()) {
+								case 'position':
+									if (_.camera.position.set)
+										_.camera.position.set(v2.x, v2.y, v2.z);
+									else
+										V.merge(_.camera.position, v2, true);
+									break;
+								case 'rotate':
+									if (_.camera.rotation.set)
+										_.camera.rotation.set(v2.x, v2.y, v2.z);
+									else
+										V.merge(_.camera.rotation, v2, true);
+									break;
+								case 'up':
+									switch (v2.toLowerCase()) {
+										case 'x':
+											V.merge(_.camera.up, { x: 1, y: 0, z: 0 }, true);
+											break;
+										case 'y':
+											V.merge(_.camera.up, { x: 0, y: 1, z: 0 }, true);
+											break;
+										case 'z':
+										default:
+											V.merge(_.camera.up, { x: 0, y: 0, z: 1 }, true);
+											break;
+									}
+									break;
+								case 'look':
+									if (v2) {
+										_.camera.lookAt(v2);
+									}
+									break;
+							}
+						}, function () {
+							//_.camera.updateProjectionMatrix();
+						});
 						break;
 					case 'lights':
 						if (v) {
@@ -321,6 +353,27 @@
                 }
             }, function () {
 				__.render(data);
+				if (data.play != undefined) {
+					var v2 = data.play;
+					if (v2 && typeof (v2) == 'function') {
+						var id = '';
+						var func = v2;
+						var go = function () {
+							if (_.stats) _.stats.update();
+							if (_.vm.get().play) {
+								id = window.requestAnimationFrame(go);
+							} else {
+								__.resumego = go;
+								window.cancelAnimationFrame(id);
+							}
+							func.apply(_.parent.vms, [_.vm.data, _.vm]);
+							//_.parent.redraw();
+						};
+						go();
+					} else if (true === v2 && __.resumego) {
+						__.resumego();
+					}
+				}
 				_.redraw();
 			});
         };

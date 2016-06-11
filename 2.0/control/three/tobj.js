@@ -18,7 +18,6 @@
           color: { rgb: 0xffffff, opacity: 1.0 },
           transparent: false,
           side: 0,
-          image: '',
           style: 'basic',
           debug: false
         }
@@ -126,7 +125,7 @@
             }
             break
           case 'style':
-            var data2 = {
+            __.data2 = {
               side: (function () {
                 switch (data.side) {
                   default:
@@ -146,7 +145,7 @@
               debug: data.debug
             }
 
-            if (data2.debug) { data2.wireframe = true; data2.wireframeLinecap = 'round'; data2.wireframeLinewidth = 2; }
+            if (__.data2.debug) { __.data2.wireframe = true; __.data2.wireframeLinecap = 'round'; __.data2.wireframeLinewidth = 2; }
             delete data.side;
             delete data.transparent;
             delete data.needUpdate;
@@ -154,20 +153,20 @@
             switch (v.toLowerCase()) {
               default:
               case 'basic':
-                _.material = new THREE.MeshBasicMaterial(data2);
+                _.material = new THREE.MeshBasicMaterial(__.data2);
                 break
               case 'lambert':
                 // ambient,emissive 两个可见与不可见光源
-                _.material = new THREE.MeshLambertMaterial(data2);
+                _.material = new THREE.MeshLambertMaterial(__.data2);
                 break
               case 'phong':
-                data2 = V.merge({ shininess: 30, specular: data2.color }, data2);
-                _.material = new THREE.MeshPhongMaterial(data2);
+                __.data2 = V.merge({ shininess: 30, specular: __.data2.color }, __.data2);
+                _.material = new THREE.MeshPhongMaterial(__.data2);
                 break
               case 'line':
-                data2.vertexColors = true;
-                data2.linewidth = V.getValue(data.width, 1);
-                _.material = new THREE.LineBasicMaterial(data2);
+                __.data2.vertexColors = true;
+                __.data2.linewidth = V.getValue(data.width, 1);
+                _.material = new THREE.LineBasicMaterial(__.data2);
                 break
             }
             break
@@ -194,34 +193,39 @@
             break
           case 'image':
             _.map = null;
-            V.next(function (data, next) {
-              if (v && V.isArray(v) && v.length == 6) {
-                _.map = THREE.ImageUtils.loadTextureCube(v);
-                if (next) next();
-              } else {
-                new THREE.TextureLoader().load(v, function (texture) {
-                  _.map = texture;
-                  if (next) next();
-                });
-              }
-            }, function (data, next) {
+            var wrap = (function () {
               switch (data.size.toLowerCase()) {
                 default:
                 case 'cover':
-                  _.map.wrapS = _.map.wrapT = THREE.ClampToEdgeWrapping
-                  break
+                  return THREE.ClampToEdgeWrapping;
                 case 'repeat':
-                  _.map.wrapS = _.map.wrapT = THREE.RepeatWrapping
-                  break
+                  return THREE.RepeatWrapping;
                 case 'mirror':
-                  _.map.wrapS = _.map.wrapT = THREE.MirroredRepeatWrapping
-                  break
+                  return THREE.MirroredRepeatWrapping;
               }
-            });
+            })();
+
+            if (v && V.isArray(v) && v.length > 1) {
+              var textures = [];
+              var data2 = V.merge({}, __.data2);
+              V.each(v, function (v2) {
+                var map = THREE.ImageUtils.loadTexture(v2);
+                map.wrapS = map.wrapT = wrap;
+                var mesh = new THREE.MeshBasicMaterial({ color: data2.color, opacity: data2.opacity, map: map, side: data2.side });
+                textures.push(mesh);
+              }, function () {
+                _.material = new THREE.MeshFaceMaterial(textures);
+              }, true);
+            } else {
+              _.map = THREE.ImageUtils.loadTexture(v);
+              _.map.wrapS = _.map.wrapT = wrap;
+            }
             break
         }
       }, function () {
         if (data.type) {
+          if (_.map) _.material.map = _.map;
+          //对材质的设置必须在生成Mesh之前否则就是更新Mesh.Material也无济于事，可能是更新的属性不对导致的或者其属性是clone的
           switch (data.type.toLowerCase()) {
             default:
             case 'sphere':
@@ -237,7 +241,6 @@
           }
           _.parent.add3DObject(_);
         }
-        if (_.map) _.material.map = _.map;
         if (_.obj)
           V.forC(data, function (k2, v2) {
             switch (k2.toLowerCase()) {

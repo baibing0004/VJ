@@ -134,7 +134,7 @@
 				var eltx = (1 + projected.x) * _.node[0].offsetWidth / 2;
 				var elty = (1 - projected.y) * _.node[0].offsetHeight / 2;
 
-				var offset = $(_.renderer.domElement).offset();
+				var offset = $(__.renderer.domElement).offset();
 				eltx += offset.left;
 				elty += offset.top;
 

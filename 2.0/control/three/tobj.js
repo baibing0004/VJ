@@ -53,9 +53,9 @@
       _.addDesc("\tthreeobject: { path: '../../Scripts/ref/three.js;../../Scripts/module/part/tobj.js;' }")
     }
     _.onLoad = function (node) {
-      _.parent = (_.parent.vs[node.parent().attr('id')]);
-      if (!_.parent.is3D) throw new Error('ThreeObject必须运行在ThreeMovie中')
-      _.scene = _.parent.scene
+      _.movie = (_.parent.vs[node.parent().attr('id')]);
+      if (!_.movie.is3D) throw new Error('ThreeObject必须运行在ThreeMovie中')
+      _.scene = _.movie.scene
       _.obj = null
       V.forC(_.events, function (k, v) {
         switch (k.toLowerCase()) {
@@ -74,11 +74,20 @@
       })
     };
     _.fill = function () { if (_.obj) return { EPosition: _.obj.position.clone(), ERotate: _.obj.rotation.clone(), EScale: _.obj.scale.clone() }; else return {}; };
+    _.get2DPosition = function () { if (_.obj && _.movie) { return _.movie.get2DPosition(_.obj); } else return {}; };
     _.render = function (data) {
       V.forC(data, function (k, v) {
         switch (k.toLowerCase()) {
           case 'desc':
             _.desc();
+            break;
+          case 'visible':
+            if (_.obj) _.obj.visible = v ? true : false;
+            break;
+          case '2dposition':
+            if (v && typeof (v) == 'function') {
+              v.apply(_, [_.get2DPosition()]);
+            }
             break;
           case 'type':
             switch (v.toLowerCase()) {
@@ -86,8 +95,11 @@
               case 'mesh':
               case 'line':
                 // 多面体
-                _.geometry = new THREE.Geometry()
+                _.geometry = new THREE.Geometry();
                 break
+              case 'text':
+                _.geometry = new THREE.TextGeometry(data.text, {});
+                break;
               case 'plane':
                 if (data.width && data.height)
                   _.geometry = new THREE.PlaneGeometry(data.width, data.height);
@@ -171,13 +183,7 @@
             }
             break
           case 'file':
-            _.map = null
-            if (v) {
-              //todo canvas 播放视频或者6个视频 进行处理
-              var canvas = V.newEl('canvas', '', '').width(_.node.width()).height(_.node.height()).appendTo(_.node);
-              //todo canvas设置播放视频
-              _.map = new THREE.Texture(canvas)
-            }
+            _.map = null;
             switch (data.size.toLowerCase()) {
               default:
               case 'cover':
@@ -189,6 +195,37 @@
               case 'mirror':
                 _.map.wrapS = _.map.wrapT = THREE.MirroredRepeatWrapping
                 break
+            }
+            _.map = null;
+            var wrap = (function () {
+              switch (data.size.toLowerCase()) {
+                default:
+                case 'cover':
+                  return THREE.ClampToEdgeWrapping;
+                case 'repeat':
+                  return THREE.RepeatWrapping;
+                case 'mirror':
+                  return THREE.MirroredRepeatWrapping;
+              }
+            })();
+            if (v && V.isArray(v) && v.length > 1) {
+              var textures = [];
+              var data2 = V.merge({}, __.data2);
+              V.each(v, function (v2) {
+                var map = THREE.ImageUtils.loadTexture(v2);
+                map.wrapS = map.wrapT = wrap;
+                var mesh = new THREE.MeshBasicMaterial({ color: data2.color, opacity: data2.opacity, map: map, side: data2.side });
+                textures.push(mesh);
+              }, function () {
+                _.material = new THREE.MeshFaceMaterial(textures);
+              }, true);
+            } else {
+              //todo canvas 播放视频或者6个视频 进行处理
+              var canvas = V.newEl('canvas', '', '').width(data.width).height(data.height).appendTo(_.movie.node);
+              console.log('new canvas');
+              //todo canvas设置播放视频
+              _.map = new THREE.Texture(canvas);
+              _.map.wrapS = _.map.wrapT = wrap;
             }
             break
           case 'image':
@@ -204,7 +241,6 @@
                   return THREE.MirroredRepeatWrapping;
               }
             })();
-
             if (v && V.isArray(v) && v.length > 1) {
               var textures = [];
               var data2 = V.merge({}, __.data2);
@@ -233,13 +269,14 @@
             case 'plane':
             case 'mesh':
             case 'cube':
+            case 'text':
               _.obj = new THREE.Mesh(_.geometry, _.material)
               break
             case 'line':
               _.obj = new THREE.Line(_.geometry, _.material, THREE.LinePieces)
               break
           }
-          _.parent.add3DObject(_);
+          _.movie.add3DObject(_);
         }
         if (_.obj)
           V.forC(data, function (k2, v2) {
@@ -267,8 +304,8 @@
                       __.resumego = go;
                       window.cancelAnimationFrame(id);
                     }
-                    func.apply(_.parent.vms, [_.vm.data, _.vm]);
-                    //_.parent.redraw();
+                    func.apply(_.movie.vms, [_.vm.data, _.vm]);
+                    //_.movie.redraw();
                   };
                   go();
                 } else if (true === v2 && __.resumego) {
@@ -276,12 +313,12 @@
                 }
                 break;
             }
-          }, _.parent.redraw)
+          }, _.movie.redraw)
 
       })
     }
     _.dispose = function () {
-      V.tryC(function () { _.call('dispose'); if (_.obj) { _.parent.scene.remove(_.obj); _.parent.redraw(); } }); _.node.remove()
+      V.tryC(function () { _.call('dispose'); if (_.obj) { _.movie.scene.remove(_.obj); _.movie.redraw(); } }); _.node.remove()
     }
     // 动态添加控件到指定位置 如果不指定那么会添加到最后
     _.addControl = function () {

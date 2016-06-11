@@ -87,19 +87,26 @@
 						movie:{
 							data:{
 								desc:true,
-								camera:{left:200,right:200,top:200,bottom:200,angle:90,near:0.1,far:20000,position:{z:0},look:{x:0,y:0,z:0}},
-								lights:[{type:'Ambient',color:{rgb:0xffffff,opacity:1},position:{x:100,y:100,z:200}},{type:'Point',color:{rgb:0xaaaaaa,opacity:1},position:{x:0,y:0,z:300}}],
-								render:{type:'webgl'},
+								camera:{left:200,right:200,top:200,bottom:200,angle:90,near:0.1,far:20000,position:{y:0},look:{x:0,y:0,z:0}},
+								lights1:[{type:'Ambient',color:{rgb:0xffffff,opacity:1},position:{x:100,y:100,z:200}}],
+								lights:[],
 								ss:-90
 							},
 							onLoad:function(D,I){
 								V.registEvent('test.resize',function(size){
 									I.update({size:size});
 								});
-								I.update({
+								var d2d = $('#div2D');
+								I.update({									
 									play:function(D,I){
-										if(D.camera.look)
+										if(D.camera.look){
 											I.update({ss:D.ss+=0.1,camera:{look:{x:100*Math.cos(D.ss*Math.PI/180),z:100*Math.sin(D.ss*Math.PI/180),y:D.camera.look.y}}});
+											if(this.pancan1 && this.pancan1.update)
+											this.pancan1.update({'2dposition1':function(pos){
+												//非常耗运算 计算对应对象的2d地址
+												d2d.css('top',pos.y).css('left',pos.x);
+											}});
+										}
 								}});
 							},
 							onMouseDown:function(D,I){
@@ -117,14 +124,13 @@
 									var xstep = ydis<xdis?(D.D2Position.x>D.start.x?0.8:-0.8):0;
 									var start = D.ss+xstep;
 									var starty = D.camera.look.y;
-									console.log(100*Math.sin(ystep*Math.PI/180)+starty);
 									if(D.camera.look)
 											I.update({ss:start,start:D.D2Position,camera:{look:{x:100*Math.cos(start*Math.PI/180),z:100*Math.sin(start*Math.PI/180),y:100*Math.sin(ystep*Math.PI/180)+starty}}});
 								}
 							}
 						},
 						side1:{							
-							data:{debug:false,side:0,type:'plane',style:'basic',image:'720/img0.jpg',position:{z:-500},rotate:{},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+							data:{debug:false,side:0,type:'plane',style:'basic',file1:'720/home0.mp4',image:'720/img0.jpg',position:{z:-500},rotate:{},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
 						},
 						side2:{							
 							data:{debug:false,side:0,type:'plane',style:'basic',image:'720/img1.jpg',position:{x:500},rotate:{y:-90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
@@ -133,7 +139,7 @@
 							data:{debug:false,side:0,type:'plane',style:'basic',image:'720/img2.jpg',position:{z:500},rotate:{y:180},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
 						},
 						side4:{							
-							data:{debug:false,side:0,type:'plane',style:'basic',image:'720/img3.jpg',position:{x:-500},rotate:{y:90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+							data:{visible:false,debug:false,side:0,type:'plane',style:'basic',image:'720/img3.jpg',position:{x:-500},rotate:{y:90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
 						},
 						top:{							
 							data:{debug:false,side:0,type:'plane',style:'basic',image:'720/img4.jpg',position:{y:500},rotate:{x:90,z:-90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
@@ -142,19 +148,20 @@
 							data:{debug:false,side:0,type:'plane',style:'basic',image:'720/img5.jpg',position:{y:-500},rotate:{x:-90,z:0},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
 						},
 						pancan1:{							
-							data:{debug:false,side:2,type:'plane',style:'basic',width:200,height:80,color:{rgb:0xff0000,opacity:1},position:{z:-499}},
+							data:{visible:true,side:0,type:'plane',style:'basic',width:200,height:80,color:{rgb:0xff0000,opacity:1},position:{z:-499}},
 							onLoad:function(D,I){								
 								var start = 0;
 								I.update({play:function(D,I){
-									I.update({rotate:{x:D.rotate.x+=1}});
+									I.update({rotate:{z:D.rotate.z+=1}});
 								}});
+								var _this = this;
 							},
 							onHover:function(D,I){
 								console.log('pancan1 hover:'+D.hover);
 								if(D.hover){									
-									I.update({play:false});
+									I.update({play:false,scale:{x:1.1,y:1.1,z:1.1}});
 								}else{
-									I.update({play:true});
+									I.update({play:true,scale:{x:1,y:1,z:1}});
 								}
 							},
 							onClick:function(D,I){alert('点到我了');},
@@ -191,6 +198,7 @@
 			<tobject id="bottom" _=""></tobject>
 			<tobject id="pancan1" _=""></tobject>
 		</div>
+		<div id="div2D" style="position:absolute;top:0px;left:0px;width:300px;height:80px;text-align:center;line-height:80px;color:white;">VJ ThreeMovie+ThreeObject控件</div>
 	</div>
 </body>
 

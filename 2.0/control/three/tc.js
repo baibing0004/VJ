@@ -27,7 +27,7 @@
             _.addDesc('\tcamera 镜头type Orthographic left,right,top,bottom,near,far/Perspective angle视锥角度,near近处和far远处的阀值设置 当比例超出阀值设置时不可显示,position:{x,y,z}方位，look:{x,y,z}朝向的方向,up:{x,y,z}设定镜头的正向方向');
             _.addDesc('\trender 生成器type WebGL 生成器的基本属性 antialias:是否抗锯齿,precision:0低精度，1中精度，2高精度，hasShadow:是否允许阴影,background:{rgb:0xFFFFFF,opacity:1.0}背景颜色');
             _.addDesc("定义:");
-            _.addDesc("\tthreemovie: { path: '../../Scripts/ref/three.js;../../Scripts/module/part/tc.js;' }");
+            _.addDesc("\tthreemovie: { path: '../../Scripts/ref/three.min.js;../../Scripts/ref/stats.min.js;../../Scripts/module/part/tc.js;' }");
         }
         _.onLoad = function (node) {
             V.forC(_.events, function (k, v) {
@@ -154,7 +154,8 @@
 
 					var vector = new THREE.Vector3(vpx, vpy, 0.5);
 
-					_.projector.unprojectVector(vector, _.camera);
+					//_.projector.unprojectVector(vector, _.camera);
+					vector.unproject(_.camera);
 					//生成视界射线
 					var ray = new THREE.Raycaster(_.camera.position, vector.sub(_.camera.position).normalize(), _.camera.near, _.camera.far);
 					//获取到相交的对象

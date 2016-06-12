@@ -1,8 +1,6 @@
 ﻿(function (V, W, $) {
     //http://www.gouguoyin.cn/demo/uploadview/index.html opcity:0
-    window.YT = V.getValue(window.YT, { view: {} });
-    var Y = YT.view;
-    Y.Upload2 = function (path, vm) {
+    V.registScript(function (path, vm) {
         var _ = this, __ = {};
         {
             V.inherit.apply(_, [W.Control, [path || '<div></div>', vm || {
@@ -36,6 +34,8 @@
                     if (filePath) {
                         var isnext = false;
                         var fileend = filePath.substring(filePath.lastIndexOf(".")).toLowerCase();
+                        _.vm.data.file = filePath;
+                        _.vm.data.fileend = fileend;
                         if (_.vm.data.filevalidate.types.length > 0) {
                             for (var i = 0; i < _.vm.data.filevalidate.types.length; i++) {
                                 if (_.vm.data.filevalidate.types[i].toLowerCase() == fileend) {
@@ -57,7 +57,7 @@
                 }
 
                 if (_.vm.data.filevalidate.size) {
-                    var fileSize = 0, filemaxsize = 1024 * _.vm.data.filevalidate.size;//2M 
+                    var fileSize = 0, filemaxsize = 1024 * _.vm.data.filevalidate.size; //2M 
                     var isIE = /msie/i.test(navigator.userAgent) && !window.opera;
                     try {
                         if (isIE && !target.files) {
@@ -101,7 +101,7 @@
                     bindinput();
                     return;
                 }
-                _.call('loading', {});
+                _.call('loading', { load: 1, length: 1 });
                 $.ajaxFileUpload({
                     url: _.vm.data.url, //需要链接到服务器地址 
                     secureuri: _.vm.data.secureuri,
@@ -111,7 +111,7 @@
                         data = data.substring(data.indexOf('>') + 1, data.lastIndexOf('<'));
                         data = eval('(' + data + ')');
                         _.call('loadend', {});
-                        _.call(data.state ? 'success' : 'error', { value: data.value });
+                        _.call(data.state ? 'success' : 'error', { value: data.value, values: data });
                         bindinput();
                     },
                     error: function (s, data, status, e) {
@@ -120,6 +120,31 @@
                         window.ss = { s: s, data: data, status: status, e: e };
                         _.call('error', { value: '服务器错误!' + data });
                         bindinput();
+                    },
+                    xhr: function () {
+                        // 获取JQuery内部使用的XMLHttpRequest对象
+                        var xhr = $.ajaxSettings.xhr();
+
+                        // 上传进度监控
+                        if (xhr.upload)
+                            xhr.upload.addEventListener('progress', function (e) {
+                                if (e.lengthComputable) {
+                                    var percentComplete = e.loaded / e.total;
+                                    _.call('loading', { load: e.loaded, length: e.total, percent: percentComplete });
+                                } else {
+                                    // 不能计算进度
+                                }
+                            }, false);
+                        else // 下载进度监控
+                            xhr.addEventListener('progress', function (e) {
+                                if (e.lengthComputable) {
+                                    var percentComplete = e.loaded / e.total;
+                                    _.call('loading', { load: e.loaded, length: e.total, percent: percentComplete });
+                                } else {
+                                    // 不能计算进度
+                                }
+                            }, false);
+                        return xhr;//一定要返回，不然jQ没有XHR对象用了
                     }
                 });
             };
@@ -142,7 +167,7 @@
                         _.call('error', { value: '控件不可用!' });
                         return false;
                     }
-                    var target = targett.files ? targett : targett.target;
+                    var target = e.files ? e : e.target;
                     if (target.value != "") click = true;
                 }).change(callback).width(width).height(height);
             };
@@ -156,5 +181,5 @@
                 }
             });
         }
-    };
+    });
 })(VJ, VJ.view, jQuery);

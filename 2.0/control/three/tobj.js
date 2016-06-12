@@ -43,14 +43,23 @@
       _.addDesc('\tdeepth 深度适用于cube,')
       _.addDesc('\tradius 半径适用于sphere,[top,bottom]两个半径适用于cylinder')
       _.addDesc('\tpoints 适用mesh,line')
+      _.addDesc('\tfaces 适用mesh');
       _.addDesc('\tsize cover,repeat,mirror适用于image属性,')
       _.addDesc('\tcolor 颜色适用于全部，多个颜色适用于mesh与line')
       _.addDesc('\ttransparent 是否透明适用于全部')
       _.addDesc('\tside 适用于正反面0 正面 1 反面 2 正反面')
       _.addDesc('\tstyle 适用于basic,lambert,phong,line')
-      _.addDesc('\tdebug:线框模式')
+      _.addDesc('\tdebug:线框模式');
+      _.addDesc('\tposition {x,y,z}中心点方位')
+      _.addDesc('事件:')
+      _.addDesc('\thover e hover:true/false')
+      _.addDesc('\tclick e mousedown与mouseup在500ms之内时认为是click')
+      _.addDesc('\tmousedown e D2Position,Position,D3Position')
+      _.addDesc('\tmouseup e D2Position,Position,D3Position')
+      _.addDesc('\tmousemove e D2Position,Position,D3Position')
+      _.addDesc('\tvideoend 视频播放完成 一般是自动重播的')
       _.addDesc('定义:')
-      _.addDesc("\tthreeobject: { path: '../../Scripts/ref/three.js;../../Scripts/module/part/tobj.js;' }")
+      _.addDesc("\tthreeobject: { path: '../../Scripts/ref/three.js;../../Scripts/ref/stats.min.js;../../Scripts/module/part/tobj.js;' }")
     }
     _.onLoad = function (node) {
       _.movie = (_.parent.vs[node.parent().attr('id')]);
@@ -64,6 +73,7 @@
           case 'mousedown':
           case 'mouseup':
           case 'mousemove':
+          case 'videoend':
             break
           default:
             _.bindEvent(_.node, k, v)
@@ -74,7 +84,32 @@
       })
     };
     _.fill = function () { if (_.obj) return { EPosition: _.obj.position.clone(), ERotate: _.obj.rotation.clone(), EScale: _.obj.scale.clone() }; else return {}; };
-    _.get2DPosition = function () { if (_.obj && _.movie) { return _.movie.get2DPosition(_.obj); } else return {}; };
+    _.get2DPosition = function () { console.log(_.obj); if (_.obj && _.movie && _.obj.visible) { return _.movie.get2DPosition(_.obj); } else return {}; };
+    _.createVideo = function (file, repeat) {
+      //全局缓存视频 防止视频加载多次造成不同步
+      var _videos = window._videos = V.getValue(window._videos, {});
+      if (_videos[file]) {
+        return _videos[file][0];
+      } else {
+        var filetype = (function () {
+          switch (file.substr(file.lastIndexOf('.') + 1).toLowerCase()) {
+            default:
+            case 'mp4':
+              return "video/mp4";
+          }
+        })();
+        var video = V.newEl('video', '', '').css('display', 'none').attr('autoplay', 'true').append('<source src="' + file + '" type="' + filetype + '">').appendTo(document.body);
+        if (repeat)
+          video[0].addEventListener('ended', function () {
+            _.call('videoend');
+            video[0].play();
+          });
+        _videos[file] = video;
+        return _videos[file][0];
+      }
+    };
+    if (_.video) _.video.remove();
+
     _.render = function (data) {
       V.forC(data, function (k, v) {
         switch (k.toLowerCase()) {
@@ -130,6 +165,16 @@
                 _.geometry.vertices.push(new THREE.Vector3(v2.x, v2.y, v2.z));
               }, null, true)
             }
+            if (data.faces && data.faces.length > 0) {
+              V.each(data.faces, function (v2) {
+                if (v2.length == 3)
+                  _.geometry.faces.push(new THREE.Face3(v2[0], v2[1], v2[2]));
+                else if (v2.length > 3)
+                  _.geometry.faces.push(new THREE.Face4(v2[0], v2[1], v2[2], v2[3]));
+                else
+                  V.showException('faces 不支持少于3点的面:' + v2.length);
+              }, null, true)
+            }
             if (data.color && V.isArray(data.color) && data.color.length > 1) {
               V.each(data.color, function (v2) {
                 _.geometry.colors.push(new THREE.Color(v2.rgb, v2.opacity))
@@ -182,20 +227,7 @@
                 break
             }
             break
-          case 'file':
-            _.map = null;
-            switch (data.size.toLowerCase()) {
-              default:
-              case 'cover':
-                _.map.wrapS = _.map.wrapT = THREE.ClampToEdgeWrapping
-                break
-              case 'repeat':
-                _.map.wrapS = _.map.wrapT = THREE.RepeatWrapping
-                break
-              case 'mirror':
-                _.map.wrapS = _.map.wrapT = THREE.MirroredRepeatWrapping
-                break
-            }
+          case 'vedio':
             _.map = null;
             var wrap = (function () {
               switch (data.size.toLowerCase()) {
@@ -212,7 +244,8 @@
               var textures = [];
               var data2 = V.merge({}, __.data2);
               V.each(v, function (v2) {
-                var map = THREE.ImageUtils.loadTexture(v2);
+                //var map = THREE.ImageUtils.loadTexture(v2);
+                var map = new THREE.TextureLoader().load(v2);
                 map.wrapS = map.wrapT = wrap;
                 var mesh = new THREE.MeshBasicMaterial({ color: data2.color, opacity: data2.opacity, map: map, side: data2.side });
                 textures.push(mesh);
@@ -220,11 +253,8 @@
                 _.material = new THREE.MeshFaceMaterial(textures);
               }, true);
             } else {
-              //todo canvas 播放视频或者6个视频 进行处理
-              var canvas = V.newEl('canvas', '', '').width(data.width).height(data.height).appendTo(_.movie.node);
-              console.log('new canvas');
-              //todo canvas设置播放视频
-              _.map = new THREE.Texture(canvas);
+              _.video = _.createVideo(v, true);
+              _.map = new THREE.VideoTexture(_.video);
               _.map.wrapS = _.map.wrapT = wrap;
             }
             break
@@ -245,7 +275,8 @@
               var textures = [];
               var data2 = V.merge({}, __.data2);
               V.each(v, function (v2) {
-                var map = THREE.ImageUtils.loadTexture(v2);
+                //var map = THREE.ImageUtils.loadTexture(v2);
+                var map = new THREE.TextureLoader().load(v2);
                 map.wrapS = map.wrapT = wrap;
                 var mesh = new THREE.MeshBasicMaterial({ color: data2.color, opacity: data2.opacity, map: map, side: data2.side });
                 textures.push(mesh);
@@ -253,7 +284,7 @@
                 _.material = new THREE.MeshFaceMaterial(textures);
               }, true);
             } else {
-              _.map = THREE.ImageUtils.loadTexture(v);
+              _.map = new THREE.TextureLoader().load(v);
               _.map.wrapS = _.map.wrapT = wrap;
             }
             break

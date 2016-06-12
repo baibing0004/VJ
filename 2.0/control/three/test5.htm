@@ -77,8 +77,8 @@
 					cm = V.merge(cm,{
 						Middler:{
 							'VESH.view':{											
-								tmovie:{path:'../three/three.min.js;../three/tc.js',params:['',{data:{stats:false}}]},
-								tobject:{path:'../three/three.min.js;../three/tobj.js',params:["",{data:{debug:false}}]}
+								tmovie:{path:'../three/three.min.js;../three/Stats.min.js;../three/tc.js',params:['',{data:{stats:false}}]},
+								tobject:{path:'../three/three.min.js;../three/Stats.min.js;../three/tobj.js',params:["",{data:{debug:false}}]}
 							}
 						}
 					});
@@ -87,6 +87,7 @@
 						movie:{
 							data:{
 								desc:true,
+								stats: true,
 								camera:{left:200,right:200,top:200,bottom:200,angle:90,near:0.1,far:20000,position:{y:0},look:{x:0,y:0,z:0}},
 								lights1:[{type:'Ambient',color:{rgb:0xffffff,opacity:1},position:{x:100,y:100,z:200}}],
 								lights:[],
@@ -130,22 +131,22 @@
 							}
 						},
 						side1:{							
-							data:{debug:false,side:0,type:'plane',style:'basic',file1:'720/home0.mp4',image:'720/img0.jpg',position:{z:-500},rotate:{},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+							data:{debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img0.jpg',position:{z:-500},rotate:{},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
 						},
 						side2:{							
-							data:{debug:false,side:0,type:'plane',style:'basic',image:'720/img1.jpg',position:{x:500},rotate:{y:-90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+							data:{debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img1.jpg',position:{x:500},rotate:{y:-90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
 						},
 						side3:{							
-							data:{debug:false,side:0,type:'plane',style:'basic',image:'720/img2.jpg',position:{z:500},rotate:{y:180},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+							data:{debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img2.jpg',position:{z:500},rotate:{y:180},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
 						},
 						side4:{							
-							data:{visible:false,debug:false,side:0,type:'plane',style:'basic',image:'720/img3.jpg',position:{x:-500},rotate:{y:90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+							data:{visible:false,debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img3.jpg',position:{x:-500},rotate:{y:90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
 						},
 						top:{							
-							data:{debug:false,side:0,type:'plane',style:'basic',image:'720/img4.jpg',position:{y:500},rotate:{x:90,z:-90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+							data:{debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img4.jpg',position:{y:500},rotate:{x:90,z:-90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
 						},
 						bottom:{							
-							data:{debug:false,side:0,type:'plane',style:'basic',image:'720/img5.jpg',position:{y:-500},rotate:{x:-90,z:0},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+							data:{debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img5.jpg',position:{y:-500},rotate:{x:-90,z:0},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
 						},
 						pancan1:{							
 							data:{visible:true,side:0,type:'plane',style:'basic',width:200,height:80,color:{rgb:0xff0000,opacity:1},position:{z:-499}},
@@ -155,6 +156,11 @@
 									I.update({rotate:{z:D.rotate.z+=1}});
 								}});
 								var _this = this;
+								V.once(function(){
+									I.update({'2dposition1':function(pos){
+										console.log(pos);
+									}});
+								},4000);
 							},
 							onHover:function(D,I){
 								console.log('pancan1 hover:'+D.hover);

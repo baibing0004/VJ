@@ -458,7 +458,7 @@ if (top.location == location) {
 		V.newEl = function (tag, style, txt) {
 			var elm = $(document.createElement(tag));
 			if (txt != "") {
-				elm.text(txt);
+				elm.html(txt);
 			}
 			if (style != "") {
 				elm.addClass(style);

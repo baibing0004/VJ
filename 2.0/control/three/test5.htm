@@ -1,0 +1,211 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="description" content="Add multi-touch gestures to your webpage.">
+	<title>VJ test</title>
+	<script src="../../../2.0/ref/jquery-1.8.0.min.js" type="text/javascript"></script>
+	<script src="../../../2.0/VJ.js" type="text/javascript"></script>
+	<script src="../../../config.js" type="text/javascript"></script>
+	<script src="../../../ni.js" type="text/javascript"></script>
+	<style type="text/css">
+		.animate {
+			transition: all 0.3s;
+			-webkit-animation-timing-function: ease;
+		}
+	</style>
+	<script type="text/javascript">
+		if(0){
+			$(function(){
+				VJ.include('three.min.js');
+				var scene = new THREE.Scene();
+				console.log(window.innerWidth/window.innerHeight);
+				var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 10000);
+				camera.lookAt({x:0,y:0,z:0});
+				camera.position.z = 500;
+				var renderer = new THREE.WebGLRenderer();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				document.body.appendChild(renderer.domElement);
+				console.log(renderer);
+				var geometry = new THREE.CubeGeometry(100,100,100);
+				var mats = [];
+				for(var i=0;i<6;i++) {
+					var map = THREE.ImageUtils.loadTexture('720/img'+i+'.jpg');
+					map.wrapS = map.wrapT = THREE.ClampToEdgeWrapping;
+					mats.push(new THREE.MeshBasicMaterial({color:0xffffff,opacity:0.5,map:map,side:THREE.DoubleSide}));
+				}
+				var material = new THREE.MeshFaceMaterial(mats);
+				var cube = new THREE.Mesh(geometry, material); 
+				cube.position.set(-200,0,0);				
+				cube.rotation.set(1,0,0);
+				scene.add(cube);
+				function render() {
+					requestAnimationFrame(render);
+					//cube.rotation.x += 0.1;
+					cube.rotation.y += 0.1;
+					//cube.rotation.z += 0.1;
+					renderer.render(scene, camera);
+				}
+				var geometry2 = new THREE.CubeGeometry(100,100,100);
+				var material2 = new THREE.MeshBasicMaterial({color: 0x0000ff});
+				var cube2 = new THREE.Mesh(geometry2, material2);
+				cube2.position.set(200,0,0);				
+				cube2.rotation.set(1,0,0);
+				scene.add(cube2);				
+				function render2() {
+					requestAnimationFrame(render2);
+					//cube2.rotation.x += 0.1;
+					cube2.rotation.y -= 0.1;
+					//cube2.rotation.z += 0.1;
+					renderer.render(scene, camera);
+				}
+				VJ.once(function(){					
+					render();	
+					render2();
+				},1000);				
+				console.log(scene);
+			});
+		}
+		else	
+		(function(V,M,$,cm,W){
+			new function(){
+				var _=this,__={};
+				{
+					cm = V.merge(cm,{
+						Middler:{
+							'VESH.view':{											
+								tmovie:{path:'../three/three.min.js;../three/Stats.min.js;../three/tc.js',params:['',{data:{stats:false}}]},
+								tobject:{path:'../three/three.min.js;../three/Stats.min.js;../three/tobj.js',params:["",{data:{debug:false}}]}
+							}
+						}
+					});
+					V.isDebug = true;
+					V.inherit.apply(_,[M.Page,[cm,{
+						movie:{
+							data:{
+								desc:true,
+								stats: true,
+								camera:{left:200,right:200,top:200,bottom:200,angle:90,near:0.1,far:20000,position:{y:0},look:{x:0,y:0,z:0}},
+								lights1:[{type:'Ambient',color:{rgb:0xffffff,opacity:1},position:{x:100,y:100,z:200}}],
+								lights:[],
+								ss:-90
+							},
+							onLoad:function(D,I){
+								V.registEvent('test.resize',function(size){
+									I.update({size:size});
+								});
+								var d2d = $('#div2D');
+								I.update({									
+									play:function(D,I){
+										if(D.camera.look){
+											I.update({ss:D.ss+=0.1,camera:{look:{x:100*Math.cos(D.ss*Math.PI/180),z:100*Math.sin(D.ss*Math.PI/180),y:D.camera.look.y}}});
+											if(this.pancan1 && this.pancan1.update)
+											this.pancan1.update({'2dposition1':function(pos){
+												//非常耗运算 计算对应对象的2d地址
+												d2d.css('top',pos.y).css('left',pos.x);
+											}});
+										}
+								}});
+							},
+							onMouseDown:function(D,I){
+								I.update({down:true,play:false,start:D.D2Position});
+							},
+							onMouseUp:function(D,I){
+								I.update({down:false,play:true,start:false});
+							},
+							onMouseMove:function(D,I){
+								if(D.down && D.start){
+									var xdis = Math.abs(D.D2Position.x-D.start.x);
+									var ydis = Math.abs(D.D2Position.y-D.start.y);
+																		
+									var ystep = ydis>xdis?(D.D2Position.y>D.start.y?-0.8:0.8):0;
+									var xstep = ydis<xdis?(D.D2Position.x>D.start.x?0.8:-0.8):0;
+									var start = D.ss+xstep;
+									var starty = D.camera.look.y;
+									if(D.camera.look)
+											I.update({ss:start,start:D.D2Position,camera:{look:{x:100*Math.cos(start*Math.PI/180),z:100*Math.sin(start*Math.PI/180),y:100*Math.sin(ystep*Math.PI/180)+starty}}});
+								}
+							}
+						},
+						side1:{							
+							data:{debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img0.jpg',position:{z:-500},rotate:{},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+						},
+						side2:{							
+							data:{debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img1.jpg',position:{x:500},rotate:{y:-90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+						},
+						side3:{							
+							data:{debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img2.jpg',position:{z:500},rotate:{y:180},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+						},
+						side4:{							
+							data:{visible:false,debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img3.jpg',position:{x:-500},rotate:{y:90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+						},
+						top:{							
+							data:{debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img4.jpg',position:{y:500},rotate:{x:90,z:-90},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+						},
+						bottom:{							
+							data:{debug:false,side:0,type:'plane',style:'basic',vedio:'720/home0.mp4',image1:'720/img5.jpg',position:{y:-500},rotate:{x:-90,z:0},width:1000,height:1000,color:{rgb:0xffffff,opacity:1},size:'cover'}
+						},
+						pancan1:{							
+							data:{visible:true,side:0,type:'plane',style:'basic',width:200,height:80,color:{rgb:0xff0000,opacity:1},position:{z:-499}},
+							onLoad:function(D,I){								
+								var start = 0;
+								I.update({play:function(D,I){
+									I.update({rotate:{z:D.rotate.z+=1}});
+								}});
+								var _this = this;
+								V.once(function(){
+									I.update({'2dposition1':function(pos){
+										console.log(pos);
+									}});
+								},4000);
+							},
+							onHover:function(D,I){
+								console.log('pancan1 hover:'+D.hover);
+								if(D.hover){									
+									I.update({play:false,scale:{x:1.1,y:1.1,z:1.1}});
+								}else{
+									I.update({play:true,scale:{x:1,y:1,z:1}});
+								}
+							},
+							onClick:function(D,I){alert('点到我了');},
+							onMouseUp:function(D,I){console.log('object2 mouseup:');},
+							onMouseDown:function(D,I){console.log('object2 mousedown:');}
+						},
+						page:{
+							data:{
+								title:'测试页面aa'
+							},
+							onStart:function(D,I){
+								//V.tryC(function(){I.v.middler.getObjectByAppName('VESH.view','map')});								
+								//V.callEvent('test.resize',[{width:V.userAgent.width,height:V.userAgent.height}]);
+							},
+							onSize:function(D,I){
+								V.callEvent('test.resize',[{width:D.width,height:D.height}]);
+							}			
+						}
+					}]]);
+				}
+			};
+		})(VJ,VJ.viewmodel,jQuery,window.top.config,VJ.view);
+	</script>
+</head>
+
+<body>
+	<div style="width:100%;height:100%;position:absolute;top:0px;left:0px;display:block;">
+		<div id="movie" _="type:'tmovie'">
+			<tobject id="side1" _=""></tobject>
+			<tobject id="side2" _=""></tobject>
+			<tobject id="side3" _=""></tobject>
+			<tobject id="side4" _=""></tobject>
+			<tobject id="top" _=""></tobject>
+			<tobject id="bottom" _=""></tobject>
+			<tobject id="pancan1" _=""></tobject>
+		</div>
+		<div id="div2D" style="position:absolute;top:0px;left:0px;width:300px;height:80px;text-align:center;line-height:80px;color:white;">VJ ThreeMovie+ThreeObject控件</div>
+	</div>
+</body>
+
+</html>

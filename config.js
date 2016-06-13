@@ -13,7 +13,7 @@
 			select:{type:'.Select',path:'../../VJ/2.0/VJ.view.extend.js'},
 			hidden:{type:'.Hidden',path:'../../VJ/2.0/VJ.view.extend.js'},
 			passwordbox:{type:'.PasswordBox',path:'../../VJ/2.0/VJ.view.extend.js'},
-			button:{type:'.Button',path:'../../ditu/2.0/VJ.view.extend.js'},
+			button:{type:'.Button',path:'../../VJ/2.0/VJ.view.extend.js'},
 			submit:{type:'.Submit',path:'../../VJ/2.0/VJ.view.extend.js'},
 			reset:{type:'.Reset',path:'../../VJ/2.0/VJ.view.extend.js'},
 			form:{type:'.Form',path:'../../VJ/2.0/VJ.view.extend.js'},

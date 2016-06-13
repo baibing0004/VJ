@@ -1,0 +1,37 @@
+﻿div.p_table_contain {
+    background:#eeeeee;
+    width:99%;
+    border-top-left-radius:10px;
+    border-top-right-radius:10px;
+    padding-bottom: 1rem
+}
+div.p_table_titleback {
+    padding: 1rem 1rem 0 1rem;
+    border-bottom: solid 1px #333;
+}
+div.p_table_title {
+    background:white;
+    padding:0.2rem;
+    border:solid 1px #999;
+    width: 7rem;
+    text-align:center;
+    border-top-left-radius:5px;
+    border-top-right-radius:5px;
+}
+table.p_table {
+    margin: 1rem;
+    background: white;
+    border: solid 1px #333;
+    width: 97%;
+    text-align:center;
+}
+    table.p_table td {
+        border-bottom:solid 1px #eee;
+        border-left:solid 1px #eee;
+    }
+
+        table.p_table td.p_table_Name {
+            max-width:10rem;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }

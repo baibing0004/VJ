@@ -1,0 +1,27 @@
+﻿ul.p_navTab, .p_navTab li {
+    list-style: none;
+}
+
+ul.p_navTab {
+    display: -webkit-box;
+    text-align: center;
+    line-height: 100%;
+    -webkit-user-select: none;
+    font-size: 2rem;
+    width: 100%;
+    margin: 0px auto;
+    padding: 0px;
+}
+
+    ul.p_navTab li {
+        text-align: center;
+        width: 33%;
+    }
+
+        ul.p_navTab li:first-child {
+            width: 34%;
+        }
+
+        ul.p_navTab li.p_active {
+            line-height: 100%;
+        }

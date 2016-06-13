@@ -7,31 +7,43 @@
 		var KEY='Middler';
 		{}
 		_.getObjectByAppName = function(app,name){
-			return cm.getConfigValue(KEY,new function(){
-				var _ = this;
-				{}
-				_.getValue = function(config){
-					return config.getValueByName(app,name);
-				};
-			});
+			try{
+				return cm.getConfigValue(KEY,new function(){
+					var _ = this;
+					{}
+					_.getValue = function(config){
+						return config.getValueByName(app,name);
+					};
+				});
+			}catch(e){
+				V.showException(app+":"+name,e);				
+			}
 		};
 		_.setObjectByAppName = function(app,name,val){
-			return cm.setConfigValue(KEY,new function(){
-				var _ = this;
-				{}
-				_.setValue = function(config,val){
-					return config.setValueByName(app,name,val);
-				};
-			},val);
+			try{
+				return cm.setConfigValue(KEY,new function(){
+					var _ = this;
+					{}
+					_.setValue = function(config,val){
+						return config.setValueByName(app,name,val);
+					};
+				},val);
+			} catch(e) {
+				V.showException(app+":"+name,e);
+			}
 		};
 		_.getTypeByAppName = function(app,name){
-			return cm.getConfigValue(KEY,new function(){
-				var _ = this;
-				{}
-				_.getValue = function(config){
-					return config.getTypeByName(app,name);
-				};
-			});
+			try{
+				return cm.getConfigValue(KEY,new function(){
+					var _ = this;
+					{}
+					_.getValue = function(config){
+						return config.getTypeByName(app,name);
+					};
+				});
+			} catch(e) {
+				V.showException(app+":"+name,e);
+			}
 		};
 	};
 	M.MiddlerConfig = function(){

@@ -78,30 +78,31 @@
 			__.css = V.getValue(css,'');
 			this.go = function(node,func){
 				if(V.isValid(__.css)){
-					node = $(node);
-					node.css('animation',css).css('-webkit-animation',css).css('-webkit-animation-play-state','running').css('-moz-animation',css).css('-moz-animation-play-state','running').css('-o-animation',css).css('-o-animation-play-state','running');
+					node = $(node);      
+                    var _f = func		
 					{
-						node.one('webkitAnimationEnd',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('webkitAnimationEnd').on('webkitAnimationEnd',function(){
+                            node.off('animationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s();};
 						});
-						node.one('mozAnimationEnd',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('mozAnimationEnd').on('mozAnimationEnd',function(){
+                            node.off('animationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
-						node.one('MSAnimationEnd',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('MSAnimationEnd').on('MSAnimationEnd',function(){
+                            node.off('MSAnimationEnd').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
-						node.one('oanimationend',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('oanimationend').on('oanimationend',function(){
+                            node.off('oanimationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
-						node.one('animationend',function(){
-							node.css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
-							if(func) func();
+						node.off('animationend').on('animationend',function(){
+                            node.off('animationend').css('-webkit-animation','').css('-moz-animation','').css('-o-animation','');
+							if(_f){var _s=_f;delete _f;_s()};
 						});
 					}
+                    node.css('animation',css).css('-webkit-animation',css).css('-webkit-animation-play-state','running').css('-moz-animation',css).css('-moz-animation-play-state','running').css('-o-animation',css).css('-o-animation-play-state','running');
 				}
 			};
 		};
@@ -177,8 +178,11 @@
 						case 'dispose':
 							if(value) _.dispose();
 							break;
+						case 'css':
+							V.forC(value,function(k,v){_.node.css(k,v);});
+                            break;
 						case 'attr':
-							V.forC(value,function(key2,value2){_.node.attr(key2,value2);},function(){});
+							V.forC(value,function(k,v){_.node.attr(k,v);});
 							break;
 						case 'enable':
 							if(value){_.node.removeAttr('disabled');}else{_.node.attr('disabled','disabled');}
@@ -286,7 +290,7 @@
 							_.animate(value,function(){_.node.hide();_.vm.data.visible = false;});
 							break;
 						case 'desc':
-							_.desc();
+							if(value) _.desc();
 							break;
 					}
 				});
@@ -388,17 +392,17 @@
 					var obj = _.middler.getObjectByAppName(W.APP,'ValidateManager');
 					if(obj){obj.validate(_,input);}
 				}
-			};
-			_.call = function(name,param){
-				//所有的事件调用全部采用异步调用方式 V.once
-				if(param){
-					V.merge(_.vm.data,param,true);
-				}
-				V.merge(_.vm.data,_.fill(),V.getValue(param,{}),true);
+			};			
+			_.call = function(name,param,imme){
+				//所有的事件调用全部采用异步调用方式 V.once				
+			    param = V.getValue(param, {});
+				V.merge(_.vm.data,_.fill(),param,true);
+				param = V.merge(_.vm.data, param);
 				name = name.toLowerCase();
 				if(_.events[name]){
 					V.once(function(){
-						var val = _.events[name].apply(_.parent.vms,[_.vm.data,_.vm]);
+					    var val = _.events[name].apply(_.parent.vms, [imme?param:_.vm.data, _.vm]);
+                        if(imme) V.merge(_.vm.data,param, true);
 						if(val && val != {}){
 							V.merge(_.vm.data, val, true)
 							_.render(val);
@@ -441,7 +445,8 @@
 				obj.page = _.page;
 				_.controls.push(obj);
 				var key = V.getValue(v.id,V.random());
-				if(_.vs[key]){V.showException('控件id为'+id+'的子控件已经存在，请更换id名');return;}
+				if(_.vs[key]){V.showException('控件id为'+key+'的子控件已经存在，请更换id名');return;}
+				node.attr('id',key);
 				_.vs[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
 				_.vms[key]=v;
@@ -585,19 +590,20 @@
 			};
 			//用于覆盖引起页面布局改变
 			_.onReady = function(){
-			};			
-			_.call = function(name,param){
-				//所有的事件调用全部采用异步调用方式 V.once
-				if(param){
-					V.merge(_.vm.data,param,true);
-				}
-				V.merge(_.vm.data,_.fill(),V.getValue(param,{}),true);
+			};
+
+			_.call = function(name,param,imme){
+				//所有的事件调用全部采用异步调用方式 V.once				
+			    param = V.getValue(param, {});
+				V.merge(_.vm.data,_.fill(),param,true);
+				param = V.merge(_.vm.data, param);
 				name = name.toLowerCase();
 				if(_.events[name]){
-					V.once(function(){
-						var val = _.events[name].apply(_.page.getModels(),[_.vm.data,_.vm]);
+					V.once(function(){						
+					    var val = _.events[name].apply(_.parent.getModels(), [imme?param:_.vm.data, _.vm]);
+                        if(imme) V.merge(_.vm.data,param, true);
 						if(val && val != {}){
-							V.merge(_.vm.data,val, true)
+							V.merge(_.vm.data, val, true)
 							_.render(val);
 						}
 					});
@@ -658,7 +664,7 @@
 				obj.page = _;
 				_.controls.push(obj);				
 				var key = V.getValue(v.id,V.random());
-				if(_.vs[key]){V.showException('控件id为'+id+'的控件已经存在，请更换id名');return;}
+				if(_.vs[key]){V.showException('控件id为'+key+'的控件已经存在，请更换id名');return;}
 				_.vs[key] = obj;
 				V.inherit.apply(v,[M.Control,[]]);
 				_.vm.vms[key]=v;
@@ -687,15 +693,20 @@
 			_.onLoad = function(node){
 				V.forC(_.events,function(k,v){
 					switch(k){
-						case 'resize':
+						case 'size':
 							$(window).resize(function(){
 								V.userAgent.refresh();
-								_.call('resize',{
+								_.call('size',{
 									height:V.userAgent.height,
 									width:V.userAgent.width
 								});
 							});
 							break;
+						case 'wheel':
+							var wheelEvent = "onwheel" in document.createElement("div") ? "wheel" : document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll";
+							//todo 兼容版本 判断为向下
+							node[0].addEventListener(wheelEvent, function (e) { _.call('wheel',{e:e,isDown:e.wheelDelta < 0}) }, false);
+						break;
 						default:
 							_.bindEvent(node,k,v);
 							break;

@@ -675,10 +675,10 @@
 							_.lock = v;
 							break;
 						case 'height':
-							_.children.height(v);
+							_.panel.children().height(v);
 							break;
-						case 'width':							
-							_.children.width(v);
+						case 'width':				
+							_.panel.children().width(v);
 							break;
 						case 'values':
 							var lst = V.newEl('div','','').css('display','none;');

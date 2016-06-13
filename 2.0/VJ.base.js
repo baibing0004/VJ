@@ -458,7 +458,7 @@ if (top.location == location) {
 		V.newEl = function (tag, style, txt) {
 			var elm = $(document.createElement(tag));
 			if (txt != "") {
-				elm.text(txt);
+				elm.html(txt);
 			}
 			if (style != "") {
 				elm.addClass(style);
@@ -507,66 +507,6 @@ if (top.location == location) {
 			$("textarea[maxlength]").unbind('change').change(function (event) {
 				var _ = $(this);
 				_.val(_.val.substring(0, _.attr("maxlength")));
-			});
-		};
-		V.fill = function (node, data) {
-			$(node.find('[__]')).each(function (i, v) {
-				v = $(v);
-				var option = V.merge({ formatter: function (val, v, data) { return val; } }, eval('[{' + v.attr('__') + '}]')[0]);
-				var val = V.getValue(data[option.field], '');
-				val = option.formatter.apply(v, [val, v, data]);
-				if (V.isValid(val) || val === '') {
-					if (V.isArray(val)) {
-						if (v[0].tagName.toLowerCase() === 'select' && V.isValid(option.textfield)) {
-							v.empty();
-							$(val).each(function (i, v3) {
-								v.append(V.newEl('option', '', V.getValue(v3[option.textfield], '')).attr('value',v3.value));
-							});
-						} else { val = val.join(';'); }
-					}
-					switch (v[0].tagName.toLowerCase()) {
-						case 'input':
-							if (v.attr('type') == 'checkbox') {
-								V.setChecked(v,(val == true || val == 1 || val == "1") ? true : false);
-							} else {
-								v.val(val);
-							}
-							break;
-						case 'textarea':
-						case 'select':
-							v.val(val);
-							break;
-						case 'img':
-							v.attr('src',val);
-							break;
-						default:
-							v.html(val);
-							break;
-					}
-				}
-			});
-		};
-		V.fillTo = function (sor, data, aim, func) {
-			$(sor.find('[__]')).each(function (i, v) {
-				V.tryC(function () {
-					v = $(v);
-					var node2 = func();
-					aim.append(node2);
-					var option = V.merge({ formatter: function (val, v, data) { return val; } }, eval('[{' + v.attr('__') + '}]')[0]);
-					var val = V.getValue(data[option.field], '');
-					val = option.formatter.apply(node2, [val, node2, data]);
-					if(V.isValid(option.cssClass)){
-						node2.addClass(option.cssClass)
-					}
-					if (V.isValid(option.click)) {
-						node2.click(function () {
-							option.click.apply($(this), data);
-						});
-					}
-					if (V.isValid(val)) {
-						node2.html(val);
-					}
-				});
 			});
 		};
 		//剪贴板

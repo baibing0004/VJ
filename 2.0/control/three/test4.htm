@@ -91,32 +91,50 @@
 								camera:{left:200,right:200,top:200,bottom:200,angle:90,near:0.1,far:20000,position:{y:0},look:{x:0,y:0,z:0}},
 								lights1:[{type:'Ambient',color:{rgb:0xffffff,opacity:1},position:{x:100,y:100,z:200}}],
 								lights:[],
-								ss:-90
+								xs:-90,ys:0
 							},
 							onLoad:function(D,I){
 								V.registEvent('test.resize',function(size){
 									I.update({size:size});
 								});
-								var d2d = $('#div2D');
-								I.update({									
-									play:function(D,I){
-										if(D.camera.look){
-											I.update({ss:D.ss+=0.1,camera:{look:{x:100*Math.cos(D.ss*Math.PI/180),z:100*Math.sin(D.ss*Math.PI/180),y:D.camera.look.y}}});
+								var d2d = $('#div2D');	
+								I.call('MouseUp');							
+							},
+							onMouseDown:function(D,I){
+								I.update({down:true,play:false,start:D.D2Position});
+								V.once(function(){
+									I.update({play:function(D2,I2){
+										if(D2.camera.look){
+											//计算距离
+											var xdis = Math.abs(D2.D2Position.x-D2.start.x);
+											var ydis = Math.abs(D2.D2Position.y-D2.start.y);
+											//获取步长
+											var ystep = ydis>xdis?((D2.D2Position.y-D2.start.y)/D2.size.height*10):0;
+											var xstep = Math.max(-90,Math.min(90,(ydis<xdis?((D2.D2Position.x-D2.start.x)/D2.size.width*10):0)));
+											//计算最终结果 x直接旋转 y轴只能上下90度
+											var ys = Math.max(-90,Math.min(90,((D2.ys?D2.ys:0)-ystep)));
+											var xs = (D2.xs?D2.xs:-90)+xstep;
+											I.update({ys:ys,xs:xs,start:D.D2Position,camera:{look:{x:100*Math.cos(xs*Math.PI/180),z:100*Math.sin(xs*Math.PI/180),y:100*Math.sin(ys*Math.PI/180)}}});
+											/*
 											if(this.pancan1 && this.pancan1.update)
 											this.pancan1.update({'2dposition1':function(pos){
 												//非常耗运算 计算对应对象的2d地址
 												d2d.css('top',pos.y).css('left',pos.x);
-											}});
+											}});*/
 										}
-								}});
-							},
-							onMouseDown:function(D,I){
-								I.update({down:true,play:false,start:D.D2Position});
+									}});
+								},200)
 							},
 							onMouseUp:function(D,I){
-								I.update({down:false,play:true,start:false});
+								I.update({down:false,play:false,start:false});
+								V.once(function(){
+									I.update({play:function(D2,I2){
+										var xs = D2.xs+0.1;
+										I.update({xs:xs,start:D.D2Position,camera:{look:{x:100*Math.cos(xs*Math.PI/180),z:100*Math.sin(xs*Math.PI/180),y:D2.camera.look.y}}});										
+									}});
+								},200);
 							},
-							onMouseMove:function(D,I){
+							onMouseMove1:function(D,I){
 								if(D.down && D.start){
 									var xdis = Math.abs(D.D2Position.x-D.start.x);
 									var ydis = Math.abs(D.D2Position.y-D.start.y);
@@ -131,7 +149,7 @@
 							}
 						},
 						object:{							
-							data:{debug:false,side:2,type:'cube',style:'basic',vedio:'720/home0.mp4',vedio1:['720/home0.mp4','720/home1.mp4','720/home2.mp4','720/home3.mp4','720/home4.mp4','720/home5.mp4'],image1:['720/img0.jpg','720/img2.jpg','720/img4.jpg','720/img5.jpg','720/img3.jpg','720/img1.jpg'],width:-1000,height:-1000,deepth:-1000,rotate:{z:180,y:90},color:{rgb:0xffffff,opacity:1}},
+							data:{debug:false,side:2,type:'cube',style:'basic',vedio1:'720/home0.mp4',vedio1:['720/home0.mp4','720/home1.mp4','720/home2.mp4','720/home3.mp4','720/home4.mp4','720/home5.mp4'],image:['720/img0.jpg','720/img2.jpg','720/img4.jpg','720/img5.jpg','720/img3.jpg','720/img1.jpg'],width:-1000,height:-1000,deepth:-1000,rotate:{z:180,y:90},color:{rgb:0xffffff,opacity:1}},
 							onLoad:function(D,I){								
 								var start = 0;
 								I.update({play1:function(D,I){start+=2;
@@ -213,7 +231,7 @@
 							},
 							onStart:function(D,I){
 								//V.tryC(function(){I.v.middler.getObjectByAppName('VESH.view','map')});								
-								//V.callEvent('test.resize',[{width:V.userAgent.width,height:V.userAgent.height}]);
+								V.callEvent('test.resize',[{width:V.userAgent.width,height:V.userAgent.height}]);
 							},
 							onSize:function(D,I){
 								V.callEvent('test.resize',[{width:D.width,height:D.height}]);

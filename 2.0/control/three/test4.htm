@@ -77,8 +77,8 @@
 					cm = V.merge(cm,{
 						Middler:{
 							'VESH.view':{											
-								tmovie:{path:'../three/three.min.js;../three/tc.js',params:['',{data:{stats:false}}]},
-								tobject:{path:'../three/three.min.js;../three/tobj.js',params:["",{data:{debug:true}}]}
+								tmovie:{path:'../three/three.min.js;../three/stats.min.js;../three/tc.js',params:['',{data:{stats:false}}]},
+								tobject:{path:'../three/three.min.js;../three/stats.min.js;../three/tobj.js',params:["",{data:{debug:true}}]}
 							}
 						}
 					});
@@ -131,7 +131,7 @@
 							}
 						},
 						object:{							
-							data:{debug:false,side:2,type:'cube',style:'basic',image:['720/img0.jpg','720/img2.jpg','720/img4.jpg','720/img5.jpg','720/img3.jpg','720/img1.jpg'],width:-1000,height:-1000,deepth:-1000,rotate:{z:180,y:180},color:{rgb:0xffffff,opacity:1}},
+							data:{debug:false,side:2,type:'cube',style:'basic',vedio:'720/home0.mp4',vedio1:['720/home0.mp4','720/home1.mp4','720/home2.mp4','720/home3.mp4','720/home4.mp4','720/home5.mp4'],image1:['720/img0.jpg','720/img2.jpg','720/img4.jpg','720/img5.jpg','720/img3.jpg','720/img1.jpg'],width:-1000,height:-1000,deepth:-1000,rotate:{z:180,y:90},color:{rgb:0xffffff,opacity:1}},
 							onLoad:function(D,I){								
 								var start = 0;
 								I.update({play1:function(D,I){start+=2;

@@ -101,6 +101,7 @@
 								I.call('MouseUp');							
 							},
 							onMouseDown:function(D,I){
+								console.log('mousedown');
 								I.update({down:true,play:false,start:D.D2Position});
 								V.once(function(){
 									I.update({play:function(D2,I2){
@@ -123,9 +124,10 @@
 											}});*/
 										}
 									}});
-								},200)
+								},10)
 							},
 							onMouseUp:function(D,I){
+								console.log('mouseup');
 								I.update({down:false,play:false,start:false});
 								V.once(function(){
 									I.update({play:function(D2,I2){
@@ -134,18 +136,9 @@
 									}});
 								},200);
 							},
-							onMouseMove1:function(D,I){
-								if(D.down && D.start){
-									var xdis = Math.abs(D.D2Position.x-D.start.x);
-									var ydis = Math.abs(D.D2Position.y-D.start.y);
-																		
-									var ystep = ydis>xdis?(D.D2Position.y>D.start.y?-0.8:0.8):0;
-									var xstep = ydis<xdis?(D.D2Position.x>D.start.x?0.8:-0.8):0;
-									var start = D.ss+xstep;
-									var starty = D.camera.look.y;
-									if(D.camera.look)
-											I.update({ss:start,start:D.D2Position,camera:{look:{x:100*Math.cos(start*Math.PI/180),z:100*Math.sin(start*Math.PI/180),y:100*Math.sin(ystep*Math.PI/180)+starty}}});
-								}
+							onClick:function(D,I){
+								console.log('click');
+								I.update({down:false,play:false,start:false},100);
 							}
 						},
 						object:{							
@@ -181,7 +174,9 @@
 									I.update({play:true,scale:{x:1,y:1,z:1}});
 								}
 							},
-							onClick:function(D,I){alert('点到我了');},
+							onClick:function(D,I){//alert('点到我了');
+								console.log('点到我了!');
+							},
 							onMouseUp:function(D,I){console.log('object2 mouseup:');},
 							onMouseDown:function(D,I){console.log('object2 mousedown:');}
 						},

@@ -34,15 +34,15 @@
                 switch (k.toLowerCase()) {
                     case 'hover':
 						node.hover(function (e) {
-							_.call('hover', { e: e, hover: true, D2Location: _.getPointOnCanvas(e.target, e.pageX, e.pageY) });
+							_.call('hover', { e: e, hover: true, D2Location: __.getPointOnCanvas(e.target, e.pageX, e.pageY) });
 						}, function (e) {
-							_.call('hover', { e: e, hover: false, D2Location: _.getPointOnCanvas(e.target, e.pageX, e.pageY) });
+							_.call('hover', { e: e, hover: false, D2Location:__.getPointOnCanvas(e.target, e.pageX, e.pageY) });
 						});
 						break;
                     case 'click':
 						node.click(function (e) {
 							V.stopProp(e);
-							_.call('click', { e: e, D2Location: _.getPointOnCanvas(e.target, e.pageX, e.pageY) });
+							_.call('click', { e: e, D2Location: __.getPointOnCanvas(e.target, e.pageX, e.pageY) });
 						});
 						break;
 					case 'mousedown':
@@ -97,8 +97,10 @@
 							obj.obj.call('mousedown', { e: e, D2Position: loc, D3Position: obj.point });
 							break;
 						case 'mouseup':
-							if (new Date().sub('ms', __.clicktime) <= 500)
+							if (new Date().sub('ms', __.clicktime) <= 500){
+								_.call('click', { e: e, D2Position: loc });
 								obj.obj.call('click', { e: e, D2Position: loc, D3Position: obj.point });
+							}
 							obj.obj.call('mouseup', { e: e, D2Position: loc, D3Position: obj.point });
 							break;
 						case 'mousemove':

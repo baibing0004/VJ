@@ -120,7 +120,7 @@
 									var xs = D2.xs;//+0.1;
 									I.update({xs:xs,start:D.D2Position,camera:{look:{x:100*Math.cos(xs*Math.PI/180),z:100*Math.sin(xs*Math.PI/180),y:D2.camera.look.y}}});										
 								}});
-								V.once(function(){I.update({play:false})},500);
+								V.once(function(){I.update({play:false})},2000);
 							},
 							onMouseDown:function(D,I){
 								console.log('mousedown');
@@ -295,10 +295,11 @@
 							},
 							onStart:function(D,I){
 								//V.tryC(function(){I.v.middler.getObjectByAppName('VESH.view','map')});								
-								V.callCommand('test.resize',[{width:V.userAgent.width,height:V.userAgent.height}]);
+								V.callEvent('test.resize',[{width:V.userAgent.width,height:V.userAgent.height}]);
 							},
 							onSize:function(D,I){
-								V.callCommand('test.resize',[{width:D.width,height:D.height}]);
+								console.log('resize');
+								V.callEvent('test.resize',[{width:D.width,height:D.height}]);
 							}			
 						}
 					}]]);

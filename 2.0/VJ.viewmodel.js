@@ -582,7 +582,7 @@
 				_.session = page.session;
 				_.config = page.config;
 			}
-			_.dispose = function(){_.session.updateAll();_.call('dispose');_.clearControl();$('body').empty();window.close();};
+			_.dispose = function(){_.session.updateAll();_.call('dispose');$('body').empty();window.close();};
 			//用于重载触发方式
 			_.ready = function(func){
 				$(function(){func();_.bindControl(_.node);});

@@ -164,8 +164,23 @@
 			};
 			//处理控件下载完成后的操作
 			_.onLoad = function(node){
-				_.render(_.vm.data);
-				_.call('load');
+				V.forC(_.events,function(k,v){
+					switch(k){						
+                        case 'hover':
+                            _.node.hover(function () {
+                                if (node.parents("[disabled]").length > 0) return;
+                                _.call('Hover', { hover: true });
+                            }, function () {
+                                if (node.parents("[disabled]").length > 0) return;
+                                _.call('Hover', { hover: false });
+                            });
+                            break;
+					}
+				},function(){
+					_.render(_.vm.data);
+					_.call('load');
+				},true);
+				
 			};
 			//在更新_.vm.data
 			_.fill = function(){

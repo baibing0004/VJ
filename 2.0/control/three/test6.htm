@@ -164,6 +164,11 @@
 									}});
 								},200);
 							},
+							onHover:function(D,I){
+								if(!D.hover){
+									I.call('mouseup');
+								}
+							},
 							onClick:function(D,I){
 								console.log('click');
 								I.update({down:false,play:false,start:false},100);
@@ -278,7 +283,7 @@
 								});
 								V.registCommand('test6.hide',function(pos,url){
 									V.once(function(){
-										if(!I.get().hover) I.update({hide:'fadeOut'});
+										if(!D.hover) I.update({hide:'fadeOut'});
 									},500);
 								});
 							},

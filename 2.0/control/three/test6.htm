@@ -282,9 +282,10 @@
 									I.update({show:'fadeIn',css:{left:pos.x,top:_this.movie.data.size.height*0.2},value:{url:url}});
 								});
 								V.registCommand('test6.hide',function(pos,url){
+									I.update({hover:false});
 									V.once(function(){
 										if(!D.hover) I.update({hide:'fadeOut'});
-									},500);
+									},200);
 								});
 							},
 							onHover:function(D,I){

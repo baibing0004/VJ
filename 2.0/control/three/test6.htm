@@ -278,7 +278,7 @@
 							onLoad:function(D,I){
 								var _this = this;
 								V.registCommand('test6.info',function(pos,width,url){
-									pos.x = (pos.x+width/2+430)>_this.movie.data.size.width?(pos.x-430-width/2):(pos.x+width/2);
+									pos.x = (pos.x+width/2+430)>_this.movie.data.size.width?(pos.x-430-width*2/3):(pos.x+width*2/3);
 									I.update({show:'fadeIn',css:{left:pos.x,top:_this.movie.data.size.height*0.2},value:{url:url}});
 								});
 								V.registCommand('test6.hide',function(pos,url){

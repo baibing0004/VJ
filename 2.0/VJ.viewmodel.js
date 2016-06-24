@@ -164,23 +164,8 @@
 			};
 			//处理控件下载完成后的操作
 			_.onLoad = function(node){
-				V.forC(_.events,function(k,v){
-					switch(k){						
-                        case 'hover':
-                            _.node.hover(function () {
-                                if (node.parents("[disabled]").length > 0) return;
-                                _.call('Hover', { hover: true });
-                            }, function () {
-                                if (node.parents("[disabled]").length > 0) return;
-                                _.call('Hover', { hover: false });
-                            });
-                            break;
-					}
-				},function(){
-					_.render(_.vm.data);
-					_.call('load');
-				},true);
-				
+				_.render(_.vm.data);
+				_.call('load');
 			};
 			//在更新_.vm.data
 			_.fill = function(){
@@ -314,9 +299,18 @@
 			//用于扩展给主要对象绑定事件使用 一般用于bind事件的默认值
 			_.bindEvent = function(node,k,v){
 				node = $(node);
-				if(typeof(node[k]) == 'function'){
-					node[k](function(e){
-						if(node.parents('[disabled]').length>0) return;
+				if(typeof(node[k]) == 'function' && (!$._data(node[0],"events") || !$._data(node[0],"events")[k])){
+					if(k.toLowerCase()=='hover'){
+						if((!$._data(node[0],"events") || (!$._data(node[0],"events")['mouseenter']) && !$._data(node[0],"events")['mouseleave']))
+						node[k](function (e) {
+							if (node.attr('disabled') || node.parents("[disabled]").length > 0) return;
+							_.call(k, {e:e,hover: true });
+						}, function (e) {
+							if (node.attr('disabled') || node.parents("[disabled]").length > 0) return;
+							_.call(k, {e:e, hover: false });
+						});
+					} else node[k](function(e){
+						if(node.attr('disabled') || node.parents('[disabled]').length>0) return;
 						_.call(k,{e:e});
 					});
 				}

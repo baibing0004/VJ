@@ -299,9 +299,18 @@
 			//用于扩展给主要对象绑定事件使用 一般用于bind事件的默认值
 			_.bindEvent = function(node,k,v){
 				node = $(node);
-				if(typeof(node[k]) == 'function'){
-					node[k](function(e){
-						if(node.parents('[disabled]').length>0) return;
+				if(typeof(node[k]) == 'function' && (!$._data(node[0],"events") || !$._data(node[0],"events")[k])){
+					if(k.toLowerCase()=='hover'){
+						if((!$._data(node[0],"events") || (!$._data(node[0],"events")['mouseenter']) && !$._data(node[0],"events")['mouseleave']))
+						node[k](function (e) {
+							if (node.attr('disabled') || node.parents("[disabled]").length > 0) return;
+							_.call(k, {e:e,hover: true });
+						}, function (e) {
+							if (node.attr('disabled') || node.parents("[disabled]").length > 0) return;
+							_.call(k, {e:e, hover: false });
+						});
+					} else node[k](function(e){
+						if(node.attr('disabled') || node.parents('[disabled]').length>0) return;
 						_.call(k,{e:e});
 					});
 				}

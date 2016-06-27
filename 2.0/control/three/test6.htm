@@ -35,6 +35,31 @@
 			top: -338px;
 			left: -843px;
 		}
+		.div_button{
+			width: 100%;
+			height: 50px;
+			left :0;
+			top:52%;
+			position:absolute;
+			
+		}
+		.div_button .button_left input,.div_button .button_right input{
+		     width:48px;
+		     height:48px;
+			 border-style: none;
+			 opacity:0.7;
+			 cursor:pointer;
+		}
+		.div_button .button_left input{
+		float:left;
+		margin-left:20px;
+		background: url("720/icons.png") 0 -115px no-repeat;		
+		}
+		.div_button .button_right input{
+		float:right;
+		margin-right:20px;
+		background: url("720/icons.png") -50px -115px no-repeat;
+		}
 	</style>
 	<script type="text/javascript">
 		if(0){
@@ -122,6 +147,7 @@
 									I.update({xs:xs,start:D.D2Position,camera:{look:{x:100*Math.cos(xs*Math.PI/180),z:100*Math.sin(xs*Math.PI/180),y:D2.camera.look.y}}});										
 								}});
 								V.once(function(){I.update({play:false})},2000);
+								
 							},
 							onMouseDown:function(D,I){
 								console.log('mousedown');
@@ -182,6 +208,25 @@
 								I.update({play1:function(D,I){start+=2;
 									I.update({rotate:{x1:D.rotate.x+=1,y:D.rotate.y-=0.4,z1:D.rotate.z+=1}});
 								}});
+								 V.registCommand('cssobject1.auto',function(direction,auto){
+								var play=_.vms.object.data.play;
+									if(!play&&auto){
+									console.log('进来了');
+                                       if(direction=='left'){
+									      I.update({play:function(D,I){start+=2;
+									I.update({rotate:{x1:D.rotate.x+=1,y:D.rotate.y-=0.4,z1:D.rotate.z+=1}});
+								},bunauto:true,direction:direction});
+									   }else{
+									    I.update({play:function(D,I){start-=2;
+									I.update({rotate:{x1:D.rotate.x-=1,y:D.rotate.y+=0.4,z1:D.rotate.z-=1}});
+								},bunauto:true,direction:direction});
+									   }								
+									      
+									}else if(play&&D.bunauto){
+									console.log('出去了');
+									    I.update({play:false,bunauto:false});
+									}
+								});
 							},
 							onMouseDown:function(D,I){I.update({play:false});},
 							onMouseUp:function(D,I){I.update({play:true});},
@@ -297,6 +342,18 @@
 								}
 							}
 						},
+						bunLeft:{
+						   onHover:function(D,I){
+						   //console.log(D.hover);
+						   V.callCommand('cssobject1.auto',['left',D.hover]);
+							},
+						},
+						bunRight:{
+						   onHover:function(D,I){
+						   console.log(D.hover);
+						   V.callCommand('cssobject1.auto',['right',D.hover]);
+							},
+						},
 						page:{
 							data:{
 								title:'测试页面aa'
@@ -329,6 +386,12 @@
 		<div id="desc" _="type:'fill'">
 			<iframe src="{url}"></iframe>
 		</div>
+		<div class="div_button">
+            <button class="button_left" id="bunLeft" _="">
+            </button>
+			 <button class="button_right" id="bunRight" _="">
+            </button>
+        </div>
 	</div>
 </body>
 

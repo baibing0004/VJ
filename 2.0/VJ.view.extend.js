@@ -12,6 +12,15 @@
                 _.input = node.find('input:first');
                 V.forC(_.events, function (k, v) {
                     switch (k) {
+                        case 'hover':
+                            _.node.hover(function () {
+                                if (node.parents("[disabled]").length > 0) return;
+                                _.call('Hover', { hover: true });
+                            }, function () {
+                                if (node.parents("[disabled]").length > 0) return;
+                                _.call('Hover', { hover: false });
+                            });
+                            break;
                         case 'error':
                             if (_.get().validate) {
                                 _.validate(_, _.input);
@@ -49,6 +58,8 @@
                                 _.input.val(value);
                                 if (_.vm.data.title && !V.isValid(value)) _.input.val(_.vm.data.title);
                             } else {
+                                delete _.vm.data.value;
+                                delete _.vm.data.text;
                                 _.input.val('');
                             }
                             break;
@@ -401,7 +412,7 @@
         W.Form = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.Control, [path || '<form method="get" action=""></form>', vm || { data: { enctype: 'multipart/form-data'}}]]);
+                V.inherit.apply(_, [W.Control, [path || '<form method="get" action=""></form>', vm || { data: { enctype: 'multipart/form-data' } }]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -421,6 +432,7 @@
                             value[v] = vm.get().value;
                         }
                     }, null, true);
+                console.log(value);
                 return { value: value };
             };
             _.render = function (data) {
@@ -457,6 +469,7 @@
                             break;
                         case 'value':
                             if (value) {
+                                _.vm.data.value = value;
                                 V.each(_.cons, function (v) {
                                     var vm = _.parent.vms[v] ? _.parent.vms[v] : _.page.vms[v];
                                     if (vm) {
@@ -478,7 +491,7 @@
         W.Router = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.Panel, [path || '<div style="display:none;"></div>', vm || { data: { showaction: 'fadeInRight', hideaction: 'fadeOutRight'}}]]);
+                V.inherit.apply(_, [W.Panel, [path || '<div style="display:none;"></div>', vm || { data: { showaction: 'fadeInRight', hideaction: 'fadeOutRight' } }]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
                 _.addDesc('Router:');

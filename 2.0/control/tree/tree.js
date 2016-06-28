@@ -12,6 +12,7 @@
             __.onLoad = _.onLoad;
             __.render = _.render;
             _.addDesc('Tree.js\r\n使用zTree制作\r\n数据格式:{id:"",name:"",isParent:true/false}');
+            _.addDesc('定义 tree: {path: "zTreeStyle.css;jquery.ztree.core-3.5.min.js;../../Scripts/module/part/tree.js" },');
             __.setting = {
                 check: {
                     enable: _.params.data.isChecked

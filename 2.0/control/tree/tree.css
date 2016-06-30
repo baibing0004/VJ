@@ -1,0 +1,41 @@
+﻿.c_tree {
+    position: absolute;
+    font-size: inherit;
+    width: 120px;
+    padding: 15px;
+}
+
+    .c_tree .c_tree_inner {
+        background: white;
+        border: solid 1px #eee;
+        padding: 5px;
+    }
+
+    .c_tree div.c_tree_item {
+        cursor: pointer;
+        height: 30px;
+        line-height: 30px;
+    }
+
+        .c_tree div.c_tree_item:hover {
+            background: #cee;
+        }
+
+    .c_tree span.c_tree_icon {
+        width: 28px;
+        height: 30px;
+        display: inline-block;
+        background-size: 16px;
+        background-repeat: no-repeat;
+        background-position: 6px 7px;
+        line-height: 30px;
+    }
+
+    .c_tree span.c_tree_name {
+        display: inline-block;
+        height: 30px;
+        font-size: 14px;
+        padding: 0px;
+        margin: 2px;
+        line-height: 30px;
+    }

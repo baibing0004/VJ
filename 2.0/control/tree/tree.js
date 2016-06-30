@@ -32,7 +32,7 @@
                             _.menu.css({ top: e.clientY - 10, left: e.clientX - 10, display: 'block' }).show();
                             _.menu.focus();
                             __.nodes[json.ID] = json;
-                            _.vm.data.value = __.datas[json.ID];
+                            _.vm.data.value = V.merge({}, __.datas[json.ID]);
                         }
                         V.stopProp(e);
                         return false;
@@ -41,13 +41,13 @@
                         json.clickFlag = clickFlag;
                         __.nodes[json.ID] = json;
                         _.vm.data.value = null;
-                        _.call('click', { value: __.datas[json.ID] });
+                        _.call('click', { value: V.merge({}, __.datas[json.ID]) });
                     },
                     onExpand: function (e, id, json) {
-                        _.vm.data.value = null;
                         __.nodes[json.ID] = json;
+                        _.vm.data.value = null;
                         if (!json.children)
-                            _.call('expand', { value: __.datas[json.ID] });
+                            _.call('expand', { value: V.merge({}, __.datas[json.ID]) });
                     }
                 },
                 view: {
@@ -107,18 +107,17 @@
                         break;
                     case 'value':
                         if (v.ID && __.nodes[v.ID]) {
-                            __.datas[v.ID] = v;
+                            __.datas[v.ID] = V.merge({}, v);
                             V.merge(__.nodes[v.ID], { ID: v.ID, name: v.name, isParent: v.isParent, checked: true }, true);
                             //兼容check模式
                             _.tree.updateNode(__.nodes[v.ID]);
-                            _.tree.selectNode(__.nodes[v.ID]);
                         }
                         break;
                     case 'add':
                         if (_.vm.data.value && _.vm.data.value.ID && __.nodes[_.vm.data.value.ID]) {
                             __.datas[v.ID] = v;
                             var pnode = _.vm.data.value ? __.nodes[_.vm.data.value.ID] : null;
-                            _.tree.addNodes(pnode, [{ ID: v.ID, name: v.name, isParent: v.isParent }]);
+                            _.tree.addNodes(pnode, [{ ID: v.ID, name: v.name, isParent: v.isParent}]);
                         }
                         break;
                     case 'remove':

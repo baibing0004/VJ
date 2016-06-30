@@ -39,8 +39,6 @@
                     },   //处理为菜单事件  
                     onClick: function (e, id, json, clickFlag) {
                         json.clickFlag = clickFlag;
-                        console.log(json);
-                        console.log(__.datas[json.ID]);
                         __.nodes[json.ID] = json;
                         _.vm.data.value = null;
                         _.call('click', { value: __.datas[json.ID] });
@@ -48,7 +46,6 @@
                     onExpand: function (e, id, json) {
                         _.vm.data.value = null;
                         __.nodes[json.ID] = json;
-                        console.log(json);
                         if (!json.children)
                             _.call('expand', { value: __.datas[json.ID] });
                     }

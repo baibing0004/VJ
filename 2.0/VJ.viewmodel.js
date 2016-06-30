@@ -147,7 +147,8 @@
 					//完成方法注入
 					_.vm.update = function () { var as = Array.prototype.slice.call(arguments); as = V.getValue(as, [null]); if (as[0]) V.merge(_.vm.data, as[0], true); as[0] = as[0] ? as[0]:V.merge({}, _.vm.data); _.render.apply(_, as); };
 					_.vm.call = function(){_.call.apply(_.parent.vms,arguments);};
-					_.vm.add = function(){_.addControl.apply(_,arguments);};
+					_.vm.add = function(){_.addControl.apply(_,arguments);};					
+					_.vm.remove = function(){_.removeControl.apply(_,arguments);};
 					_.vm.desc = function(){_.desc();};
 					_.vm.get = function(key){_.vm.data = V.merge(_.vm.data,_.fill());return key?_.vm.data[key]:_.vm.data;};
 					_.vm.bind(_);
@@ -563,6 +564,7 @@
 					_.vm.update = function () { var as = Array.prototype.slice.call(arguments); as = V.getValue(as, [null]); if (as[0]) V.merge(_.vm.data, as[0], true); as[0] = as[0] ? as[0] : V.merge({}, _.vm.data); _.render.apply(_, as); };                    			
 					_.vm.call = function(){_.call.apply(_.page.getModels(),arguments);};
 					_.vm.add = function(){_.addControl.apply(_,arguments);};
+					_.vm.remove = function(){_.removeControl.apply(_,arguments);};
 					_.vm.desc = function(){_.desc();};
 					_.vm.get = function(key){_.vm.data = V.merge(_.vm.data,_.fill());return key?_.vm.data[key]:_.vm.data;};
 					

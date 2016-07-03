@@ -14,15 +14,6 @@
             _.input = node.find('textarea:first');
             V.forC(_.events, function (k, v) {
                 switch (k) {
-                    case 'hover':
-                        _.node.hover(function () {
-                            if (node.parents("[disabled]").length > 0) return;
-                            _.call('Hover', { hover: true });
-                        }, function () {
-                            if (node.parents("[disabled]").length > 0) return;
-                            _.call('Hover', { hover: false });
-                        });
-                        break;
                     case 'error':
                         if (_.get().validate) {
                             _.validate(_, _.input);

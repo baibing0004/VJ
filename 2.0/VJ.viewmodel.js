@@ -299,7 +299,8 @@
 			};			
 			//用于扩展给主要对象绑定事件使用 一般用于bind事件的默认值
 			_.bindEvent = function(node,k,v){
-				node = $(node);
+				node = $(node);				
+                try{($._data(node[0],"events"));}catch(e){console.log('发现有极端情况会报nodeName错误!');return;}
 				if(typeof(node[k]) == 'function' && (!$._data(node[0],"events") || !$._data(node[0],"events")[k])){
 					if(k.toLowerCase()=='hover'){
 						if((!$._data(node[0],"events") || (!$._data(node[0],"events")['mouseenter']) && !$._data(node[0],"events")['mouseleave']))

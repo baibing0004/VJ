@@ -144,6 +144,7 @@
             _.render = function (data) {
                 data = __.render(data);
                 var setValue = function (value) {
+                    _.vm.data.preValue = _.sel.find(':selected').val();
                     _.sel.find(':selected').attr('selected', false);
                     _.sel.find('option[value="' + value + '"]').attr('selected', true);
                 };
@@ -412,7 +413,7 @@
         W.Form = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.Control, [path || '<form method="get" action=""></form>', vm || { data: { enctype: 'multipart/form-data' } }]]);
+                V.inherit.apply(_, [W.Control, [path || '<form method="get" action=""></form>', vm || { data: { enctype: 'multipart/form-data'}}]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -491,7 +492,7 @@
         W.Router = function (path, vm) {
             var _ = this, __ = {};
             {
-                V.inherit.apply(_, [W.Panel, [path || '<div style="display:none;"></div>', vm || { data: { showaction: 'fadeInRight', hideaction: 'fadeOutRight' } }]]);
+                V.inherit.apply(_, [W.Panel, [path || '<div style="display:none;"></div>', vm || { data: { showaction: 'fadeInRight', hideaction: 'fadeOutRight'}}]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
                 _.addDesc('Router:');

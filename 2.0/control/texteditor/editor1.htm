@@ -26,21 +26,21 @@
 					cm = V.merge(cm,{
 						Middler:{
 							'VESH.view':{											
-								editor:{path:'../texteditor/xhtml.js;../texteditor/htmlbox.js;../texteditor/texteditor.js',params:["",{data:{debug:true}}]}
+								editor:{path:'../texteditor/xhtml.js;../texteditor/htmlbox.js;../texteditor/htmlbox.colors.js;../texteditor/htmlbox.styles.js;../texteditor/htmlbox.undoredomanager.js;../texteditor/texteditor.js',params:["",{data:{debug:true}}]}
 							}
 						}
 					});
 					V.isDebug = true;
 					V.inherit.apply(_,[M.Page,[cm,{
                         editor:{
-						data:{width:'100%',height:'600px',skin:'red',language:'zh-cn',init:true,desc:true},
-						onLoad:function(D,I){	
-						//console.log(I);
-						},
-						getHtml(){
-						console.log(this);
-						   return this.v.node.get_html();
-						}
+							data:{id:'editor',width:'100%',height:'600px',skin:'black',language:'zh-cn',desc:true,value:'测试内容11'},
+							onLoad:function(D,I){	
+								//console.log(I);
+								//V.once(function(){
+									//I.update({text1:'看到我看到我!!'});
+									I.update({value:'看到我看到我!!22'});
+								//},100);
+							}
 						},
 						page:{
 							data:{
@@ -49,7 +49,7 @@
 							onStart:function(D,I){
 								//V.tryC(function(){I.v.middler.getObjectByAppName('VESH.view','map')});								
 								V.callEvent('test.resize',[{width:V.userAgent.width,height:V.userAgent.height}]);
-								setTimeout(function(){console.log(I.v.vms.editor.getHtml());},5000);
+								setTimeout(function(){console.log(I.v.vms.editor.update({value:'2233222332'}));},5000);
 							},
 							onSize:function(D,I){
 								console.log('resize');

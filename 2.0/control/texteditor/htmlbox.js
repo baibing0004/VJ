@@ -196,8 +196,10 @@ $.fn.htmlbox=function(options){
 		* @access private
 	    */
 	var toolbar=function(){
+		console.log('toolbar');
 	    var h = "";
 	    if(d.about&&!in_array(d.toolbars[0],"about")){d.toolbars[0][d.toolbars[0].length]="separator";d.toolbars[0][d.toolbars[0].length]="about";}
+		console.log(d);
 		for(var k=0;k<d.toolbars.length;k++){
 		    var toolbar = d.toolbars[k];
 			h += "<tr><td class='"+d.id+"_tb' valign='middle'><table cellspacing='1' cellpadding='0'>";
@@ -251,6 +253,7 @@ $.fn.htmlbox=function(options){
 		    }
 			h += "</table></td></tr>";
 		}
+		console.log(h);
 		return h;
 	};
 	var getLanguage=function(type){
@@ -304,8 +307,8 @@ $.fn.htmlbox=function(options){
 		// END: Timeout to allow creation of DesignMode
 		d.ta_wrap_id = d.id+"_wrap";
 		var w=$(this).css("width");var h=$(this).css("height");$(this).wrap("<table id='"+d.id+"_wrap' width='"+w+"' style='height:"+h+";border:2px solid #E9EAEF;' cellspacing='0' cellpadding='0'><tr><td id='"+d.id+"_container'></td></tr></table>");
-		// START: Appending toolbar
-		$(this).parent().parent().parent().parent().prepend(toolbar());
+		// START: Appending toolbar		
+		$(this).parent().addClass('p_abc1').parent().addClass('p_abc2').parent().addClass('p_abc3').parent().addClass('p_abc4').prepend(toolbar());
 		$("."+d.id+"_tb").height(d.toolbar_height);
 		
 		$("."+d.id+"_html_button").each(function(){

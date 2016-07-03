@@ -828,7 +828,7 @@
 				var obj = _.middler.getObjectByAppName(W.APP,v.type);
 				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
 				node = node?node:V.newEl('div').appendTo(_.panel);
-				obj.init(_,node,v);
+				obj.init(_,node,v.data);
 				obj.page = _.page;
 				_.controls.push(obj);
 				var key = V.getValue(v.id,V.random());

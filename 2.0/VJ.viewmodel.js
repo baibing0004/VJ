@@ -164,8 +164,9 @@
 				}
 			};
 			//处理控件下载完成后的操作
-			_.onLoad = function(node){
-				_.render(_.vm.data);
+			_.onLoad = function(node){				
+				_.render(V.merge({},_.vm.data));
+                //防止call与onload彼此冲突
 				_.call('load');
 			};
 			//在更新_.vm.data
@@ -452,7 +453,7 @@
 				var obj = _.middler.getObjectByAppName(W.APP,v.type);
 				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
 				node = node?node:V.newEl('div').appendTo(_.node);
-				obj.init(_,node,v);
+				obj.init(_,node,v.data);
 				obj.page = _.page;
 				_.controls.push(obj);
 				var key = V.getValue(v.id,V.random());
@@ -474,14 +475,15 @@
 					//V.tryC(function(){_.vs[id].node.remove();});
 				}
 			};
-			_.clearControl = function(){
+			_.clearControl = function(){			
 				if(_.controls){
-					var vs=_.vs
+					var vs=_.vs;					
+					_.controls = [];_.vms = {};_.models = _.vms;_.vs = {};
 					var div = $('<div style="display:none;"></div>').appendTo(window.document.body);
 					_.node.children().appendTo(div);
+					_.node.empty();
 					V.forC(vs,function(k,v){v.dispose();},function(){div.remove();});
-				}	
-				_.controls = [];_.vs = {};_.vms = {};_.models = _.vms;
+				} else {_.controls = [];_.vms = {};_.models = _.vms;_.vs = {};}
 			};
 		};
 	}
@@ -672,7 +674,7 @@
 				var obj = _.middler.getObjectByAppName(W.APP,v.type);
 				if(!obj) throw new Error('配置文件中没有找到对象类型定义:'+v.type);
 				node = node?node:V.newEl('div').appendTo(_.node);
-				obj.init(_,node,v);
+				obj.init(_,node,v.data);
 				obj.page = _;
 				_.controls.push(obj);				
 				var key = V.getValue(v.id,V.random());

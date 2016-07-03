@@ -433,7 +433,6 @@
                             value[v] = vm.get().value;
                         }
                     }, null, true);
-                console.log(value);
                 return { value: value };
             };
             _.render = function (data) {

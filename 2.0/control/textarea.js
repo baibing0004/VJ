@@ -37,6 +37,9 @@
                         _.input.attr('cols', value);
                         delete data[key];
                         break;
+                    case 'value':
+                        _.input.scrollTop(0)
+                        break;
                 }
             });
             return data;

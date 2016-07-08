@@ -622,6 +622,7 @@ $.fn.htmlbox=function(options){
 	   return this;
 	};
 	this.insert_text = function(txt){
+		console.log(txt);
 	   var text = this.get_html();
 	   this.set_text(text+txt);
 			   $("#"+d.id).focus();

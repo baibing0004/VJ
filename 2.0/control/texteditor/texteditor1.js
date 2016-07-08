@@ -23,7 +23,7 @@
             _.addDesc('非必填属性:');
 			_.addDesc('\twidth 类型300px,100%');
 			_.addDesc('\theight 类型300px,不支持百分比');
-			_.addDesc('\ttoolbars 类型头部button     [{icons:[第一行的icon],add:{新加的控件}},{icons:[第二行的icon],add:[{新加的控件}]}] separator为分隔符,没有就不需要输入或采用默认值 例:');
+			_.addDesc('\ttoolbars 类型头部button     [{icons:[第一行的icon],add:{新加的控件}},{icons:[第二行的icon],add:[{新加的控件(icon:图标地址，tooltip:图标显示名称，command:要执行的函数)}]}] separator为分隔符,没有就不需要输入或采用默认值 例:');
 			_.addDesc('\ttoolbars:[{icons:["separator","cut","copy","paste","separator","undo","redo","separator","bold","italic","separator"],add:[{icon:"new.gif",tooltip:"添加新控件",command:function(){initControl();}}]},{icons:["separator","sup","sub","separator","link","unlink","image","separator"],add:[{icon:"new.gif",tooltip:"添加新控件",command:function(){initControl();}}]}]');
 			_.addDesc('\tskin  皮肤色 类型 blue red green silver  默认值不用加');
 			_.addDesc('\tlanguage  语言 类型 en zh-cn');
@@ -42,6 +42,7 @@
             }, function () { __.onLoad(node) });  
         };//[{icons:[],add:[{icon:"new.gif",tooltip:"添加新控件",command:function(){initControl();}}]}]
 		_.transform = function (data) {
+			console.log();
 			var ret = V.merge({ about: false, toolbar: [],idir:data.image },data);
 			if(V.isArray(data.toolbars)){
 				for(var i=0;i<data.toolbars.length;i++){
@@ -50,6 +51,9 @@
 						if(one.icons.length>0){
 							news=one.icons;
 						}
+					}
+					if(i<2&&news.length==0){
+						news=__.toolbars[i];
 					}
 					if(V.isArray(one.add)){
 						for(var j=0;j<one.add.length;j++){

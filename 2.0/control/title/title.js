@@ -16,8 +16,8 @@
 				switch(k.toLowerCase()){
 					case 'change':
 						_.node.on('click','li',function(){
-							var li = $(this);
-							if(li.attr('data_navindex') != (_.get().value+'')){
+						    var li = $(this);
+							if(li.attr('data_navindex') != (_.vm.get().value+'')){
 								_.call('change',{value:li.attr('data_navindex')});
 								$(document).scrollTop(0);
 							}

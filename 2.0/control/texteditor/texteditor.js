@@ -27,11 +27,12 @@
             _.addDesc('非必填属性:');
             _.addDesc('\twidth 类型300px,100%');
             _.addDesc('\theight 类型300px,不支持百分比');
-            _.addDesc('\ttoolbars cut:true,copy:true,paste:true,undo:true,redo:true,bold:true,italic:true,underline:true,strike:true,sup:true,sub:true,link:true,unlink:true,image:true,justify:true,left:true,center:true,right:true,removeformat:true,hr:true,paragraph:true');
+            _.addDesc('\ttoolbars cut:true,copy:true,paste:true,undo:true,redo:true,bold:true,italic:true,underline:true,strike:true,sup:true,sub:true,link:true,unlink:true,image:true,justify:true,left:true,center:true,right:true,removeformat:true,hr:true,paragraph:true,commands:[{icon:"new.gif",tooltip:"添加新控件",command:function(){initControl();}}]');
+			 _.addDesc('\t说明  commands表示要添加新的icon控件，支持N个,{新加的控件(icon:图标地址，tooltip:图标显示名称，command:要执行的函数)}');
             _.addDesc('\tlanguage  语言 类型 en zh-cn');
             _.addDesc('\tvalue  内容会被V.decHtml 同时获取的内容会被自动encHtml 另更新value时请至少等待100ms以防止渲染出现问题');
             _.addDesc("\t定义:editor:{path:'xhtml.js;htmlbox.js;../Scripts/module/part/texteditor.js',params:['',{data:{debug:true,image:'../../Scripts/ref/images/'}}]}");
-            //_.addDesc('\tinit  控件初始化生成texteditor');
+            //_.addDesc('\tinit  新加的控件(icon:图标地址，tooltip:图标显示名称，command:要执行的函数)');
         }
         _.onLoad = function (node) {
             V.forC(_.events, function (k, v) {
@@ -98,6 +99,16 @@
                             ret.toolbar[5].push(k);
                         }
                         break;
+					case 'commands':
+					    if(V.isArray(v)){
+							ret.toolbar[6] = ret.toolbar[6] ? ret.toolbar[6] : [];
+							for(var i=0;i<v.length;i++){
+								if(v[i]&&v[i].icon){
+									 ret.toolbar[6].push(v[i]);
+								}
+							}
+						}
+						break;
                     default:
                         if (v) {
                             ret.toolbar[6] = ret.toolbar[6] ? ret.toolbar[6] : [];
@@ -125,7 +136,9 @@
         };
         _.fill = function () { return { value: _.node.get_html ? V.encHtml(_.node.get_html().replace(/</g, '&lt;').replace(/>/g, '&gt;')) : "", html: _.node.get_html ? _.node.get_html() : "" } };
         _.render = function (data) {
-            var ret = V.merge({ value: '' }, data);//处理空数据
+			console.log(data);
+			//data = __.render(data);
+            var ret = V.merge({}, data);//处理空数据
             var render = _.editor ? false : true;
             V.forC(ret, function (k, v) {
                 switch (k.toLowerCase()) {
@@ -140,12 +153,17 @@
                         render = true;
                         break;
                     case 'value':
+					console.log('value'+v);
                         if (_.editor) {
                             V.once(function () {
-                                _.node.set_text(V.decHtml(v).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<script/g, '&lt;script').replace(/script>/g, 'script&gt;'));
+                                _.node.set_text(V.decHtml(v).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<script/g, '&lt;script').replace(/script>/g, 'script&gt;'));_.call('changed');
                             }, 100);
                         } else render = true;
                         break;
+					case 'addvalue':
+						console.log(v);
+					   if(_.editor) {V.once(function(){_.node.insert_text(V.decHtml(v).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<script/g, '&lt;script').replace(/script>/g, 'script&gt;'));_.call('changed');},100);};
+					    break;
                 }
             }, function () {
                 if (render && !_.editor) {
@@ -153,7 +171,7 @@
                     ret = _.transform(ret);
                     _.node.htmlbox(ret);
                     if (data.value) {
-                        _.node.set_text(V.decHtml(v).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<script/g, '&lt;script').replace(/script>/g, 'script&gt;'));
+                        _.node.set_text(V.decHtml(data.value).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<script/g, '&lt;script').replace(/script>/g, 'script&gt;'));
                     }
                 }
                 delete data.value;

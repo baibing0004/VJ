@@ -23,6 +23,7 @@
 	  height:300px;
 	  left:400px;
 	  top:200px;
+	  border-radius: 30px;
 	  display:none;
 	  background-color:lightcoral;
 	}
@@ -114,7 +115,7 @@
 					V.isDebug = true;
 					V.inherit.apply(_,[M.Page,[cm,{
                         editor:{
-							data:{width:'100%',height:'600px',skin:'red',language:'zh-cn',desc:true,toolbars:[{icons:["separator","cut","copy","paste","separator","undo","redo","separator","bold","italic"],add:[{icon:"new.gif",tooltip:"添加新控件",command:function(){console.log(_);_.vms.htmlc.update({init:true});}}]},{icons:["separator","sup","sub","separator","link","unlink","image"],add:[{icon:"code.gif",tooltip:"得到html",command:function(){_.vms.editor.getHtml();}}]}]},
+							data:{width:'100%',height:'600px',skin:'red',language:'zh-cn',desc:true,toolbars:[{add:[{icon:"new.gif",tooltip:"添加新控件",command:function(){console.log(_);_.vms.htmlc.update({init:true});}}]},{icons:[],add:[{icon:"code.gif",tooltip:"得到html",command:function(){_.vms.editor.getHtml();}}]}]},
 							onLoad:function(D,I){	
 								window._=_;
 								setTimeout(function(){

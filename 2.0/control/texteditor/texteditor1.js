@@ -12,8 +12,8 @@
       }
     }, vm)]]);
 	        __.toolbars=[
-							["separator","cut","copy","paste","separator","undo","redo","separator","bold","italic","underline","strike","sup","sub","separator","link","unlink","image"],
-							["separator","justify","left","center","right","separator","removeformat","striptags","hr","paragraph"]
+							["separator","cut","copy","paste","separator","undo","redo","separator","bold","italic","underline","strike","sup","sub","separator","justify","left","center","right","separator","link","unlink","image","separator"],
+							["separator","fontsize","fontfamily","fontcolor","separator","removeformat","striptags","hr","paragraph","separator"]
 						];
             __.onLoad = _.onLoad;
             __.render = _.render;
@@ -24,7 +24,7 @@
 			_.addDesc('\twidth 类型300px,100%');
 			_.addDesc('\theight 类型300px,不支持百分比');
 			_.addDesc('\ttoolbars 类型头部button     [{icons:[第一行的icon],add:{新加的控件}},{icons:[第二行的icon],add:[{新加的控件(icon:图标地址，tooltip:图标显示名称，command:要执行的函数)}]}] separator为分隔符,没有就不需要输入或采用默认值 例:');
-			_.addDesc('\ttoolbars:[{icons:["separator","cut","copy","paste","separator","undo","redo","separator","bold","italic","separator"],add:[{icon:"new.gif",tooltip:"添加新控件",command:function(){initControl();}}]},{icons:["separator","sup","sub","separator","link","unlink","image","separator"],add:[{icon:"new.gif",tooltip:"添加新控件",command:function(){initControl();}}]}]');
+			_.addDesc('\ttoolbars:[{icons:["separator","cut","copy","paste","separator","undo","redo","separator","bold","italic","underline","strike","sup","sub","separator","justify","left","center","right","separator","link","unlink","image","separator"],add:[{icon:"new.gif",tooltip:"添加新控件",command:function(){initControl();}}]},{icons:["separator","fontsize","fontfamily","fontcolor","separator","removeformat","striptags","hr","paragraph","separator"],add:[{icon:"new.gif",tooltip:"添加新控件",command:function(){initControl();}}]}]');
 			_.addDesc('\tskin  皮肤色 类型 blue red green silver  默认值不用加');
 			_.addDesc('\tlanguage  语言 类型 en zh-cn');
 			_.addDesc('\tvalue  内容会被V.decHtml 同时获取的内容会被自动encHtml 另更新value时请至少等待100ms以防止渲染出现问题');

@@ -19,7 +19,7 @@
             __.render = _.render;
 			_.addDesc('texteditor 对象');
 			_.addDesc('\t所有icon图标:');
-			_.addDesc('\t{"bold":"粗体","center":"中心","code":"显示代码","copy":"复制","cut":"粘贴","hr":"插入一行","link":"插入链接","image":"插入图片","indent":"缩进","italic":"字体","justify":"Justify","left":"居左","ol":"Numbered List","outdent":"Outdent","paragraph":"Insert Paragraph","paste":"粘贴","quote":"Quote","redo":"Redo","removeformat":"Remove Format","right":"居右","strike":"Strikethrough","striptags":"Strip Tags","sub":"Subscript","sup":"Superscript","ul":"Bulleted List","underline":"下划线","undo":"撤销","unlink":"移除链接"},"separator":"分隔符"');
+			_.addDesc('\t{"bold":"粗体","center":"中心","code":"显示代码","copy":"复制","cut":"粘贴","hr":"插入一行","link":"插入链接","image":"插入图片","indent":"缩进","italic":"字体","justify":"Justify","left":"居左","ol":"Numbered List","outdent":"Outdent","paragraph":"Insert Paragraph","paste":"粘贴","quote":"Quote","redo":"Redo","removeformat":"Remove Format","right":"居右","strike":"Strikethrough","striptags":"Strip Tags","sub":"Subscript","sup":"Superscript","ul":"Bulleted List","underline":"下划线","undo":"撤销","unlink":"移除链接","fontsize":"字体大小","fontfamily":"字体系列","highlight":"高亮","fontcolor":"字体颜色"},"separator":"分隔符"');
             _.addDesc('非必填属性:');
 			_.addDesc('\twidth 类型300px,100%');
 			_.addDesc('\theight 类型300px,不支持百分比');

@@ -40,7 +40,14 @@
 				V.forC(_.events,function(k,v){
 					if(k.toLowerCase() == 'click'){
 						_.node.on('click', 'input', function (e) { var _this = $(this); _.call('click', { e: e, vid: _this.val(), name: _this.attr('name') }); V.stopProp(e); return false;});
-						_.node.on('click', 'a,.click', function (e) { var _this = $(this); _.call('click', { e: e, vid: _this.attr('vid') || _this.attr('href'), name: _this.attr('name') }); V.stopProp(e); return false; });
+						_.node.on('click', 'a,.click', function (e) {
+                            var _this = $(this);
+                            if (_this.attr('href') && _this.attr('href').indexOf('http://') >= 0) {
+                                return true;
+                            } else {
+                                _.call('click', { e: e, vid: _this.attr('vid') || _this.attr('href'), name: _this.attr('name') }); V.stopProp(e); return false;
+                            }
+                        });
 					} else _.bindEvent(_.node,k,v);					
 				},null,true);
 				__.onLoad(node);

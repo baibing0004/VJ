@@ -138,6 +138,7 @@
                                     _.menu.hide();
                                 }
                             }).hover(function () { }, function () { $(this).hide(); }).appendTo(document.body);
+                            _.menu[0].oncontextmenu = function () { return false; }
                             var menu = V.newEl('div', 'c_tree_inner', '').appendTo(_.menu);
                             V.forC(v, function (k2, v2) {
                                 var item = V.newEl('div', 'c_tree_item', '').appendTo(menu);

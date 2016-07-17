@@ -7341,7 +7341,7 @@ var fillCharReg = new RegExp(domUtils.fillChar, 'g');
 
             me.fireEvent('beforesetcontent', html);
             var root = UE.htmlparser(html);
-            me.filterInputRule(root);
+			me.filterInputRule(root);
             html = root.toHtml();
 
             me.body.innerHTML = (isAppendTo ? me.body.innerHTML : '') + html;
@@ -28892,6 +28892,9 @@ UE.ui = baidu.editor.ui = {};
                         if (img.src.indexOf("http://maps.google.com/maps/api/staticmap") != -1) {
                             dialogName = "gmapDialog"
                         }
+						if(img.getAttribute('_type')){
+							dialogName = "input"+img.getAttribute('_type');
+						}
                         if (img.getAttribute("anchorname")) {
                             dialogName = "anchorDialog";
                             html = popup.formatHtml(

@@ -1,0 +1,19 @@
+div.c_textshower{
+    background: #ccc;
+    overflow: hidden;
+    overflow-y: auto;
+    padding: 10px;
+    height: 100px;
+}
+div.c_textshower	div.c_textshower_inner{
+	    width: 93%;
+    height: 100%;
+    padding: 50px;
+    background: white;
+    min-height: 430px;
+	}
+div.c_textshower	input.c_text{
+		border:none;
+		border-bottom:solid 1px black;
+		text-align:right;
+	}

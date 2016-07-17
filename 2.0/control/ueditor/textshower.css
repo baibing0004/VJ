@@ -17,3 +17,9 @@ div.c_textshower	input.c_text{
 		border-bottom:solid 1px black;
 		text-align:right;
 	}
+	div.c_textshower textarea.c_textarea{
+	border:none;
+	}
+	div.c_textshower textarea.c_textarea:hover{
+	border:solid 1px #eee;
+	}

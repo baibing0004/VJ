@@ -45,7 +45,7 @@
 							val[id]=val[id] || v.val();
 							break;
 						case 'textarea':
-							val[id]=val[id] || v.text();
+							val[id]=val[id] || v.val() || v.text();
 							break;
 						case 'img':
 							val[id]=val[id] || v.attr('src');
@@ -65,13 +65,16 @@
 						var val = V.decHtml(v).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<script/g, '&lt;script').replace(/script>/g, 'script&gt;').replace(/<img[^>]+>/g,function(txt){
 							var id = txt.match(/id\s*=\s*['"][^'"]+['"]/);
 							if(id.length>0){id=id[0].split('\"')[1];} else id='';
-							var data = txt.match(/_data\s*=\s*['"][^'"]+['"]/);									
-							if(data.length>0){data=V.json(V.decHtml(data[0].split('\"')[1]).replace(/&quot;/g,"\""));} else data={};
-							V.merge(data,{id:id},true);
+							var type = txt.match(/_type\s*=\s*['"][^'"]+['"]/);
+							if(type.length>0){type=type[0].split('\"')[1];} else type='';
+							var data = txt.match(/_data\s*=\s*['"][^'"]+['"]/);
+							if(data.length>0){data=eval('('+(V.decHtml(data[0].split('\"')[1]).replace(/&quot;/g,"\""))+')');} else data={};
+							V.merge(data,{id:id,type:type},true);
 							switch(data.type){
 								case 'text':
 									return V.format("<input type='{type}' id='{id}' maxlength='{length}' _type='{type}' class='c_{type}'/>",data);
-									break;
+								case 'textarea':
+									return V.format("<p><textarea type='{type}' id='{id}' cols='{cols}' rows='{rows}' _type='{type}' class='c_{type}'></textarea></p>",data);
 								default:
 									return '';
 							}

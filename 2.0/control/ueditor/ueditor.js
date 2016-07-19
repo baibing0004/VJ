@@ -64,7 +64,7 @@
 				UE.registerUI('input', function(editor, uiName) {	//注册按钮执行时的command命令，使用命令默认就会带有回退操作
 					editor.registerCommand(uiName, {
 						execCommand: function() {
-							editor.execCommand('inserthtml', V.format("<img src='dialogs/input/input.png' id='{id}' _type='text' _data='{data}'/>",{id:V.random(),data:"{length:10}"}));
+						    editor.execCommand('inserthtml', V.format("<img src='" + editor.options.UEDITOR_HOME_URL + "dialogs/input/input.png' id='{id}' _type='text' _data='{data}'/>", { id: V.random(), data: "{length:10}" }));
 						}
 					});
 					//创建一个button
@@ -98,7 +98,7 @@
 				UE.registerUI('textarea', function(editor, uiName) {	//注册按钮执行时的command命令，使用命令默认就会带有回退操作
 					editor.registerCommand(uiName, {
 						execCommand: function() {
-							editor.execCommand('inserthtml', V.format("<img src='dialogs/input/inputtextarea.png' id='{id}' _type='textarea' _data='{data}'/>",{id:V.random(),data:"{rows:20,cols:70}"}));
+						    editor.execCommand('inserthtml', V.format("<img src='" + editor.options.UEDITOR_HOME_URL + "dialogs/input/inputtextarea.png' id='{id}' _type='textarea' _data='{data}'/>", { id: V.random(), data: "{rows:20,cols:70}" }));
 						}
 					});
 					//创建一个button
@@ -376,7 +376,7 @@
 										className:'edui-okbutton',
 										label:editor.getLang("ok"),
 										editor:editor,
-										onclick:function () {
+										onclick: function () {
 											dialog.close(true);
 										}
 									},
@@ -397,7 +397,7 @@
 						{
 							//添加对应对话框 需要在all.min.js中添加对象
 							//editor.options.iframeUrlMap["inputtext"]='~/dialog/input/inputtext.htm';						
-							var dialog = new baidu.editor.ui.Dialog({
+							var dialog2 = new baidu.editor.ui.Dialog({
 								iframeUrl:editor.ui.mapUrl('~/dialogs/input/inputtextarea.htm'),
 								editor:editor,
 								className:'edui-for-snapscreen',
@@ -407,8 +407,8 @@
 										className:'edui-okbutton',
 										label:editor.getLang("ok"),
 										editor:editor,
-										onclick:function () {
-											dialog.close(true);
+										onclick: function () {
+											dialog2.close(true);
 										}
 									},
 									{
@@ -416,13 +416,13 @@
 										label:editor.getLang("cancel"),
 										editor:editor,
 										onclick:function () {
-											dialog.close(false);
+											dialog2.close(false);
 										}
 									}
 								]
 
 							});
-							editor.ui._dialogs["inputtextarea"] = dialog;
+							editor.ui._dialogs["inputtextarea"] = dialog2;
 							editor.ui._dialogs["inputtextarea"].render();
 						}
 						func(ret);

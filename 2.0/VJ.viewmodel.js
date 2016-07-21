@@ -176,7 +176,7 @@
 			//可以将数据更新到标签上
 			_.render = function(data){
 				V.forC(data,function(key,value){
-					switch(key){
+					switch(key.toLowerCase()){
 						case 'dispose':
 							if(value) _.dispose();
 							break;

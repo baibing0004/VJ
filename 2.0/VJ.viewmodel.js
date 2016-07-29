@@ -1024,7 +1024,7 @@
 					else if(typeof(_.reg) == 'string'){_.reg = eval(_.reg);};
 				};
 				_.validate = function(text,func){
-					func((text+'').match(_.reg));
+					func((text || '').match(_.reg));
 				};
 			};
 		}

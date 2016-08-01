@@ -43,7 +43,7 @@
             V.forC(data, function (k, v) {
                 switch (k.toLowerCase()) {
                     case 'removevalue':
-                        _.body.children('li:eq(' + v._index + ')').remove();
+                        _.body.children('li[data-index="' + v._index + '"]').remove();
                         break;
                     case 'addvalues':
                     case 'values':
@@ -60,12 +60,12 @@
                                 __.values[v2._index] = v2;
                                 sb.appendFormat(_.content, v2);
                             }, function () {
-                                _.vm.data.values = v;
+                                _.vm.data.values = __.values;
                                 if (k.toLowerCase() == 'values') _.body.empty();
                                 _.body.append(sb.clear());
                                 _.body.children('li:even').addClass('p_li_even');
                                 _.body.children('li:odd').addClass('p_li_odd');
-                                _.body.children('li').hover(
+                                _.body.children('li').off('mouseenter').off('mouseover').off('mouseleave').hover(
                                     function (e) {
                                         var _this = $(this).addClass('p_list_hover');
                                         var li = _this;
@@ -80,6 +80,8 @@
                                     }
                                 );
                                 sb = null;
+                                if (data.select)
+                                    _.body.children('li:eq(' + data.select + ')').addClass('active').siblings().removeClass('active');
                             });
                         }
                         break;
@@ -88,8 +90,11 @@
                             __.values[v._index] = v;
                             _.body.children('li:eq(' + v._index + ')').html(V.format(__.innerhtml, v));
                         } else v._index = 0;
-                        _.body.children('li:nth-child(' + v._index + ')').addClass('active').siblings().removeClass('active');
-                        _.body.children('li:nth-child(' + v._index + ')').focus();
+                        _.body.children('li:eq(' + v._index + ')').addClass('active').siblings().removeClass('active');
+                        _.body.children('li:eq(' + v._index + ')').focus();
+                        break;
+                    case 'select':
+                        _.body.children('li:eq(' + (v - 1) + ')').addClass('active').siblings().removeClass('active');
                         break;
                 }
             });

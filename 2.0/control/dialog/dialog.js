@@ -3,7 +3,7 @@
     V.registScript(function (path, vm) {
         var _ = this, __ = {};
         {
-            V.inherit.apply(_, [W.Control, [path || '<div class="p_dialog_contain" style="display:none;"><div class="p_dialog_title"></div><div class="p_dialog_content"></div><div class="p_dialog_buttons"></div></div>', vm || { data: { ok: "确 定", cancel: '取 消', autoclose: true, openanimate: 'fadeIn', closeanimate: 'fadeOut' } }]]);
+            V.inherit.apply(_, [W.Control, [path || '<div class="p_dialog_contain" style="display:none;"><div class="p_dialog_title"></div><div class="p_dialog_content"></div><div class="p_dialog_buttons"></div></div>', vm || { data: { ok: "确 定", cancel: '取 消', autoclose: true, openanimate: 'fadeIn', closeanimate: 'fadeOut'}}]]);
             __.onLoad = _.onLoad;
             __.render = _.render;
             _.addDesc('dialog 必填参数:');
@@ -19,7 +19,9 @@
             _.addDesc('\tcloseanimate:默认关闭动画名');
             _.addDesc('\tok:确定按钮说明');
             _.addDesc('\tcancel:取消按钮说明');
+            _.addDesc('\ttitle:dialog标题');
             _.addDesc('dialog可选函数:');
+            _.addDesc('\tonOpen:打开的时候');
             _.addDesc('\tonCancel:cancel关闭');
             _.addDesc('\tonClose:关闭（总是触发）');
             _zindex = _zindex ? _zindex : 999;
@@ -31,7 +33,7 @@
             _.body = node.find('div.p_dialog_content');
             _.buttons = node.find('div.p_dialog_buttons').empty();
             _.back.click(function () {
-                if (_.vm.get().autoclose) { _.call('cancel'); __.close(); }
+                if (_.vm.get().autoclose) { _.call('cancel'); __.close(true); }
             });
             _.body.append(node.children(':gt(2)'));
             node.select();
@@ -65,7 +67,7 @@
                             if (typeof (__.ok) == 'undefined') {
                                 __.ok = V.newEl('div', 'p_dialog_ok', v).click(function () {
                                     _.call('ok');
-                                    if (_.vm.get().autoclose) { __.close(); __.ok.blur(); }
+                                    if (_.vm.get().autoclose) { __.close(true); __.ok.blur(); }
                                 }).appendTo(_.buttons);
                             } else {
                                 __.ok.html(v);
@@ -73,18 +75,17 @@
                         }
                         break;
                     case 'cancel':
-                        console.log('cancel' + v);
                         if (v) {
                             if (typeof (__.cancel) == 'undefined') {
                                 __.cancel = V.newEl('div', 'p_dialog_cancel', v).click(function () {
                                     _.call('cancel');
-                                    if (_.vm.get().autoclose) { __.close(); __.cancel.blur(); }
+                                    if (_.vm.get().autoclose) { __.close(true); __.cancel.blur(); }
                                 }).appendTo(_.buttons);
                             } else {
                                 __.cancel.html(v);
                             }
                         } else {
-                            if (__.cancel) { __.cancel.remove(); delete __.cancel;}
+                            if (__.cancel) { __.cancel.remove(); }
                         }
                         break;
                     case 'open':
@@ -100,15 +101,16 @@
                 __.render(data);
                 if (show) {
                     //定位
-                    var data = _.vm.get();
-                    var left = data.width / -2;
-                    var top = data.height / -2;
-                    _.node.width(data.width).height(data.height).css('margin-left', left).css('margin-top', top);
+                    var poi = _.vm.get();
+                    var left = poi.width / -2;
+                    var top = poi.height / -2;
+                    _.call('open');
+                    _.back.css('z-index', _zindex++).show();
+                    _.node.css('z-index', _zindex++).width(poi.width).height(poi.height).css('margin-left', left).css('margin-top', top);
                     _.buttons.css('margin-left', -50 * _.buttons.children().length);
                     __.render({ show: true == show ? _.vm.get().openanimate : show });
-                    _.back.show();
                 }
-            });
+            }, null, true);
         }
     });
 })(VJ, VJ.view, jQuery);

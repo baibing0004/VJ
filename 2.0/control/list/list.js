@@ -24,6 +24,8 @@
                     case 'click':
                         _.body.on('click', 'a,input,.click', function (e) {
                             var _this = $(this);
+                            console.log(_this.attr('vid'));
+                            console.log(__.values);
                             var li = $(_this.parents('li[data-index]').get(0));
                             _.call('click', { e: e, value: __.values[li.attr('data-index')], vid: _this.attr('vid') || _this.val() || _this.attr('href'), name: _this.attr('name') });
                             V.stopProp(e);
@@ -38,15 +40,25 @@
         };
         _.fill = function () { return { ids: (function () { var sb = []; _.body.find(':checked[value]').each(function (i, v) { sb.push(v.getAttribute('value')); }); return sb.join(';'); })()} };
         _.render = function (data) {
-            data = __.render(data);
             var rebuild = false;
             V.forC(data, function (k, v) {
                 switch (k.toLowerCase()) {
                     case 'removevalue':
-                        _.body.children('li:eq(' + v._index + ')').remove();
+                        _.body.children('li[data-index="' + v._index + '"]').remove();
+                        __.values = __.values.splice(v._index, 1);
+                        var i = 0;
+                        V.each(__.values, function (v2) {
+                            v2._index = i;
+                            _.body.children('li:eq(' + i + ')').attr('data-index', i);
+                            i++;
+                        }, function () {
+                            _.vm.data.values = __.values;
+                        });
                         break;
+                    case 'addvalue':
                     case 'addvalues':
                     case 'values':
+                        console.log('hear');
                         if (k.toLowerCase() == 'values') __.values = [];
                         if (!V.isArray(v)) v = [v];
                         if (_.body.children('li.nodata').length > 0) { _.body.children('li.nodata').remove(); }
@@ -54,18 +66,17 @@
                             _.body.html('<li class="nodata">' + _.get().nodata + '</li>');
                         } else {
                             var sb = VJ.sb();
-                            var w = __.values.length;
                             V.each(v, function (v2) {
-                                v2._index = w++;
-                                __.values[v2._index] = v2;
+                                v2._index = __.values.length;
+                                __.values.push(V.merge({},v2));
                                 sb.appendFormat(_.content, v2);
                             }, function () {
-                                _.vm.data.values = v;
+                                _.vm.data.values = __.values;
                                 if (k.toLowerCase() == 'values') _.body.empty();
                                 _.body.append(sb.clear());
                                 _.body.children('li:even').addClass('p_li_even');
                                 _.body.children('li:odd').addClass('p_li_odd');
-                                _.body.children('li').hover(
+                                _.body.children('li').off('mouseenter').off('mouseover').off('mouseleave').hover(
                                     function (e) {
                                         var _this = $(this).addClass('p_list_hover');
                                         var li = _this;
@@ -80,18 +91,27 @@
                                     }
                                 );
                                 sb = null;
+                                console.log(__.values[__.values.length - 1]);
+                                if (data.select)
+                                    _.body.children('li:eq(' + data.select + ')').addClass('active').siblings().removeClass('active');
                             });
                         }
                         break;
                     case 'value':
+                        console.log(v);
                         if (V.isValid(v._index)) {
-                            __.values[v._index] = v;
+                            __.values[v._index] = V.merge({}, v);
                             _.body.children('li:eq(' + v._index + ')').html(V.format(__.innerhtml, v));
                         } else v._index = 0;
-                        _.body.children('li:nth-child(' + v._index + ')').addClass('active').siblings().removeClass('active');
-                        _.body.children('li:nth-child(' + v._index + ')').focus();
+                        _.body.children('li:eq(' + v._index + ')').addClass('active').siblings().removeClass('active');
+                        _.body.children('li:eq(' + v._index + ')').focus();
+                        break;
+                    case 'select':
+                        _.body.children('li:eq(' + (v - 1) + ')').addClass('active').siblings().removeClass('active');
                         break;
                 }
+            }, function () {
+                data = __.render(data);
             });
         }
     });

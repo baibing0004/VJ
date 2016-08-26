@@ -1,5 +1,6 @@
 ﻿(function (V, W, $) {
     //http://www.gouguoyin.cn/demo/uploadview/index.html opcity:0
+    var _zindex = 999;
     V.registScript(function (path, vm) {
         var _ = this, __ = {};
         {
@@ -9,15 +10,20 @@
             __.onLoad = _.onLoad;
             __.render = _.render;
             __.fill = _.fill;
+            _zindex = _zindex ? (_zindex + 1) : 999;
         }
         _.fill = function () { return {}; };
         _.onLoad = function (node) {
             V.forC(_.events, function (k, v) {
                 switch (k.toLowerCase()) {
                     case 'success':
-                    case 'error':
                     case 'loading':
                     case 'loadend':
+                        break;
+                    case 'error':
+                        if (_.get().validate) {
+                            _.validate(_.node);
+                        }
                         break;
                     default:
                         _.bindEvent(_.node, k, v);
@@ -94,6 +100,10 @@
         _.render = function (data) {
             data = __.render(data);
             var click = false;
+            //自动判断跨域请求
+            var crossDomain = _.vm.data.url.indexOf(window.location.host) < 0;
+            if (crossDomain)
+                document.domain = window.location.host.split('\.').slice(window.location.host.split('\.').length - 2).join('.');
             var callback = function (e) {
                 var error = _.jsValide(e);
                 if (error.length > 0) {
@@ -103,12 +113,13 @@
                 }
                 _.call('loading', { load: 1, length: 1 });
                 $.ajaxFileUpload({
-                    url: _.vm.data.url, //需要链接到服务器地址 
+                    url: _.vm.data.url + (crossDomain ? ((_.vm.data.url.indexOf('?') >= 0 ? "&" : "?") + 'crossDomain=true') : ''), //需要链接到服务器地址 
                     secureuri: _.vm.data.secureuri,
+                    crossDomain: crossDomain,
                     fileElementId: _.vm.data.uid, //文件选择框的id属性 
                     dataType: 'text', //服务器返回的格式，可以是json、xml 
                     success: function (data, status) {
-                        data = data.substring(data.indexOf('>') + 1, data.lastIndexOf('<'));
+                        data = data.substring(data.lastIndexOf('<pre>') + 5, data.lastIndexOf('</pre>'));
                         data = eval('(' + data + ')');
                         _.call('loadend', {});
                         _.call(data.state ? 'success' : 'error', { value: data.value, values: data });
@@ -117,7 +128,6 @@
                     error: function (s, data, status, e) {
                         _.call('loadend', {});
                         //相当于java中catch语句块的用法 
-                        window.ss = { s: s, data: data, status: status, e: e };
                         _.call('error', { value: '服务器错误!' + data });
                         bindinput();
                     },
@@ -144,24 +154,24 @@
                                     // 不能计算进度
                                 }
                             }, false);
-                        return xhr;//一定要返回，不然jQ没有XHR对象用了
+                        return xhr; //一定要返回，不然jQ没有XHR对象用了
                     }
                 });
             };
             var bindinput = function () {
                 click = false;
-                var text = '<input type="file" name="upload" id="' + _.vm.data.uid + '" accept="' + _.vm.data.filter + '" style="z-index: 9999;cursor:pointer;" />'
+                var text = '<input type="file" name="upload" id="' + _.vm.data.uid + '" accept="' + _.vm.data.filter + '" style="z-index: ' + _zindex + ';cursor:pointer;" />'
                 if (_.input) {
                     _.input.after(text).remove();
                 }
                 else
-                    _.node.append('<div style="z-index: 9999;opacity:0;-ms-filter:\'progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\';filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=0);">' + text + '</div>')
-                _.input = _.node.find('input');
+                    _.node.append('<div style="z-index: ' + _zindex + ';opacity:0;-ms-filter:\'progid:DXImageTransform.Microsoft.Alpha(Opacity=0)\';filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=0);padding: 0px;">' + text + '</div>')
+                _.input = _.node.find('input[type=file]');
                 var firstChild = _.node.children(':not(input)').css('position', 'absolute');
                 var width = firstChild.width();
                 var height = firstChild.height();
                 _.input.click(function (e) {
-                    if (click) { V.stopProp(e); return false; };
+                    if (click || !V.isValid(_.vm.data.url)) { V.stopProp(e); return false; };
                     if (!_.vm.data.enable) {
                         V.stopProp(e);
                         _.call('error', { value: '控件不可用!' });
@@ -175,6 +185,9 @@
                 switch (k.toLowerCase()) {
                     case 'url':
                         bindinput();
+                        break;
+                    case 'enable':
+                        if (v) { _.input.removeAttr('disabled'); } else { _.input.attr('disabled', 'disabled'); }
                         break;
                     default:
                         break;

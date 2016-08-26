@@ -485,6 +485,174 @@
 					V.forC(vs,function(k,v){v.dispose();},function(){div.remove();});
 				} else {_.controls = [];_.vms = {};_.models = _.vms;_.vs = {};}
 			};
+			_._settings = {};
+			_._exSettings = {};
+			//设置默认配置
+			_.getSettings=function(key,data){
+				if(!V.isValid(_._settings[key])){				
+					if(V.isValid(_._exSettings[key])){
+						_._settings[key] = V.merge(V.getValue(data,{}),_._exSettings[key]);
+						delete _._exSettings[key];
+					} else
+						_._settings[key] = V.getValue(data,{});
+				}
+				return _._settings[key];
+			};
+			//扩展默认配置
+			_.extendSettings = function(key,data){
+				if(V.isValid(_._settings[key])) {
+					_._settings[key] = V.merge(_._settings[key],data);
+				} else {
+					if(V.exSettings[key]){
+						_._exSettings[key] = V.merge(_._exSettings[key],V.getValue(data,{}));
+					}else{
+						_._exSettings[key] = V.getValue(data,{});
+					}
+				}
+			};
+			/*
+			V用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+			--案例
+			V.registCommand('showXXList',getData)
+			*/
+			_.registCommand = function (name, func) {
+				var comms = _.getSettings('comms',[]);
+				var data = comms[name];
+				if (V.isValid(data) && typeof (data) != 'function') {
+					func.apply(null, data);
+				}
+				comms[name] = func;
+			};
+			/*
+			V用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+			--案例
+			V.callCommand('showXXList',[{id:1}])
+			*/
+			_.callCommand = function (name, data) {
+				var caller = arguments.caller;
+				var comms = _.getSettings('comms',[]);
+				var func = comms[name];
+				data = V.isArray(data)?data:[data];
+				if (V.isValid(func) && typeof (func) == 'function') {
+					V.once(function(){func.apply(caller, data);});
+				} else {
+					comms[name] = data;
+				}
+			};
+			/*
+			用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false;
+			--案例
+			if (!V.hasCommand('editor.open')) V.part("/FileServer/layout/editor/editor.htm");
+			*/
+			_.hasCommand = function (name) {
+				var comms = _.getSettings('comms',[]);
+				var func = comms[name];
+				return (V.isValid(func) && typeof (func) == 'function');
+			};
+
+			/*
+			仅限iframe方式调用时，先取消原页面添加的方法
+			//业务逻辑深度交叉，iframe落后的控件连接方式时使用
+			一定要在part前
+			--案例
+			V.cleanCommand('editor.open');
+			V.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){});
+			*/
+			_.cleanCommand = function (name) {
+				var comms = _.getSettings('comms',[]);
+				delete comms[name];
+			};
+			/*
+			V用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+			并约定1分钟内 允许注册者多次被触发
+			--案例
+			V.registEvent('showXXList',getData),V.registEvent(['showXXList',''],getData)
+			*/
+			_.registEvent = function (name,func,isTop) {
+				var fun = function(name,func,isTop){
+					var events = _.getSettings('events',[]);
+					var funs = events[name];
+					if (!V.isValid(funs)) {
+						funs = [];
+						events[name] = funs;
+					}
+					if (typeof (func) == 'function') {
+						if(isTop && !funs.top){
+							funs.top = func;
+							funs.unshift(func);
+						} else {
+							if(isTop && funs.top){V.showException('V.registEvent:'+name+' 事件已经有订阅者被置顶!');}
+							funs.push(func);
+						}					
+						var ecall = _.getSettings('eventcall',{});
+						ecall = ecall[name]?ecall[name]:{};
+						if(ecall.time && ecall.time>=(new Date().getTime())){
+							V.once(function(){
+								func.apply(ecall.caller,ecall.data);
+							});
+						}
+					}
+				};
+				if(V.isArray(name)){
+					V.each(name,function(v){
+						fun(v,func,isTop);
+					},null,true);
+				} else {
+					fun(name,func,isTop);
+				}
+			};
+			/*
+			V用于调用被调用页面注册的事件以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+			并约定1分钟内 允许注册者多次被触发
+			--案例
+			V.callEvent('showXXList',[{id:1}])
+			*/
+			_.callEvent = function (name, data) {
+				var caller = arguments.caller;
+				var events = _.getSettings('events',[]);
+				var funs = events[name];
+				data = V.isArray(data)?data:[data];
+				if (V.isValid(funs) && V.isArray(funs)) {
+					V.each(funs,function (func) {
+						//报错不下火线
+						V.tryC(function () {
+							func.apply(caller,data);
+						});
+					});
+				}
+				var ecall = _.getSettings('eventcall',{});
+				if(!ecall[name]){ecall[name] = {};}
+				ecall = ecall[name];
+				ecall.time = new Date().add('n',1).getTime();
+				ecall.data = data;
+				ecall.caller = caller;
+			};
+			/*
+			用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false;
+			--案例
+			if (!V.hasEvent('editor.open')) V.part("/FileServer/layout/editor/editor.htm");
+			*/
+			_.hasEvent = function (name) {
+				var events = _.getSettings('events',[]);
+				var funs = events[name];
+				if (V.isValid(funs) && V.isArray(funs)) {
+					return true;
+				}
+				return false;
+			};
+
+			/*
+			仅限iframe方式调用时，先取消原页面添加的方法
+			//业务逻辑深度交叉，iframe落后的控件连接方式时使用
+			一定要在part前
+			--案例
+			V.cleanEvent('editor.open');
+			V.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){});
+			*/
+			_.cleanEvent = function (name) {
+				var events = _.getSettings('events',[]);
+				delete events[name];
+			};
 		};
 	}
 	{
@@ -570,6 +738,14 @@
 					_.vm.remove = function(){_.removeControl.apply(_,arguments);};
 					_.vm.desc = function(){_.desc();};
 					_.vm.get = function(key){_.vm.data = V.merge(_.vm.data,_.fill());return key?_.vm.data[key]:_.vm.data;};
+					_.page.registEvent = _.registEvent;
+					_.page.callEvent = _.callEvent;
+					_.page.hasEvent = _.hasEvent;
+					_.page.clearEvent = _.clearEvent;
+					_.page.registCommand = _.registCommand;
+					_.page.callCommand = _.callCommand;
+					_.page.hasCommand = _.hasCommand;
+					_.page.clearCommand = _.clearCommand;
 					
 					V.forC(vm,function(key,value){
 						key = key.toLowerCase();

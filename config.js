@@ -21,6 +21,7 @@
 			radiolist:{type:'.RadioList',path:'../../VJ/2.0/VJ.view.extend.js'},
 			checklist:{type:'.CheckList',path:'../../VJ/2.0/VJ.view.extend.js'},
 			swiperpanel:{type:'.SwiperPanel',path:'swiper3.07.min.css;animate.min.css;swiper3.07.jquery.min.js;swiper.animate1.0.2.min.js;../../VJ/2.0/VJ.view.extend.js'},
+
 			fill:{type:'.FillControl',path:'../../VJ/2.0/VJ.view.extend.js'},
 			history:{type:'.History',path:'../../VJ/2.0/VJ.view.extend.js'},
 			panel:{type:'.Panel',path:'hammer.min.js;../../VJ/2.0/VJ.view.extend.js'},
@@ -30,6 +31,7 @@
 				{middler:true},'','',0.4,false],path:'../../VJ/2.0/VJ.view.extend.js'},
 			scrollpanel:{type:'.ScrollPanel',params:[
 				//{type:'VJ.middler.getTypeByAppName',params:[{self:true},'VESH.view','panel'],method:'factory',mode:'static'},
+
 				{middler:true},'','',100,false],path:'../../VJ/2.0/VJ.view.extend.js'},			
 			//动画			
 			bounce:{type:'VJ.view.CssAction',mode:'static',path:"animate.min.css",params:['bounce .4s linear']},
@@ -117,7 +119,7 @@
             isRequired: { type: 'VJ.view.Regex', params: ['/^(\\s*\\S\\s*)+$/g'] },
             isChinese: { type: 'VJ.view.Regex', params: ['/^((.{0,0})|([\\u4e00-\\u9fa5]{0,}))$/g'] },
             isEmail: { type: 'VJ.view.Regex', params: ['/^((.{0,0})|(\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*))$/g'] },
-            isUrl: { type: 'VJ.view.Regex', params: ['/^((.{0,0})|([^:]+):\\/\\/([^\\/]+\\/?)+([^\\.]+)(\\.[^\\?]+)?\\??([^=]+=[^&])?(&[^=]+=[^&])*)$/g'] },
+            isUrl: { type: 'VJ.view.Regex', params: ['/^((.{0,0})|((http|https):\\/\\/[\\w\\-_]+(\\.[\\w\\-_]+)+([\\w\\-\\.,@?^=%&amp;:/~\\+#]*[\\w\\-\\@?^=%&amp;/~\\+#])?))$/g'] },
             isPhone: { type: 'VJ.view.Regex', params: ['/^((.{0,0})|((\\d{3}-\\d{8}|\\d{4}-\\d{7})))$/g'] },
             isMobile: { type: 'VJ.view.Regex', params: ['/^((.{0,0})|(1[3|4|5|6|7|8][0-9]\\d{8}))$/g'] },
             isCard: { type: 'VJ.view.Regex', params: ['/^((.{0,0})|((\\d{14}|\\d{17})(\\d|[a-zA-Z])))$/g'] },

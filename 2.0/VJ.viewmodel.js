@@ -176,7 +176,7 @@
 			//可以将数据更新到标签上
 			_.render = function(data){
 				V.forC(data,function(key,value){
-					switch(key){
+					switch(key.toLowerCase()){
 						case 'dispose':
 							if(value) _.dispose();
 							break;
@@ -1200,7 +1200,7 @@
 					else if(typeof(_.reg) == 'string'){_.reg = eval(_.reg);};
 				};
 				_.validate = function(text,func){
-					func((text+'').match(_.reg));
+					func((text || '').match(_.reg));
 				};
 			};
 		}

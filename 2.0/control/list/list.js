@@ -58,7 +58,7 @@
                     case 'addvalue':
                     case 'addvalues':
                     case 'values':
-                        console.log('hear');
+                       
                         if (k.toLowerCase() == 'values') __.values = [];
                         if (!V.isArray(v)) v = [v];
                         if (_.body.children('li.nodata').length > 0) { _.body.children('li.nodata').remove(); }

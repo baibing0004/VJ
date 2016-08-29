@@ -661,7 +661,7 @@ if (top.location == location) {
 					delete V._ajaxcall[random];
 					funcsucc.success(data,null);
 				};
-				V.getRemoteJSON(data.url+(data.url.indexOf('?')>=0?'&':'?')+(data.jsonp==true?'callback':data.jsonp)+'=VJ._ajaxcall['+random+']&'+$.param(data.data));
+				V.getRemoteJSON(data.url+(data.url.indexOf('?')>=0?'&':'?')+(data.jsonp==true?'_bk':data.jsonp)+'=VJ._ajaxcall['+random+']&'+$.param(data.data));
 			} else {
 				$.ajax(funcsucc);
 			}

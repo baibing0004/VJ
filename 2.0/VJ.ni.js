@@ -72,7 +72,7 @@
 						params = cmd.merge(cmd.params,V.getValue(params,{}));
 						template = cmd.template;
 					}
-					_.lstCmd.push({name:command,params:params,func:func,template:template,key:name,dbtype:(cmd && cmd.dbtype)?cmd.dbtype:"tjson"});
+					_.lstCmd.push({name:command,params:params,func:func,template:template,key:name,jsonp:(cmd && cmd.jsonp)?cmd.jsonp:false,dbtype:(cmd && cmd.dbtype)?cmd.dbtype:"tjson"});
 				};
 				_._excute = function(){
 					var _cms = _.lstCmd;
@@ -87,6 +87,7 @@
 								cmd.command = v.name;
 								cmd.params = v.params;
 								cmd.dbtype = v.dbtype;
+								cmd.jsonp = v.jsonp;
 								var _func = v.func;
 								cmd.excute(_.result,function(data){
 									V.tryC(function(){
@@ -352,6 +353,7 @@
 						V.ajax(V.merge(_.params,{
 							url:(cmd.command.indexOf('http:')>=0?'':_.params.host)+cmd.command,
 							data:cmd.params,
+							jsonp:cmd.jsonp,
 							success: function (data, status) {								
 								try {
 									if(func){func(data);}

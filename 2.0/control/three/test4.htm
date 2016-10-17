@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <meta name="renderer" content="webkit" />
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
@@ -77,8 +78,8 @@
 					cm = V.merge(cm,{
 						Middler:{
 							'VESH.view':{											
-								tmovie:{path:'../three/three.min.js;../three/stats.min.js;../three/tc.js',params:['',{data:{stats:false}}]},
-								tobject:{path:'../three/three.min.js;../three/stats.min.js;../three/tobj.js',params:["",{data:{debug:true}}]}
+								tmovie:{path:'../three/three.min.js;../three/stats.min.js;../three/Projector.js;../three/CanvasRenderer.js;../three/tc.js',params:['',{data:{stats:false}}]},
+								tobject:{path:'../three/three.js;../three/stats.min.js;../three/tobj.js',params:["",{data:{debug:true}}]}
 							}
 						}
 					});
@@ -91,6 +92,7 @@
 								camera:{left:200,right:200,top:200,bottom:200,angle:90,near:0.1,far:20000,position:{y:0},look:{x:0,y:0,z:0}},
 								lights1:[{type:'Ambient',color:{rgb:0xffffff,opacity:1},position:{x:100,y:100,z:200}}],
 								lights:[],
+								render:{type:'canvas'},
 								xs:-90,ys:0
 							},
 							onLoad:function(D,I){

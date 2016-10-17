@@ -2,64 +2,64 @@
   V.registScript(function (path, vm) {
     var _ = this, __ = {}
     {
-    // 简历一个基础的3DObject对象，允许定义其position scale rotate move动画等等
-    V.inherit.apply(_, [W.Control, [path || "<div style='display:none;'></div>", V.getValue({
-      data: {
-        type: 'plane',
-        position: { x: 0, y: 0, z: 0 },
-        scale: { x: 1, y: 1, z: 1 },
-        rotate: { x: 0, y: 0, z: 0 },
-        width: 0,
-        height: 0,
-        deepth: 0,
-        radius: 0,
-        points: [],
-        size: 'cover',
-        color: { rgb: 0xffffff, opacity: 1.0 },
-        transparent: false,
-        side: 0,
-        style: 'basic',
-        debug: false
-      }
-    }, vm)]])
-    _.is3D = true
-    __.obj = null
-    __.onLoad = _.onLoad
-    __.render = _.render
-    __.addControl = _.addControl
-    __.removeControl = _.removeControl
-    __.clearControl = _.clearControl
-    __.dispose == _.dispose
-    _.geometry = null
-    _.material = null
-    _.addDesc('three3D 对象')
-    _.addDesc('属性:')
-    _.addDesc('\ttype 类型mesh,line,cube,cylinder,sphere,plane')
-    _.addDesc('\tposition {x,y,z}中心点方位')
-    _.addDesc('\tscale 放大缩小')
-    _.addDesc('\trotate 旋转')
-    _.addDesc('\twidth 宽度适用于plane,cube,line')
-    _.addDesc('\theight 高度适用plane,cube,cylinder')
-    _.addDesc('\tdeepth 深度适用于cube,')
-    _.addDesc('\tradius 半径适用于sphere,[top,bottom]两个半径适用于cylinder')
-    _.addDesc('\tpoints 适用mesh,line')
-    _.addDesc('\tfaces 适用mesh')
-    _.addDesc('\tsize cover,repeat,mirror适用于image属性,')
-    _.addDesc('\tcolor 颜色适用于全部，多个颜色适用于mesh与line')
-    _.addDesc('\ttransparent 是否透明适用于全部')
-    _.addDesc('\tside 适用于正反面0 正面 1 反面 2 正反面')
-    _.addDesc('\tstyle 适用于basic,lambert,phong,line')
-    _.addDesc('\tdebug:线框模式')
-    _.addDesc('\tposition {x,y,z}中心点方位')
-    _.addDesc('事件:')
-    _.addDesc('\thover e hover:true/false')
-    _.addDesc('\tclick e mousedown与mouseup在500ms之内时认为是click')
-    _.addDesc('\tmousedown e D2Position,Position,D3Position')
-    _.addDesc('\tmouseup e D2Position,Position,D3Position')
-    _.addDesc('\tmousemove e D2Position,Position,D3Position')
-    _.addDesc('\tvideoend 视频播放完成 一般是自动重播的')
-    _.addDesc('定义:')
-    _.addDesc("\tthreeobject: { path: '../../Scripts/ref/three.js;../../Scripts/ref/stats.min.js;../../Scripts/module/part/tobj.js;' }")
+		// 简历一个基础的3DObject对象，允许定义其position scale rotate move动画等等
+		V.inherit.apply(_, [W.Control, [path || "<div style='display:none;'></div>", V.getValue({
+		  data: {
+			type: 'plane',
+			position: { x: 0, y: 0, z: 0 },
+			scale: { x: 1, y: 1, z: 1 },
+			rotate: { x: 0, y: 0, z: 0 },
+			width: 0,
+			height: 0,
+			deepth: 0,
+			radius: 0,
+			points: [],
+			size: 'cover',
+			color: { rgb: 0xffffff, opacity: 1.0 },
+			transparent: false,
+			side: 0,
+			style: 'basic',
+			debug: false
+		  }
+		}, vm)]])
+		_.is3D = true
+		__.obj = null
+		__.onLoad = _.onLoad
+		__.render = _.render
+		__.addControl = _.addControl
+		__.removeControl = _.removeControl
+		__.clearControl = _.clearControl
+		__.dispose == _.dispose
+		_.geometry = null
+		_.material = null
+		_.addDesc('three3D 对象')
+		_.addDesc('属性:')
+		_.addDesc('\ttype 类型mesh,line,cube,cylinder,sphere,plane')
+		_.addDesc('\tposition {x,y,z}中心点方位')
+		_.addDesc('\tscale 放大缩小')
+		_.addDesc('\trotate 旋转')
+		_.addDesc('\twidth 宽度适用于plane,cube,line')
+		_.addDesc('\theight 高度适用plane,cube,cylinder')
+		_.addDesc('\tdeepth 深度适用于cube,')
+		_.addDesc('\tradius 半径适用于sphere,[top,bottom]两个半径适用于cylinder')
+		_.addDesc('\tpoints 适用mesh,line')
+		_.addDesc('\tfaces 适用mesh')
+		_.addDesc('\tsize cover,repeat,mirror适用于image属性,')
+		_.addDesc('\tcolor 颜色适用于全部，多个颜色适用于mesh与line')
+		_.addDesc('\ttransparent 是否透明适用于全部')
+		_.addDesc('\tside 适用于正反面0 正面 1 反面 2 正反面')
+		_.addDesc('\tstyle 适用于basic,lambert,phong,line')
+		_.addDesc('\tdebug:线框模式')
+		_.addDesc('\tposition {x,y,z}中心点方位')
+		_.addDesc('事件:')
+		_.addDesc('\thover e hover:true/false')
+		_.addDesc('\tclick e mousedown与mouseup在500ms之内时认为是click')
+		_.addDesc('\tmousedown e D2Position,Position,D3Position')
+		_.addDesc('\tmouseup e D2Position,Position,D3Position')
+		_.addDesc('\tmousemove e D2Position,Position,D3Position')
+		_.addDesc('\tvideoend 视频播放完成 一般是自动重播的')
+		_.addDesc('定义:')
+		_.addDesc("\tthreeobject: { path: '../../Scripts/ref/three.js;../../Scripts/ref/stats.min.js;../../Scripts/module/part/tobj.js;' }")
     }
     _.onLoad = function (node) {
       _.movie = (_.parent.vs[node.parent().attr('id')])

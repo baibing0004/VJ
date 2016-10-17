@@ -136,11 +136,7 @@
 								var name = appName?val.ref.substr(index+1):val.ref;
 								//paras.push(config.getValueByName(appName,name));
 								paras.push({ref:appName,name:name});
-							} else if(val.type){
-								var name = V.random()+'';
-								app[name] = __.convertContainer(config,val,defParam,app,pcm);
-								paras.push({ref:defParam.app,name:name});
-							} else if(val.path){
+							} else if(val.type || val.path){
 								var name = V.random()+'';
 								app[name] = __.convertContainer(config,val,defParam,app,pcm);
 								paras.push({ref:defParam.app,name:name});
@@ -148,34 +144,19 @@
 								paras.push(pcm);
 							} else if(val.middler){
 								paras.push(new M.Middler(pcm));
-							} else if(val.params){
-								var _v = {params:val.params};
-								for(var i in val){
-									if(i!='params'){									
-										if(val[i].type){
-											var name = V.random()+'';
-											app[name] = __.convertContainer(config,val[i],defParam,app,pcm);
-											_v[i] = {ref:defParam.app,name:name};
-										} else if(val[i].ref){
-											var index = val[i].ref.indexOf('/')>=0?val[i].ref.indexOf('/'):val[i].ref.indexOf('\\')>=0?val[i].ref.indexOf('\\'):-1;
-											var appName = index>=0?val[i].ref.substr(0,index):defParam.app;
-											name = appName?val[i].ref.substr(index+1):val[i].ref;
-											_v[i] = {ref:defParam.app,name:name};
-										} else {
-											_v[i] = val[i];
-										}
-									}
-								}
-								paras.push(_v);
+							} else if(val.params && val.param){
+								var name = V.random()+'';
+								app[name] = __.convertContainer(config,val,defParam,app,pcm);
+								paras.push({ref:defParam.app,name:name,param:val.param});
+							} else if(V.isArray(val)){
+								//objects
+								var name = V.random()+'';
+								app[name] = __.convertContainer(config,{params:val},defParam,app,pcm);
+								paras.push({ref:defParam.app,name:name});
 							} else {
 								//普通JSON
 								paras.push(val);
 							}
-						} else if(V.isArray(val)){
-							//objects
-							var name = V.random()+'';
-							app[name] = __.convertContainer(config,{params:val},defParam,app,pcm);
-							paras.push({ref:defParam.app,name:name});
 						} else {
 							paras.push(val);
 						}
@@ -190,12 +171,6 @@
 							var val = paras[i];
 							if(val.ref){
 								val = config.getValueByName(val.ref,val.name);
-							} else if(val.params){
-								for(var i in val){
-									if(i!='params' && val[i].ref){
-										val[i] = config.getValueByName(val[i].ref,val[i].name);										
-									}
-								}
 							}
 							ret.push(val);
 						}
@@ -273,13 +248,14 @@
 								if(paras){
 									for(var i in paras){
 										if(typeof(paras[i])==='object'){
-											if(paras[i].params && val['set'+paras[i].params]){
-												var me = '(val["set'+paras[i].params+'"](w,paras[i][w]))';
-												for(var w in paras[i]){
-													if(w!='params'){
-														eval(me);
-													}
-												}
+											if(v.params[i].name && val['set'+v.params[i].name]){
+												val['set'+v.params[i].name].apply(val,[paras[i]]);
+											} else if(v.params[i].param && val['set'+v.params[i].param]){
+
+
+												val['set'+v.params[i].param].apply(val,paras[i]);
+
+
 											} else {
 												val = V.merge(val,paras[i]);
 											}
@@ -291,43 +267,43 @@
 								return __.getScript(type)?__.getScript(type).apply(__.getScript(type),paras):eval('('+type+'.apply('+type+',paras))');
 							case 'factorybean':
 								var val = __.getScript(type)?__.getScript(type).apply(__.getScript(type),paras):eval('('+type+'.apply('+type+',paras))');						
-								if(paras){
-									var q = 0;
+								if(paras && val){
 									for(var i in paras){
-										if((!constructorparalength || q >= constructorparalength) && typeof(paras[i])==='object'){
-											if(paras[i].params && val['set'+paras[i].params]){
-												var me = '(val["set'+paras[i].params+'"](w,paras[i][w]))';
-												for(var w in paras[i]){
-													if(w!='params'){
-														eval(me);
-													}
-												}
+										if((!constructorparalength || i >= constructorparalength) && typeof(paras[i])==='object'){
+											if(v.params[i].name && val['set'+v.params[i].name]){
+												val['set'+v.params[i].name].apply(val,[paras[i]]);
+											} else if(v.params[i].param && val['set'+v.params[i].param]){
+
+
+												val['set'+v.params[i].param].apply(val,paras[i]);
+
+
 											} else {
 												val = V.merge(val,paras[i]);
 											}
 										}
-										q++;
 									}
 								}
 								return val;
 							case 'constructorbean':							
 								var val = __.getScript(type)?V.create(__.getScript(type),paras):V.create2(type,paras);
-								if(paras){
-									var q = 0;
+								if(paras && val){
+									
 									for(var i in paras){
-										if((!constructorparalength || q >= constructorparalength) && typeof(paras[i])==='object'){
-											if(paras[i].params && val['set'+paras[i].params]){
-												var me = '(val["set'+paras[i].params+'"](w,paras[i][w]))';
-												for(var w in paras[i]){
-													if(w!='params'){
-														eval(me);
-													}
-												}
+										if((!constructorparalength || i >= constructorparalength) && typeof(paras[i])==='object'){
+											if(v.params[i].name && val['set'+v.params[i].name]){
+												val['set'+v.params[i].name].apply(val,[paras[i]]);
+											} else if(v.params[i].param && val['set'+v.params[i].param]){
+
+
+												val['set'+v.params[i].param].apply(val,paras[i]);
+
+
 											} else {
 												val = V.merge(val,paras[i]);
 											}
 										}
-										q++;
+
 									}
 								}
 								return val;

@@ -22,10 +22,10 @@ if (top.location == location) {
 	//常用基本操作
 	{		
 		V.isValid = function (data) {
-			if (typeof (data) != "undefined" && data != null && data != 'null' && !(data === '')) {
-				return true;
-			} else {
-				return false;
+			if (typeof (data) != "undefined" && data != null && data != 'null' && ((data.replace && data.replace(/\s/g,'') != '') || data.replace == undefined)) {
+                return true;
+            } else {
+                return false;
 			}
 		};
 		V.getValue = function (data, defaultData) {
@@ -170,6 +170,9 @@ if (top.location == location) {
 							func(val,function(){
 								_func(exp());
 							});
+						},function(err){
+							V.showException('',err);
+							_func(exp());
 						});
 					} else if(finalf){finalf()};
 				};
@@ -181,6 +184,9 @@ if (top.location == location) {
 								func(val,function(){
 									_func(exp());
 								});
+							},function(err){
+								V.showException('',err);
+								_func(exp());
 							});
 						},1);
 					} else if(finalf){finalf()};
@@ -1251,6 +1257,24 @@ if (top.location == location) {
 			str = str+'';
 			return isOri?(this == str):(this.toLowerCase() == str.toLowerCase());
 		};
+		String.prototype.trim = function(chr){
+			switch(chr){
+				case '/':
+				case '\\':
+				case '?':
+				case '[':
+				case ']':
+				case '.':
+				case '*':
+				case '(':
+				case ')':
+				case '{':
+				case '}':
+					chr = '\\'+chr;
+					break;
+			}
+	　　    return this.replace(V.isValid(chr)?new RegExp('(^'+chr+'+)|('+chr+'+$)'):/(^\s+)|(\s+$)/g, "");
+	　　 };
 	}	
 	//json2
 	{		

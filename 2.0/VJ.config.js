@@ -102,7 +102,7 @@
 											if(conf.path){
 												V.include(conf.path);
 											}
-											return V.create2(conf.type,[]);
+											return V.create3(conf.type,[]);
 										})();
 									}
 								};

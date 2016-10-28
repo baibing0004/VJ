@@ -240,22 +240,18 @@
 								break;
 							default:
 							case 'constructor':
-								return __.getScript(type)?V.create(__.getScript(type),paras):V.create2(type,paras);
+								return __.getScript(type)?V.create2(__.getScript(type),paras):V.create3(type,paras);
 								break;
 							case 'bean':
-								var val = __.getScript(type)?V.create(__.getScript(type),[]):eval('(new '+type+'())');
+								var val = __.getScript(type)?V.create2(__.getScript(type),[]):eval('(new '+type+'())');
 								//bean设置出错
-								if(paras){
+								if(val && paras){
 									for(var i in paras){
 										if(typeof(paras[i])==='object'){
 											if(v.params[i].name && val['set'+v.params[i].name]){
 												val['set'+v.params[i].name].apply(val,[paras[i]]);
 											} else if(v.params[i].param && val['set'+v.params[i].param]){
-
-
 												val['set'+v.params[i].param].apply(val,paras[i]);
-
-
 											} else {
 												val = V.merge(val,paras[i]);
 											}
@@ -273,11 +269,7 @@
 											if(v.params[i].name && val['set'+v.params[i].name]){
 												val['set'+v.params[i].name].apply(val,[paras[i]]);
 											} else if(v.params[i].param && val['set'+v.params[i].param]){
-
-
 												val['set'+v.params[i].param].apply(val,paras[i]);
-
-
 											} else {
 												val = V.merge(val,paras[i]);
 											}
@@ -286,7 +278,7 @@
 								}
 								return val;
 							case 'constructorbean':							
-								var val = __.getScript(type)?V.create(__.getScript(type),paras):V.create2(type,paras);
+								var val = __.getScript(type)?V.create2(__.getScript(type),paras):V.create3(type,paras);
 								if(paras && val){
 									
 									for(var i in paras){
@@ -294,16 +286,11 @@
 											if(v.params[i].name && val['set'+v.params[i].name]){
 												val['set'+v.params[i].name].apply(val,[paras[i]]);
 											} else if(v.params[i].param && val['set'+v.params[i].param]){
-
-
 												val['set'+v.params[i].param].apply(val,paras[i]);
-
-
 											} else {
 												val = V.merge(val,paras[i]);
 											}
 										}
-
 									}
 								}
 								return val;
@@ -312,7 +299,8 @@
 				}
 			};
 			//转换成Container对象
-			__.convertContainer = function(config,v,defParam,app,pcm){
+			__
+.convertContainer = function(config,v,defParam,app,pcm){
 				var mode = V.getValue(v.mode,defParam.mode);
 				var size = V.getValue(v.size,defParam.size);
 				var creater = __.convertCreater(config,v,defParam,app,pcm);
@@ -391,7 +379,6 @@
 				};
 			};
 		}
-		
 		_.toConfig = function(val,pcm){
 			var config = new M.MiddlerConfig();
 			for(var i in val){

@@ -1,4 +1,16 @@
 //兼容IE7
+/*
+    减少语句路径
+    少用pop,push 改为i++--操作和[length]=new
+    频繁new的对象改为inherit2方法 尽管inherit2方法无法私有对象
+    多用三元？少用if
+    多用空方法 少用if
+    除非必须 少用delete
+    使用 || 代替 getValue 或者3元
+    使用for if(i++>1) 判断是否为空
+    使用substr lastIndexOf 代替split
+    尽量使用原生方法（native）代替自己的方法
+*/
 if(typeof (console) == 'undefined'){
 	window.console={
 		log:function(e){}
@@ -22,11 +34,7 @@ if (top.location == location) {
 	//常用基本操作
 	{		
 		V.isValid = function (data) {
-			if (typeof (data) != "undefined" && data != null && data != 'null' && ((data.replace && data.replace(/\s/g,'') != '') || data.replace == undefined)) {
-                return true;
-            } else {
-                return false;
-			}
+			return (typeof (data) != "undefined" && data != null && data != 'null' && ((data.replace && data.replace(/\s/g,'') != '') || data.replace == undefined));
 		};
 		V.getValue = function (data, defaultData) {
 			return V.isValid(data) ? data : defaultData;
@@ -60,58 +68,67 @@ if (top.location == location) {
 			return s;
 		};
 		//定义的StringBuilder类
-		V.sb = function(){return new function(){
-			var _ = this,__ = {};
+		var sb = function(){
+			var _ = this,__ = this;
 			{	
 				__.data= [];
-				__.length = 0;
+				__._length = 0;
+				__._append = function(str){__.data[__.data.length]=str;__._length += str.length;};
+
 			}
-			_.append = function(str){
-				str = V.getValue(str+'','');
-				__.data.push(str);
-				__.length += str.length;
-				return _;
-			};
-			_.appendFormat = function(format,data){
-				return _.append(V.format(format,data));
-			};
-			_.insert = function(start,data){
-				var str = _.toString();
-				data = V.getValue(data+'','');
-				__.data = [str.substr(0,start),data,str.substr(start)];
-				__.length = str.length+data.length;
-				return _;
-			};
-			_.insertFormat = function(start,format,data){
-				return _.insert(start,V.format(format,data));
-			};
-			_.remove = function(start,length){
-				var str = _.toString();
-				__.data = [str.substr(0,start),str.substr(start+length)];
-				__.length = Math.max(0,str.length-length);
-				return _;
-			};
-			_.toString = function(){
-				return __.data.join('');
-			};
-			_.clear = function(){
-				var s = _.toString();
-				__.data = []
-				__.length = 0;
-				return s;
-			};
-			_.length = function(){return __.length;};
-		};};
+		};
+		sb.prototype.append = function(str){
+			var _ = this,__ = this;
+			str = V.isValid(str)?__._append(str):'';
+			return _;
+		};
+		sb.prototype.appendFormat = function(format,data){                
+			var _ = this,__ = this;
+			return _.append(V.format(format,data));
+		};
+		sb.prototype.insert = function(start,data){               
+			var _ = this,__ = this;
+			var str = _.toString();
+			data = data || '';
+			__.data = [str.substr(0,start),data,str.substr(start)];
+			__._length = str.length+data.length;
+			return _;
+		};
+		sb.prototype.insertFormat = function(start,format,data){               
+			var _ = this,__ = this;
+			return _.insert(start,V.format(format,data));
+		};
+		sb.prototype.remove = function(start,length){               
+			var _ = this,__ = this;
+			var str = _.toString();
+			__.data = [str.substr(0,start),str.substr(start+length)];
+			__._length = Math.max(0,str.length-length);
+			return _;
+		};
+		sb.prototype.toString = function(){               
+			var _ = this,__ = this;
+			__.data = [__.data.join('')];
+			return __.data[0];
+		};
+		sb.prototype.clear = function(){               
+			var _ = this,__ = this;
+			var s = _.toString();
+			__.data = []
+			__._length = 0;
+			return s;
+		};
+		sb.prototype.length = function(){               
+			var _ = this,__ = this;return __._length;
+		};
+		//定义的StringBuilder类
+		V.sb = function(){
+			return new sb();
+		};
 	}
 	{
 		//数组处理
 		V.isArray = function (obj) {
 			return Object.prototype.toString.call(obj) === '[object Array]';
-		};
-		//异步处理数组的方法
-		V.each = function(data,func,finalF,isSync){
-			data = Array.prototype.slice.call(data, 0);
-			V.whileC(function(){return data.shift();},func,finalF,isSync);
 		};
 		V.once = function(func,timeout){
 			timeout = timeout || 1;
@@ -120,79 +137,108 @@ if (top.location == location) {
 			}
 			func.timeoutID = window.setTimeout(function(){V.tryC(function(){func();})},timeout);
 		};
-		//异步遍历对象的方法
-		V.forC = function(data,func,finalf,isSync){
-			var ret = [];
-			for(var i in data){
-				ret.push({key:i,value:data[i]});
-			}
-			V.whileC(function(){return ret.shift();},function(v){if(func){func(v.key,v.value);}},finalf,isSync);
+		//whileC 方法要求 四个参数 exp 给出需要处理的值，func进行处理，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的但是不保证前后两次调用是顺序的只能保证是异步的 第四个参数如果为真那么就是同步执行
+		var emptyfunc = function(){return false;};
+		var syncfunc = function(exp,func,finalf,val){
+			var ret = val?{
+				func:func,
+				val:exp(),
+				next:syncfunc
+			}:{            
+				func:finalf || emptyfunc,
+				next:emptyfunc
+			};
+			try{
+				ret.func(val);
+			} catch (err){
+				V.showException('',err);
+			};
+			ret.next(exp,func,finalf,ret.val);
 		};
-		//异步链式遍历对象的方法,需要func显式调用传入的next方法
-		V.forC2 = function(data,func,finalf,isSync){
-			var ret = [];
-			for(var i in data){
-				ret.push({key:i,value:data[i]});
-			}
-			V.whileC2(function(){return ret.shift();},function(v,next){if(func){V.tryC(function(){func(v.key,v.value,next);});}},finalf,isSync);
+		var asyncfunc = function(exp,func,finalf,val){
+			V.once(function(){
+				var ret = val?{
+					func:func,
+					val:exp(),
+					next:asyncfunc
+				}:{            
+					func:finalf || emptyfunc,
+					next:emptyfunc
+				}; 
+				try{
+					ret.func(val);
+				} catch (err){
+					V.showException('',err);
+				};
+				ret.next(exp,func,finalf,ret.val);
+			});
 		};
 		//whileC 方法要求 四个参数 exp 给出需要处理的值，func进行处理，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的但是不保证前后两次调用是顺序的只能保证是异步的 第四个参数如果为真那么就是同步执行
 		V.whileC = function(exp,func,finalf,isSync){
-			var _ = this;
-			var _func = null;
-			if(isSync){
-				_func = function(val){
-					if(val){					
-						V.tryC(function(){func(val);});
-						_func(exp());
-					} else if(finalf){finalf()};
+			isSync?syncfunc(exp,func,finalf,exp()):asyncfunc(exp,func,finalf,exp());
+		};
+		var syncfunc2 = function(exp,func,finalf,val){
+			var ret = val?{
+				func:func,
+				val:exp(),
+				next:syncfunc2
+			}:{            
+				func:finalf || emptyfunc,
+				next:emptyfunc
+			}; 
+			try{
+				ret.func(val,function(){return ret.next(exp,func,finalf,ret.val);});
+			} catch (err){
+				V.showException('',err);
+				ret.next(exp,func,finalf,ret.val)
+			};
+		};
+		var asyncfunc2 = function(exp,func,finalf,val){
+			V.once(function(){
+				var ret = val?{
+					func:func,
+					val:exp(),
+					next:asyncfunc2
+				}:{            
+					func:finalf || emptyfunc,
+					next:emptyfunc
+				}; 
+				try{
+					ret.func(val,function(){ret.next(exp,func,finalf,ret.val);});
+				} catch (err){
+					V.showException('',err);
+					ret.next(exp,func,finalf,ret.val)
 				};
-			} else {				
-				_func = function(val){
-					if(val){
-						window.setTimeout(function(){
-							V.tryC(function(){func(val);});
-							_func(exp());
-						},1);
-					} else if(finalf){finalf()};
-				};
-			}
-			_func(exp());
+			});
 		};
 		//whileC2 方法要求 四个参数 exp 给出需要处理的值，func进行处理，同时当处理完成是 调用 第二个参数执行next方法，finalf是当exp返回null值调用的关闭函数 这里保证func是异步于当前线程运行的而且保证前后两次调用是顺序的 第四个参数如果为真那么就是同步执行
 		V.whileC2 = function(exp,func,finalf,isSync){
-			var _ = this;
-			var _func = null;
-			if(isSync){
-				_func = function(val){
-					if(val){
-						V.tryC(function(){
-							func(val,function(){
-								_func(exp());
-							});
-						},function(err){
-							V.showException('',err);
-							_func(exp());
-						});
-					} else if(finalf){finalf()};
-				};
-			} else {
-				_func = function(val){
-					if(val){
-						window.setTimeout(function(){
-							V.tryC(function(){
-								func(val,function(){
-									_func(exp());
-								});
-							},function(err){
-								V.showException('',err);
-								_func(exp());
-							});
-						},1);
-					} else if(finalf){finalf()};
-				};
-			}			
-			_func(exp());
+			isSync?syncfunc2(exp,func,finalf,exp()):asyncfunc2(exp,func,finalf,exp());
+		};
+		//异步处理数组的方法
+		V.each = function(data,func,finalF,isSync){
+			var i=0;
+			data = Array.prototype.slice.call(data, 0);
+			V.whileC(function(){return data[i++];},func,finalF,isSync);
+		};
+		V.each2 = function(data,func,finalF,isSync){
+			var i=0;
+			data = Array.prototype.slice.call(data, 0);
+			V.whileC2(function(){return data[i++];},func,finalF,isSync);
+		};
+		var forfunc = function(v,func){return func(v.key,v.value);};
+		//异步遍历对象的方法
+		V.forC = function(data,func,finalf,isSync){
+			var ret = [],exp = emptyfunc,w=0;
+			if(func) {for(var i in data) ret[w++] = {key:i,value:data[i]};w=0;exp=function(){return ret[w++]};}
+			V.whileC(exp,function(v){return forfunc(v,func)},finalf,isSync);
+		};
+		var forfunc2 = function(v,func,n){return func(v.key,v.value,n);};
+		//异步链式遍历对象的方法,需要func显式调用传入的next方法
+		V.forC2 = function(data,func,finalf,isSync){
+			var ret = [],exp = emptyfunc,w=0;
+			if(func) {for(var i in data) ret[w++] = {key:i,value:data[i]};w=0;exp=function(){return ret[w++];}}
+			V.whileC2(exp,function(v,n){return forfunc2(v,func,n)},finalf,isSync);
 		};
 		//异步最终处理 其结果集最终处理的方式 function(共享的json对象 {})
 		V.finalC = function(){
@@ -206,16 +252,34 @@ if (top.location == location) {
 		};
 		//异步顺序处理 其结果集最终处理的方式 function(共享的json对象 {})
 		V.next = function(){
-			var funs = [];
-			for(var i=0;i<arguments.length;i++){if(typeof(arguments[i]) == 'function') funs.push({key:funs.length,func:arguments[i]});}
-			if(funs.length>1){
-				var data = {},finalF = funs.length>0?funs.pop().func:null;
-				V.whileC2(function(){return funs.shift();},function(v,next){if(v){v.func.apply(null,[data,next]);}},function(){finalF.apply(null,[data])},false);
-			} else { if (funs.length > 0) { funs[0].func.apply(null, [{}]); }}
+			var i = 0;
+			var funs = arguments;
+			var data = {};
+			V.whileC2(function(){return funs[i++]},function(v,next){return (v || next || emptyfunc)(data,next)});
 		};
 	}	
 	//类处理
 	{
+		var emptyfunc = function(){};
+		//callback(func,paras,call):允许被func直接返回值或者返回一个callback(call)，或者不返回值(undefined)但是默认接收最后一个参数为callback三种调用方式即，值，延迟回调,回调方式均可'
+		V.callback = function(func,paras,call){
+			V.tryC(function(){
+				var call2 = call?call:emptyfunc;
+				paras = paras || [];
+				paras.push(call2);
+				var data = func.apply(null,paras);
+				switch(typeof(data)){
+					case 'function':
+						data(null,call2);
+						break;
+					case 'undefined':
+						break;
+					default:
+						call2.apply(null,data.length?data:[null,data])
+						break;
+				}
+			},call);
+		};
 		V.getType = function (x) {
 			if (x == null) {
 				return "null";
@@ -269,6 +333,36 @@ if (top.location == location) {
 				this.prototype = _temp;
 			}
 		};
+		/* 频繁创建的对象可以这样定义 常用不经常创建可采用第一种方式定义
+		var pa = function(){
+			var _ = this;
+			_.a = 22;
+		};
+		V.merge(pa.prototype,{
+			test1:function(){console.log(this.a);}
+		},true);
+		var son = function(){
+			var _ = this;       
+			pa.apply(_,[]);
+			_.a = 33;
+			_.b = 44;
+		};
+		V.inherit2(son,pa,{
+			test2:function(){console.log(this.a);},
+			test1:function(){son.test1.apply(this);console.log(this.b);}
+		});
+		new son().test1();
+		 */
+		V.inherit2 = function(son,father,methods){
+		    var f = function() {};
+			f.prototype = father.prototype;
+			son.prototype = new f();
+			son.inherits2 = true;
+			for(var k in father.prototype) son[k] = father.prototype[k];
+			for(var k in methods){
+				son.prototype[k] = methods[k];
+			}
+		};
 		V.create = function (type, args) {
             if (typeof (type) == 'function') {
                 args = V.isArray(args) ? args : [args];
@@ -284,7 +378,19 @@ if (top.location == location) {
                 return eval(ret + '))');
             } else V.showException('请传入类定义');
         };
-		V.create2 = function(type,args){
+		V.create2 = function (type, args) {
+			if (typeof (type) == 'function') {
+				args = V.isArray(args) ? args : [args];
+				return true?(function(){
+					var ret = function(){
+						type.apply(this,args);
+					};
+					V.inherit2(ret,type,{});
+					return new ret();
+				})():new function(){type.apply(this,args)};
+			} else V.showException('请传入类定义');
+		};
+		V.create3 = function(type,args){
 			var ret = '(new '+type+'(';
 			if(V.isArray(args)){
 				for(var i in args){
@@ -429,20 +535,22 @@ if (top.location == location) {
 	}
 	//Bug处理
 	{
-		V.isDebug = false;
+		V.isDebug = true;
 		V.showException = function (name, e) {
 			if (V.isDebug) {
 				var content = name;
 				if (V.isValid(e)) {
-					content += ("\r\nname:" + e.name + "\r\nmessage:" + e.message + (e.stack ? ("\r\nstack:" + e.stack + (e.fileName?("\r\nfile:" + e.fileName):'') + (e.lineNumber?("\r\nlineNumber:" + e.lineNumber):'')) : (V.userAgent.ie ? ("\r\ndescription:" + e.description) : "")));
+					content += ("\r\nmessage:" + e.message + (e.stack ? ("\r\nstack:" + e.stack + (e.fileName?("\r\nfile:" + e.fileName):'') + (e.lineNumber?("\r\nlineNumber:" + e.lineNumber):'')) : (e.description ? ("\r\ndescription:" + e.description) : "")));
 				}
 				//V.alert('未捕获异常',content);
 				//alert('未捕获异常:' + content);
-				console.log('未捕获异常:'+content)
+				console.log('未捕获异常:'+content+"\r\n");
 				//throw e;
 			}
 		};
-		V.tryC = function (func) {try{func();} catch (e) { V.showException('', e);}};
+		var showException2 = function(e){V.showException("",e)};
+		V.tryC = function (func,errcall) {errcall = errcall || showException2;try{return func();} catch (e) {try{errcall(e);}catch(e2){showException2(e);}}};
+		V.tryC2 = function (err,func,errcall) { return err?(errcall || showException2)(err):V.tryC(func,errcall);};
 		var start = null;
 		V.watch = function(restart){
 			if(!start || restart){
@@ -474,11 +582,11 @@ if (top.location == location) {
 		V.encHtml = function (html) {
 			//20120328 白冰 只转换标点符号!    
 			//return encodeURIComponent(V.getValue(html, '').replace(/\r\n/g, ''));
-			return (V.getValue(html, '').replace(/[\r\n]+/g, '>v>j>').replace(/\s+/g, ' ').replace(/>v>j>/g, '\r\n').replace(new RegExp('~|(\r\n)|!|@|#|\\$|%|\\^|;|\\*|\\(|\\)|_|\\+|\\{|\\}|\\||:|\"|\\?|`|\\-|=|\\[|\\]|\\\|;|\'|,|\\.|/|，|；', 'g'), function (a) { return encodeURIComponent(a); }));
+			return (V.getValue(html, '').replace(/[\r\n]+/g, '>v>j>').replace(/\s+/g, ' ').replace(/>v>j>/g, '\r\n').replace(new RegExp('<|>|~|(\r\n)|!|@|#|\\$|%|\\^|;|\\*|\\(|\\)|_|\\+|\\{|\\}|\\||:|\"|\\?|`|\\-|=|\\[|\\]|\\\|;|\'|,|\\.|/|，|；', 'g'), function (a) { return encodeURIComponent(a); }));
 		};
 		//对字符串进行解码
 		V.decHtml = function (html) {
-			return decodeURIComponent(V.getValue(html, ''));
+			return decodeURIComponent(html || '');
 		};
 		V.setChecked = function (node, value) {
 			function setCheckBox(node2, value) {
@@ -580,6 +688,42 @@ if (top.location == location) {
 				res[i] = _evalTJson(v);
 			};
 			return res;
+		};
+		var checkValue = function(p){
+			switch(typeof(p)){
+				case 'number':
+				case 'boolean':
+					return p;
+				case 'undefined':
+				case 'object':
+					return "\"\"";
+				default:
+					return "\""+p+"\"";
+			}
+		};
+		V.toTJson = function(data){
+			if(data){
+				if(!V.isArray(data)) data = [data];
+				var res = [];		
+				if(V.isArray(data) && data[0] && V.isArray(data[0])){
+					for(var i in data){
+						res[i]=V.toTJson(data[i]);
+					}
+				} else {
+					//找到第一个不是数组的实例对象进行处理
+					res[0]=[];
+					for(var k in data[0]){
+						res[0][res[0].length] = "\""+k+"\"";
+					}
+					for(var v in data){
+						var obj = [];
+						for(var k2 in data[v])
+							obj[obj.length] = checkValue(data[v][k2]);
+						res[res.length] = (obj);
+					}
+				}
+				return res;
+			} else return [];
 		};
 		/*
 		V.ajax用于使用默认值
@@ -920,153 +1064,178 @@ if (top.location == location) {
 	}
 	//事件处理
 	{
-		/*
-		V用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
-		--案例
-		V.registCommand('showXXList',getData)
-		*/
-		V.registCommand = function (name, func) {
-			var comms = V.getSettings('comms',[]);
-			var data = comms[name];
-			if (V.isValid(data) && typeof (data) != 'function') {
-				func.apply(null, data);
-			}
-			comms[name] = func;
-		};
-		/*
-		V用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
-		--案例
-		V.callCommand('showXXList',[{id:1}])
-		*/
-		V.callCommand = function (name, data) {
-			var caller = arguments.caller;
-			var comms = V.getSettings('comms',[]);
-			var func = comms[name];
-			data = V.isArray(data)?data:[data];
-			if (V.isValid(func) && typeof (func) == 'function') {
-				V.once(function(){func.apply(caller, data);});
-			} else {
-				comms[name] = data;
-			}
-		};
-		/*
-		用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false;
-		--案例
-		if (!V.hasCommand('editor.open')) V.part("/FileServer/layout/editor/editor.htm");
-		*/
-		V.hasCommand = function (name) {
-			var comms = V.getSettings('comms',[]);
-			var func = comms[name];
-			return (V.isValid(func) && typeof (func) == 'function');
-		};
-
-		/*
-		仅限iframe方式调用时，先取消原页面添加的方法
-		//业务逻辑深度交叉，iframe落后的控件连接方式时使用
-		一定要在part前
-		--案例
-		V.cleanCommand('editor.open');
-		V.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){});
-		*/
-		V.cleanCommand = function (name) {
-			var comms = V.getSettings('comms',[]);
-			delete comms[name];
-		};
-		/*
-		V用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
-		并约定1分钟内 允许注册者多次被触发
-		--案例
-		V.registEvent('showXXList',getData),V.registEvent(['showXXList',''],getData)
-		*/
-		V.registEvent = function (name,func,isTop) {
-			var fun = function(name,func,isTop){
-				var events = V.getSettings('events',[]);
-				var funs = events[name];
-				if (!V.isValid(funs)) {
-					funs = [];
-					events[name] = funs;
+		//添加regist call has clean Command与Event功能
+		V.applyCommandAndEvent = function(S){    
+			S._settings = {};
+			S._exSettings = {};
+			//获取不存在就配置
+			S.getSettings=function(key,data){
+				if(!V.isValid(S._settings[key])){				
+					if(V.isValid(S._exSettings[key])){
+						S._settings[key] = V.merge(V.getValue(data,{}),S._exSettings[key]);
+						delete S._exSettings[key];
+					} else
+						S._settings[key] = V.getValue(data,{});
 				}
-				if (typeof (func) == 'function') {
-					if(isTop && !funs.top){
-						funs.top = func;
-						funs.unshift(func);
-					} else {
-						if(isTop && funs.top){V.showException('V.registEvent:'+name+' 事件已经有订阅者被置顶!');}
-						funs.push(func);
-					}					
-					var ecall = V.getSettings('eventcall',{});
-					ecall = ecall[name]?ecall[name]:{};
-					if(ecall.time && ecall.time>=(new Date().getTime())){
-						V.once(function(){
-							func.apply(ecall.caller,ecall.data);
-						});
+				return S._settings[key];
+			};
+			//扩展默认配置
+			S.extendSettings = function(key,data){
+				if(V.isValid(S._settings[key])) {
+					S._settings[key] = V.merge(S._settings[key],data);
+				} else {
+					if(S.exSettings[key]){
+						S._exSettings[key] = V.merge(S._exSettings[key],V.getValue(data,{}));
+					}else{
+						S._exSettings[key] = V.getValue(data,{});
 					}
 				}
 			};
-			if(V.isArray(name)){
-				V.each(name,function(v){
-					fun(v,func,isTop);
-				},null,true);
-			} else {
-				fun(name,func,isTop);
-			}
-		};
-		/*
-		V用于调用被调用页面注册的事件以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
-		并约定1分钟内 允许注册者多次被触发
-		--案例
-		V.callEvent('showXXList',[{id:1}])
-		*/
-		V.callEvent = function (name, data) {
-			var caller = arguments.caller;
-			var events = V.getSettings('events',[]);
-			var funs = events[name];
-			data = V.isArray(data)?data:[data];
-			if (V.isValid(funs) && V.isArray(funs)) {
-				V.each(funs,function (func) {
-					//报错不下火线
-					V.tryC(function () {
-						func.apply(caller,data);
-					});
-				});
-			}
-			var ecall = V.getSettings('eventcall',{});
-			if(!ecall[name]){ecall[name] = {};}
-			ecall = ecall[name];
-			ecall.time = new Date().add('n',1).getTime();
-			ecall.data = data;
-			ecall.caller = caller;
-		};
-		/*
-		用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false;
-		--案例
-		if (!V.hasEvent('editor.open')) V.part("/FileServer/layout/editor/editor.htm");
-		*/
-		V.hasEvent = function (name) {
-			var events = V.getSettings('events',[]);
-			var funs = events[name];
-			if (V.isValid(funs) && V.isArray(funs)) {
-				return true;
-			}
-			return false;
-		};
+			S.clearSettings= function(){S._settings = {};};
+			S.registCommand = function (name, func) {
+				var comms = S.getSettings('comms',[]);
+				var data = comms[name];
+				if (V.isValid(data) && typeof (data) != 'function') {
+					func.apply(null, data);
+				}
+				comms[name] = func;
+			};
+			/*
+			V用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+			--案例
+			S.callCommand('showXXList',[{id:1}])
+			*/
+			S.callCommand = function (name, data) {
+				var caller = arguments.caller;
+				var comms = S.getSettings('comms',[]);
+				var func = comms[name];
+				data = V.isArray(data)?data:[data];
+				if (V.isValid(func) && typeof (func) == 'function') {
+					V.once(function(){func.apply(caller, data);});
+				} else {
+					comms[name] = data;
+				}
+			};
+			/*
+			用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false;
+			--案例
+			if (!S.hasCommand('editor.open')) S.part("/FileServer/layout/editor/editor.htm");
+			*/
+			S.hasCommand = function (name) {
+				var comms = S.getSettings('comms',[]);
+				var func = comms[name];
+				return (V.isValid(func) && typeof (func) == 'function');
+			};
 
-		/*
-		仅限iframe方式调用时，先取消原页面添加的方法
-		//业务逻辑深度交叉，iframe落后的控件连接方式时使用
-		一定要在part前
-		--案例
-		V.cleanEvent('editor.open');
-		V.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){});
-		*/
-		V.cleanEvent = function (name) {
-			var events = V.getSettings('events',[]);
-			delete events[name];
+			/*
+			仅限iframe方式调用时，先取消原页面添加的方法
+			//业务逻辑深度交叉，iframe落后的控件连接方式时使用
+			一定要在part前
+			--案例
+			S.cleanCommand('editor.open');
+			S.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){});
+			*/
+			S.cleanCommand = function (name) {
+				var comms = S.getSettings('comms',[]);
+				delete comms[name];
+			};
+			/*
+			V用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+			并约定1分钟内 允许注册者多次被触发
+			--案例
+			S.registEvent('showXXList',getData),S.registEvent(['showXXList',''],getData)
+			*/
+			S.registEvent = function (name,func,isTop) {
+				var fun = function(name,func,isTop){
+					var events = S.getSettings('events',[]);
+					var funs = events[name];
+					if (!V.isValid(funs)) {
+						funs = [];
+						events[name] = funs;
+					}
+					if (typeof (func) == 'function') {
+						if(isTop && !funs.top){
+							funs.top = func;
+							funs.unshift(func);
+						} else {
+							if(isTop && funs.top){V.showException('S.registEvent:'+name+' 事件已经有订阅者被置顶!');}
+							funs.push(func);
+						}					
+						var ecall = S.getSettings('eventcall',{});
+						ecall = ecall[name]?ecall[name]:{};
+						if(ecall.time && ecall.time>=(new Date().getTime())){
+							V.once(function(){
+								func.apply(ecall.caller,ecall.data);
+							});
+						}
+					}
+				};            
+				if(V.isArray(name)){
+					V.each(name,function(v){
+						fun(v,func,isTop);
+					},null,true);
+				} else {
+					fun(name,func,isTop);
+				}
+			};
+			/*
+			V用于调用被调用页面注册的事件以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
+			并约定1分钟内 允许注册者多次被触发
+			--案例
+			S.callEvent('showXXList',[{id:1}])
+			*/
+			S.callEvent = function (name, data) {
+				var caller = arguments.caller;
+				var events = S.getSettings('events',[]);
+				var funs = events[name];
+				data = V.isArray(data)?data:[data];
+				if (V.isValid(funs) && V.isArray(funs)) {
+					V.each(funs,function (func) {
+						//报错不下火线
+						V.tryC(function () {
+							func.apply(caller,data);
+						});
+					});
+				}
+				var ecall = S.getSettings('eventcall',{});
+				if(!ecall[name]){ecall[name] = {};}
+				ecall = ecall[name];
+				ecall.time = new Date().add('n',1).getTime();
+				ecall.data = data;
+				ecall.caller = caller;
+			};
+			/*
+			用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false;
+			--案例
+			if (!S.hasEvent('editor.open')) S.part("/FileServer/layout/editor/editor.htm");
+			*/
+			S.hasEvent = function (name) {
+				var events = S.getSettings('events',[]);
+				var funs = events[name];
+				if (V.isValid(funs) && V.isArray(funs)) {
+					return true;
+				}
+				return false;
+			};
+
+			/*
+			仅限iframe方式调用时，先取消原页面添加的方法
+			//业务逻辑深度交叉，iframe落后的控件连接方式时使用
+			一定要在part前
+			--案例
+			S.cleanEvent('editor.open');
+			S.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){});
+			*/
+			S.cleanEvent = function (name) {
+				var events = S.getSettings('events',[]);
+				delete events[name];
+			};
 		};
+		V.applyCommandAndEvent(V);
 				
 		//TOTest
 		V.getEvent = function(event){
-			return event?event:window.event;
+			return event || window[event];
 			//event || window.event;
 		};
 		V.getTarget = function(event){
@@ -1241,7 +1410,6 @@ if (top.location == location) {
 				return true;
 			else
 				return false;
-			return true;
 		};
 
 		String.prototype.startWith = function (str) {
@@ -1251,12 +1419,13 @@ if (top.location == location) {
 				return true;
 			else
 				return false;
-			return true;
 		};
+
 		String.prototype.eq = function(str,isOri){			
 			str = str+'';
 			return isOri?(this == str):(this.toLowerCase() == str.toLowerCase());
 		};
+
 		String.prototype.trim = function(chr){
 			switch(chr){
 				case '/':
@@ -1274,7 +1443,7 @@ if (top.location == location) {
 					break;
 			}
 	　　    return this.replace(V.isValid(chr)?new RegExp('(^'+chr+'+)|('+chr+'+$)'):/(^\s+)|(\s+$)/g, "");
-	　　 };
+	　　 }
 	}	
 	//json2
 	{		

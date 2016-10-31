@@ -299,7 +299,7 @@
         }
       }, function () {
         if (data.type) {
-          if (_.map) _.material.map = _.map
+          if (_.map) _.material.map = _.map;		  
           // 对材质的设置必须在生成Mesh之前否则就是更新Mesh.Material也无济于事，可能是更新的属性不对导致的或者其属性是clone的
           switch (data.type.toLowerCase()) {
             default:
@@ -352,8 +352,8 @@
                 }
                 break
             }
-          }, _.movie.redraw)
-      })
+          }, _.movie.redraw,true);
+      },true);
     }
     _.dispose = function () {
       V.tryC(function () { _.call('dispose'); if (_.obj) { _.movie.scene.remove(_.obj); _.movie.redraw(); } }); _.node.remove()

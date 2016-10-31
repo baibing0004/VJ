@@ -37,7 +37,7 @@
 		}
 	</style>
 	<script type="text/javascript">
-		if(0){
+		if(false){
 			$(function(){
 				VJ.include('three.min.js');
 				var scene = new THREE.Scene();
@@ -96,7 +96,7 @@
 					cm = V.merge(cm,{
 						Middler:{
 							'VESH.view':{											
-								tmovie:{path:'../three/three.min.js;../three/stats.min.js;../three/tc.js',params:['',{data:{stats:false}}]},
+								tmovie:{path:'../three/three.min.js;../three/stats.min.js;../three/Projector.js;../three/CanvasRenderer.js;../three/tc.js',params:['',{data:{stats:false}}]},
 								tobject:{path:'../three/three.min.js;../three/stats.min.js;../three/tobj.js',params:["",{data:{debug:true}}]}
 							}
 						}
@@ -116,12 +116,13 @@
 								V.registEvent('test.resize',function(size){
 									I.update({size:size});
 								});
-								var d2d = $('#div2D');
-								I.update({play:function(D2,I2){
-									var xs = D2.xs;//+0.1;
-									I.update({xs:xs,start:D.D2Position,camera:{look:{x:100*Math.cos(xs*Math.PI/180),z:100*Math.sin(xs*Math.PI/180),y:D2.camera.look.y}}});										
-								}});
-								V.once(function(){I.update({play:false})},2000);
+								var d2d = $('#div2D');	
+								I.call('MouseUp');							
+
+
+
+
+
 							},
 							onMouseDown:function(D,I){
 								console.log('mousedown');
@@ -130,19 +131,19 @@
 									I.update({play:function(D2,I2){
 										if(D2.camera.look){
 											//计算距离
-											var xdis = (D2.D2Position.x-D2.start.x);
-											var ydis = -(D2.D2Position.y-D2.start.y);
+											var xdis = Math.abs(D2.D2Position.x-D2.start.x);
+											var ydis = Math.abs(D2.D2Position.y-D2.start.y);
 											//获取步长
-											var xs = D2.xs-(Math.asin(xdis/D2.size.width)*360/Math.PI);
-											var ys = D2.ys-(Math.asin(ydis/D2.size.height)*360/Math.PI);//Math.max(-90,Math.min(90,(Math.asin(ydis/200)*360/Math.PI))); 
-											console.log(ys);
-											//var ys = 0;
-											//var ystep = ydis>xdis?((D2.D2Position.y-D2.start.y)/D2.size.height*10):0;
-											//var xstep = Math.max(-90,Math.min(90,(ydis<xdis?((D2.D2Position.x-D2.start.x)/D2.size.width*10):0)));
+
+
+
+
+											var ystep = ydis>xdis?((D2.D2Position.y-D2.start.y)/D2.size.height*10):0;
+											var xstep = Math.max(-90,Math.min(90,(ydis<xdis?((D2.D2Position.x-D2.start.x)/D2.size.width*10):0)));
 											//计算最终结果 x直接旋转 y轴只能上下90度
-											//var ys = Math.max(-90,Math.min(90,((D2.ys?D2.ys:0)-ystep)));
-											//var xs = (D2.xs?D2.xs:-90)+xstep;
-											I.update({ys1:ys,xs1:xs,start:D.D2Position,camera:{look:{x:100*Math.cos(xs*Math.PI/180),z:100*Math.sin(xs*Math.PI/180),y:100*Math.sin(ys*Math.PI/180)}}});
+											var ys = Math.max(-90,Math.min(90,((D2.ys?D2.ys:0)-ystep)));
+											var xs = (D2.xs?D2.xs:-90)+xstep;
+											I.update({ys:ys,xs:xs,start:D.D2Position,camera:{look:{x:100*Math.cos(xs*Math.PI/180),z:100*Math.sin(xs*Math.PI/180),y:100*Math.sin(ys*Math.PI/180)}}});
 											/*
 											if(this.pancan1 && this.pancan1.update)
 											this.pancan1.update({'2dposition1':function(pos){
@@ -151,24 +152,21 @@
 											}});*/
 										}
 									}});
-								},100)
+								},10)
+
 							},
 							onMouseUp:function(D,I){
 								console.log('mouseup');
-								//I.update({xs:D.xs1?D.xs1:-90});
+
 								I.update({down:false,play:false,start:false});
-								V.once(function(){									
-									I.update({xs:D.xs1,ys:D.ys1});
-									I.update({play1:function(D2,I2){
-										var xs = D2.xs;//+0.1;
+								V.once(function(){
+									I.update({play:function(D2,I2){
+
+
+										var xs = D2.xs+0.1;
 										I.update({xs:xs,start:D.D2Position,camera:{look:{x:100*Math.cos(xs*Math.PI/180),z:100*Math.sin(xs*Math.PI/180),y:D2.camera.look.y}}});										
 									}});
 								},200);
-							},
-							onHover:function(D,I){
-								if(!D.hover){
-									I.call('mouseup');
-								}
 							},
 							onClick:function(D,I){
 								console.log('click');
@@ -299,7 +297,7 @@
 						},
 						page:{
 							data:{
-								title:'测试页面aa'
+								title:'VJ threejs控件测试页面aa'
 							},
 							onStart:function(D,I){
 								//V.tryC(function(){I.v.middler.getObjectByAppName('VESH.view','map')});								

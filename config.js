@@ -1,4 +1,4 @@
-﻿window.top.config = {
+window.top.config = {
 	Middler:{
 		'VESH.view':{
 			pack:'VJ.view',

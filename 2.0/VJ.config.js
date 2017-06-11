@@ -120,7 +120,6 @@
         _.setValue = function(key, value) { return config.setConfigValue(confkey, key, value); };
         _.merge = function(config) { V.showException('不支持的功能'); };
     };
-
     C.ConfigAdapter = function() {
         var _ = this;
         _.fill = function(cm, dic, resource) {

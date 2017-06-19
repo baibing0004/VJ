@@ -1,0 +1,38 @@
+{
+  "name": "vj",
+  "version": "1.0.0",
+  "description": "VESH's JavaScript Framework",
+  "main": "VJ.js",
+  "scripts": {
+    "init": "npm i",
+    "watch": "gulp"
+  },
+  "keywords": [
+    "VJ",
+    "VESH"
+  ],
+  "author": "baibing",
+  "license": "ISC",
+  "dependencies": {
+    "babel-core": "^6.24.0",
+    "babel-loader": "^6.4.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-es2015": "^6.24.0",
+    "babel-preset-stage-0": "^6.22.0",
+    "babelify": "^7.3.0",
+    "browserify": "^14.1.0",
+    "del": "^2.2.2",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-notify": "^3.0.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.5.4",
+    "gulp-rev": "^7.1.2",
+    "gulp-rev-collector": "^1.1.1",
+    "gulp-uglify": "^2.1.0",
+    "gulp-watch": "^4.3.11",
+    "stream-combiner2": "^1.1.1",
+    "vinyl-named": "^1.1.0"
+  }
+}

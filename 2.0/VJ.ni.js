@@ -442,7 +442,6 @@
                                 break;
                             default:
                                 throw new Error('N.NiObjectDataFactory 无法找到<' + _.params.resource + '>对象');
-                                break;
                         }
                         __.open();
                     };
@@ -485,9 +484,7 @@
                 V.inherit.apply(_, [N.NiDataFactory, []]);
                 var ws = window.WebSocket || window.MozWebSocket;
                 if (!ws) {
-
                     throw new Error(V.userAgent.name + '不支持WebSocket!');
-                    return;
                 }
                 __.SocketConnection = function() {
                     var _ = this,

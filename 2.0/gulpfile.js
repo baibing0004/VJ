@@ -10,7 +10,7 @@ const gulp = require('gulp'),
     named = require('vinyl-named'),
     combiner = require('stream-combiner2');
 
-const paths = { static: ["./VJ.*.js", "!./VJ.view.js", "!./VJ.min.js"], dest: './', destfile: ["./VJ.js", "./VJ.min.js"] };
+const paths = { static: ["./VJ.*.js", "!./VJ.view.extend.js", "!./VJ.min.js"], dest: './', destfile: ["./VJ.js", "./VJ.min.js"] };
 gulp.task('clean', function(cb) {
     return del(paths.destfile, cb);
 });
@@ -18,7 +18,7 @@ gulp.task('static', ['clean'], function(cb) {
     cb.force = true;
     const combined = combiner.obj([
         gulp.src(paths.static),
-        concat("./VJ.js", { newLine: ';;' }),
+        concat("./VJ.js", { newLine: '' }),
         gulp.dest(paths.dest),
         rename({ extname: ".min.js" }),
         babel({}), //{   presets: ['es2015', 'stage-0'] },

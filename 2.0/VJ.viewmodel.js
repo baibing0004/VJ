@@ -709,562 +709,558 @@
     //分别定义view与viewmodel的Page
     M.Page = function(cm, data) {
         var _ = this,
-            __ = {}; {
-            _.vms = V.getValue(data, {});
-            _.models = _.vms;
-            //默认使用配置作为事件定义
-            V.inherit.apply(_, [M.Control, []]);
-            _.page = _.vms.page ? _.vms.page : {};
-            _.data = _.page.data ? _.page.data : {};
-            if (cm) {
-                switch (V.getType(cm)) {
-                    case 'object':
-                    case 'Object':
-                        if (cm.getConfigValue) {
-                            _.config = cm;
-                        } else {
-                            _.config = V.config.getApplicationConfigManagerFromObj(cm);
-                        }
-                        break;
-                    case 'string':
-                        cm = eval('(' + cm + ')');
+            __ = {};
+        _.vms = V.getValue(data, {});
+        _.models = _.vms;
+        //默认使用配置作为事件定义
+        V.inherit.apply(_, [M.Control, []]);
+        _.page = _.vms.page ? _.vms.page : {};
+        _.data = _.page.data ? _.page.data : {};
+        if (cm) {
+            switch (V.getType(cm)) {
+                case 'object':
+                case 'Object':
+                    if (cm.getConfigValue) {
+                        _.config = cm;
+                    } else {
                         _.config = V.config.getApplicationConfigManagerFromObj(cm);
-                }
-            } else {
-                _.config = V.config.getApplicationConfigManagerFromObj();
+                    }
+                    break;
+                case 'string':
+                    cm = eval('(' + cm + ')');
+                    _.config = V.config.getApplicationConfigManagerFromObj(cm);
             }
-            _.middler = new V.middler.Middler(_.config);
-            _.ni = new V.ni.NiTemplateManager(_.config, M.NIAPP);
-            _.session = _.middler.getObjectByAppName(M.APP, 'SessionDataManager');
-            _.hasRight = function(name, isAdmin) {
-                //TO修改
-                if (V.getValue(isAdmin, false) && (typeof(User) == 'undefined' || !V.isValid(User))) { return false; }
-                if (User) {
-                    //添加后门
-                    if (!V.isValid(Pers)) { V.showException("permission.js不存在"); return false; }
-                    //if(VJ.getValue(checkAdmin,true) && (V.isValid(pers))) return true;
-                    var id = V.getValue(Pers[name], '_');
-                    return (V.getValue(User.PIDS, '').indexOf(',' + id + ',') >= 0);
-                }
-                return false;
-            };
-            _.getModels = function(id) { return id ? (_.vms[id] ? _.vms[id] : null) : _.vms; };
-            _.setModels = function(id, v) { _.vms[id] = v; };
-            __.bind = _.bind;
-            _.bind = function(view) {
+        } else {
+            _.config = V.config.getApplicationConfigManagerFromObj();
+        }
+        _.middler = new V.middler.Middler(_.config);
+        _.ni = new V.ni.NiTemplateManager(_.config, M.NIAPP);
+        _.session = _.middler.getObjectByAppName(M.APP, 'SessionDataManager');
+        _.hasRight = function(name, isAdmin) {
+            //TO修改
+            if (V.getValue(isAdmin, false) && (typeof(User) == 'undefined' || !V.isValid(User))) { return false; }
+            if (User) {
+                //添加后门
+                if (!V.isValid(Pers)) { V.showException("permission.js不存在"); return false; }
+                //if(VJ.getValue(checkAdmin,true) && (V.isValid(pers))) return true;
+                var id = V.getValue(Pers[name], '_');
+                return (V.getValue(User.PIDS, '').indexOf(',' + id + ',') >= 0);
+            }
+            return false;
+        };
+        _.getModels = function(id) { return id ? (_.vms[id] ? _.vms[id] : null) : _.vms; };
+        _.setModels = function(id, v) { _.vms[id] = v; };
+        __.bind = _.bind;
+        _.bind = function(view) {
                 __.bind(view);
                 _.page.v = view;
+            }
+            //初始化操作
+        var _page = _.middler.getObjectByAppName(W.APP, 'page');
+        if (!_page) { throw new Error('没有找到page对应的页面view层对象'); }
+        _page.ready(function() {
+            _page.init(_, $(document.body));
+            _page.bind(_);
+        });
+    };
+    W.Page = function(path) {
+        var _ = this,
+            __ = {}; {
+            V.inherit.apply(_, [W.Control, [path]]);
+            _.vs = {};
+            _.controls = [];
+            __.render = _.render;
+            __.onLoad = _.onLoad;
+            __.dispose = _.dispose;
+        }
+        //一般调用M.Page对象都比较特殊
+        _.bind = function(page) {
+            var vm = page.page;
+            _.page = page;
+            if (vm) {
+                //仅针对page节点
+                _.vm = vm;
+                //完成配置合并
+                _.vm.data = V.merge(_.params, V.getValue(_.vm.data, {}));
+                //完成方法注入
+                _.vm.update = function() {
+                    var as = Array.prototype.slice.call(arguments);
+                    as = V.getValue(as, [null]);
+                    if (as[0]) V.merge(_.vm.data, as[0], true);
+                    as[0] = as[0] ? as[0] : V.merge({}, _.vm.data);
+                    _.render.apply(_, as);
+                };
+                _.vm.call = function() { _.call.apply(_.page.getModels(), arguments); };
+                _.vm.add = function() { _.addControl.apply(_, arguments); };
+                _.vm.remove = function() { _.removeControl.apply(_, arguments); };
+                _.vm.desc = function() { _.desc(); };
+                _.vm.get = function(key) { _.vm.data = V.merge(_.vm.data, _.fill()); return key ? _.vm.data[key] : _.vm.data; };
+                _.page.registEvent = _.registEvent;
+                _.page.callEvent = _.callEvent;
+                _.page.hasEvent = _.hasEvent;
+                _.page.clearEvent = _.clearEvent;
+                _.page.registCommand = _.registCommand;
+                _.page.callCommand = _.callCommand;
+                _.page.hasCommand = _.hasCommand;
+                _.page.clearCommand = _.clearCommand;
 
-                //初始化操作
-                var _page = _.middler.getObjectByAppName(W.APP, 'page');
-                if (!_page) { throw new Error('没有找到page对应的页面view层对象'); }
-                _page.ready(function() {
-                    _page.init(_, $(document.body));
-                    _page.bind(_);
+                V.forC(vm, function(key, value) {
+                    key = key.toLowerCase();
+                    if (key.indexOf('on') == 0) {
+                        //事件注册
+                        _.events[key.substring(2)] = value;
+                    }
+                }, function() { page.bind(_); }, true);
+            } else {
+                _.vm = { data: V.merge(_.params, {}) };
+            }
+            _.vms = _.page.vms;
+            _.models = _.vms;
+            if (_.path) {
+                W.getTemplate(_.path, function(node) {
+                    _.replaceNode(node);
+                    _.onLoad(node);
                 });
+            } else {
+                _.node.show();
+                _.onLoad(_.node);
+            }
+            _.middler = page.middler
+            _.ni = page.ni;
+            _.session = page.session;
+            _.config = page.config;
+        }
+        _.dispose = function() {
+            _.session.updateAll();
+            _.call('dispose');
+            $('body').empty();
+        };
+        //用于重载触发方式
+        _.ready = function(func) {
+            $(function() {
+                func();
+                _.bindControl(_.node);
+            });
+            window.onbeforeunload = _.dispose;
+        };
+        //用于覆盖引起页面布局改变
+        _.onReady = function() {};
 
+        _.call = function(name, param, imme) {
+            //所有的事件调用全部采用异步调用方式 V.once				
+            param = V.getValue(param, {});
+            V.merge(_.vm.data, _.fill(), param, true);
+            param = V.merge(_.vm.data, param);
+            name = name.toLowerCase();
+            if (_.events[name]) {
+                V.once(function() {
+                    var val = _.events[name].apply(_.parent.getModels(), [imme ? param : _.vm.data, _.vm]);
+                    if (imme) V.merge(_.vm.data, param, true);
+                    if (val && val != {}) {
+                        V.merge(_.vm.data, val, true)
+                        _.render(val);
+                    }
+                });
             }
         };
-        W.Page = function(path) {
-            var _ = this,
-                __ = {}; {
-                V.inherit.apply(_, [W.Control, [path]]);
-                _.vs = {};
-                _.controls = [];
-                __.render = _.render;
-                __.onLoad = _.onLoad;
-                __.dispose = _.dispose;
-            }
-            //一般调用M.Page对象都比较特殊
-            _.bind = function(page) {
-                var vm = page.page;
-                _.page = page;
-                if (vm) {
-                    //仅针对page节点
-                    _.vm = vm;
-                    //完成配置合并
-                    _.vm.data = V.merge(_.params, V.getValue(_.vm.data, {}));
-                    //完成方法注入
-                    _.vm.update = function() {
-                        var as = Array.prototype.slice.call(arguments);
-                        as = V.getValue(as, [null]);
-                        if (as[0]) V.merge(_.vm.data, as[0], true);
-                        as[0] = as[0] ? as[0] : V.merge({}, _.vm.data);
-                        _.render.apply(_, as);
-                    };
-                    _.vm.call = function() { _.call.apply(_.page.getModels(), arguments); };
-                    _.vm.add = function() { _.addControl.apply(_, arguments); };
-                    _.vm.remove = function() { _.removeControl.apply(_, arguments); };
-                    _.vm.desc = function() { _.desc(); };
-                    _.vm.get = function(key) { _.vm.data = V.merge(_.vm.data, _.fill()); return key ? _.vm.data[key] : _.vm.data; };
-                    _.page.registEvent = _.registEvent;
-                    _.page.callEvent = _.callEvent;
-                    _.page.hasEvent = _.hasEvent;
-                    _.page.clearEvent = _.clearEvent;
-                    _.page.registCommand = _.registCommand;
-                    _.page.callCommand = _.callCommand;
-                    _.page.hasCommand = _.hasCommand;
-                    _.page.clearCommand = _.clearCommand;
-
-                    V.forC(vm, function(key, value) {
-                        key = key.toLowerCase();
-                        if (key.indexOf('on') == 0) {
-                            //事件注册
-                            _.events[key.substring(2)] = value;
-                        }
-                    }, function() { page.bind(_); }, true);
-                } else {
-                    _.vm = { data: V.merge(_.params, {}) };
-                }
-                _.vms = _.page.vms;
-                _.models = _.vms;
-                if (_.path) {
-                    W.getTemplate(_.path, function(node) {
-                        _.replaceNode(node);
-                        _.onLoad(node);
-                    });
-                } else {
-                    _.node.show();
-                    _.onLoad(_.node);
-                }
-                _.middler = page.middler
-                _.ni = page.ni;
-                _.session = page.session;
-                _.config = page.config;
-            }
-            _.dispose = function() {
-                _.session.updateAll();
-                _.call('dispose');
-                $('body').empty();
-            };
-            //用于重载触发方式
-            _.ready = function(func) {
-                $(function() {
-                    func();
-                    _.bindControl(_.node);
-                });
-                window.onbeforeunload = _.dispose;
-            };
-            //用于覆盖引起页面布局改变
-            _.onReady = function() {};
-
-            _.call = function(name, param, imme) {
-                //所有的事件调用全部采用异步调用方式 V.once				
-                param = V.getValue(param, {});
-                V.merge(_.vm.data, _.fill(), param, true);
-                param = V.merge(_.vm.data, param);
-                name = name.toLowerCase();
-                if (_.events[name]) {
-                    V.once(function() {
-                        var val = _.events[name].apply(_.parent.getModels(), [imme ? param : _.vm.data, _.vm]);
-                        if (imme) V.merge(_.vm.data, param, true);
-                        if (val && val != {}) {
-                            V.merge(_.vm.data, val, true)
-                            _.render(val);
-                        }
-                    });
-                }
-            };
-            //用于绑定对应的控件
-            _.bindControl = function(node) {
-                //这里应该由真实的View层调用使用document.ready实现
-                var p = node.find('[_]').toArray();
-                V.whileC(function() { return p.shift(); }, function(v1) {
-                    var v = $(v1);
-                    var id = v.attr('id');
-                    var json = eval("({" + v.attr('_') + "})");
-                    var type = json.type ? json.type : (id && _.page.getModels(id) && _.page.getModels(id).type) ? _.page.getModels(id).type : null;
-                    //对于容器类对象的处理方式
-                    var nodeName = type ? type.toLowerCase() : v[0].nodeName.toLowerCase();
-                    var obj = _.middler.getObjectByAppName(W.APP, nodeName);
-                    if (!obj) V.showException('配置文件中没有找到对象类型定义:' + nodeName);
-                    obj.init(_, v, V.isValid(v.attr('_')) ? json : null);
-                    obj.page = _;
-                    if (!id) {
-                        id = nodeName + V.random();
-                    }
-                    obj.nodeName = nodeName;
-                    if (!_.page.getModels(id)) {
-                        _.page.setModels(id, { data: {} });
-                    }
-                    _.vs[id] = obj;
-                    V.inherit.apply(_.page.getModels(id), [M.Control, []]);
-                    obj.bind(_.page.getModels(id));
-                }, function() {
-                    //实现通过type属性完成数据初始化的功能
-                    V.forC(_.page.getModels(), function(key, v) {
-                        if (v.type && !v.v) {
-                            var obj = _.middler.getObjectByAppName(W.APP, v.type);
-                            if (!obj) throw new Error('配置文件中没有找到对象类型定义:' + v.type);
-                            var node2 = V.newEl('div');
-                            node.append(node2);
-                            obj.init(_, node2, null);
-                            obj.page = _;
-                            _.controls.push(obj);
-                            _.vs[key] = obj;
-                            V.inherit.apply(v, [M.Control, []]);
-                            obj.bind(v);
-                        }
-                    }, function() {
-                        _.onReady();
-                        _.call('start');
-                    }, true);
-                });
-            };
-            //动态添加控件到指定位置 如果不指定那么会添加到最后
-            _.addControl = function(node, v) {
-                var obj = _.middler.getObjectByAppName(W.APP, v.type);
-                if (!obj) throw new Error('配置文件中没有找到对象类型定义:' + v.type);
-                node = node ? node : V.newEl('div').appendTo(_.node);
-                obj.init(_, node, v.data);
+        //用于绑定对应的控件
+        _.bindControl = function(node) {
+            //这里应该由真实的View层调用使用document.ready实现
+            var p = node.find('[_]').toArray();
+            V.whileC(function() { return p.shift(); }, function(v1) {
+                var v = $(v1);
+                var id = v.attr('id');
+                var json = eval("({" + v.attr('_') + "})");
+                var type = json.type ? json.type : (id && _.page.getModels(id) && _.page.getModels(id).type) ? _.page.getModels(id).type : null;
+                //对于容器类对象的处理方式
+                var nodeName = type ? type.toLowerCase() : v[0].nodeName.toLowerCase();
+                var obj = _.middler.getObjectByAppName(W.APP, nodeName);
+                if (!obj) V.showException('配置文件中没有找到对象类型定义:' + nodeName);
+                obj.init(_, v, V.isValid(v.attr('_')) ? json : null);
                 obj.page = _;
-                _.controls.push(obj);
-                var key = V.getValue(v.id, V.random());
-                if (_.vs[key]) { V.showException('控件id为' + key + '的控件已经存在，请更换id名'); return; }
-                _.vs[key] = obj;
-                V.inherit.apply(v, [M.Control, []]);
-                _.vm.vms[key] = v;
-                obj.bind(v);
-                return v;
-            };
-            _.removeControl = function(id) {
-                delete _.vm.vms[id];
-                if (_.vs[id]) {
-                    var val = _.vs[id];
-                    delete _.vs[id];
-                    _.controls = $.grep(_.controls, function(v, i) { return v != val; });
-                    if (val) val.dispose();
-                    //V.tryC(function(){_.vs[id].node.remove();});
+                if (!id) {
+                    id = nodeName + V.random();
                 }
-            };
-            _.clearControl = function() {
-                if (_.controls) {
-                    var vs = _.vs
-                    var div = $('<div style="display:none;"></div>').appendTo(window.document.body);
-                    _.node.children().appendTo(div);
-                    V.forC(vs, function(k, v) { v.dispose(); }, function() { div.remove(); }, true);
+                obj.nodeName = nodeName;
+                if (!_.page.getModels(id)) {
+                    _.page.setModels(id, { data: {} });
                 }
-                _.controls = [];
-                _.vs = {};
-                _.vm.vms = {};
-                _.models = _.vm.vms;
-            };
-            _.onLoad = function(node) {
-                    V.forC(_.events, function(k, v) {
-                        switch (k) {
-                            case 'size':
-                                $(window).resize(function() {
-                                    V.userAgent.refresh();
-                                    _.call('size', {
-                                        height: V.userAgent.height,
-                                        width: V.userAgent.width
-                                    });
+                _.vs[id] = obj;
+                V.inherit.apply(_.page.getModels(id), [M.Control, []]);
+                obj.bind(_.page.getModels(id));
+            }, function() {
+                //实现通过type属性完成数据初始化的功能
+                V.forC(_.page.getModels(), function(key, v) {
+                    if (v.type && !v.v) {
+                        var obj = _.middler.getObjectByAppName(W.APP, v.type);
+                        if (!obj) throw new Error('配置文件中没有找到对象类型定义:' + v.type);
+                        var node2 = V.newEl('div');
+                        node.append(node2);
+                        obj.init(_, node2, null);
+                        obj.page = _;
+                        _.controls.push(obj);
+                        _.vs[key] = obj;
+                        V.inherit.apply(v, [M.Control, []]);
+                        obj.bind(v);
+                    }
+                }, function() {
+                    _.onReady();
+                    _.call('start');
+                }, true);
+            });
+        };
+        //动态添加控件到指定位置 如果不指定那么会添加到最后
+        _.addControl = function(node, v) {
+            var obj = _.middler.getObjectByAppName(W.APP, v.type);
+            if (!obj) throw new Error('配置文件中没有找到对象类型定义:' + v.type);
+            node = node ? node : V.newEl('div').appendTo(_.node);
+            obj.init(_, node, v.data);
+            obj.page = _;
+            _.controls.push(obj);
+            var key = V.getValue(v.id, V.random());
+            if (_.vs[key]) { V.showException('控件id为' + key + '的控件已经存在，请更换id名'); return; }
+            _.vs[key] = obj;
+            V.inherit.apply(v, [M.Control, []]);
+            _.vm.vms[key] = v;
+            obj.bind(v);
+            return v;
+        };
+        _.removeControl = function(id) {
+            delete _.vm.vms[id];
+            if (_.vs[id]) {
+                var val = _.vs[id];
+                delete _.vs[id];
+                _.controls = $.grep(_.controls, function(v, i) { return v != val; });
+                if (val) val.dispose();
+                //V.tryC(function(){_.vs[id].node.remove();});
+            }
+        };
+        _.clearControl = function() {
+            if (_.controls) {
+                var vs = _.vs
+                var div = $('<div style="display:none;"></div>').appendTo(window.document.body);
+                _.node.children().appendTo(div);
+                V.forC(vs, function(k, v) { v.dispose(); }, function() { div.remove(); }, true);
+            }
+            _.controls = [];
+            _.vs = {};
+            _.vm.vms = {};
+            _.models = _.vm.vms;
+        };
+        _.onLoad = function(node) {
+                V.forC(_.events, function(k, v) {
+                    switch (k) {
+                        case 'size':
+                            $(window).resize(function() {
+                                V.userAgent.refresh();
+                                _.call('size', {
+                                    height: V.userAgent.height,
+                                    width: V.userAgent.width
                                 });
-                                break;
-                            case 'wheel':
-                                var wheelEvent = "onwheel" in document.createElement("div") ? "wheel" : document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll";
-                                //todo 兼容版本 判断为向下
-                                node[0].addEventListener(wheelEvent, function(e) { _.call('wheel', { e: e, isDown: e.wheelDelta < 0 }) }, false);
-                                break;
-                            default:
-                                _.bindEvent(node, k, v);
-                                break;
-                        }
-                    }, function() { __.onLoad(node); }, true);
-                }
-                //可以将数据更新
-            _.render = function(data) {
-                data = __.render(data);
-                V.forC(data, function(key, value) {
-                    switch (key) {
-                        case 'title':
-                            document.title = value;
-                            if (data != _.vm.data) { delete data[key]; }
+                            });
                             break;
-                        case 'close':
-                            _.dispose();
-                            window.close();
+                        case 'wheel':
+                            var wheelEvent = "onwheel" in document.createElement("div") ? "wheel" : document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll";
+                            //todo 兼容版本 判断为向下
+                            node[0].addEventListener(wheelEvent, function(e) { _.call('wheel', { e: e, isDown: e.wheelDelta < 0 }) }, false);
+                            break;
+                        default:
+                            _.bindEvent(node, k, v);
                             break;
                     }
-                });
-                return data;
-            };
-        };
-        //sessionAdapter添加处理业务逻辑 供人重新赋值
-        M.SessionDataManager = function(ada) {
-            var _ = this,
-                __ = {}; {
-                __.ada = ada;
-                __.data = {};
-                if (!__.ada) { throw new Error('SessionDataManager 需要设置SessionDataAdapter'); }
+                }, function() { __.onLoad(node); }, true);
             }
-            _.get = function(name) {
-                if (!__.data[name]) {
-                    __.data[name] = {};
-                    __.data[name] = __.ada.fill(name);
+            //可以将数据更新
+        _.render = function(data) {
+            data = __.render(data);
+            V.forC(data, function(key, value) {
+                switch (key) {
+                    case 'title':
+                        document.title = value;
+                        if (data != _.vm.data) { delete data[key]; }
+                        break;
+                    case 'close':
+                        _.dispose();
+                        window.close();
+                        break;
                 }
-                return __.data[name];
-            };
-            _.data = _.get;
-            //支持 session.update('会话key',[data]);
-            _.update = function(name, data) {
-                __.data[name] = V.merge(_.data(name), V.getValue(data, {}));
-                __.ada.update(__.data[name], name);
-            };
-            //支持 session.clear('会话key',[data]);
-            _.clear = function(name) {
-                __.ada.clear(name);
-            };
-            _.updateAll = function() {
-                var ret = [];
-                for (var i in __.data) {
-                    ret.push({ key: i, value: __.data[i] });
+            });
+            return data;
+        };
+    };
+    //sessionAdapter添加处理业务逻辑 供人重新赋值
+    M.SessionDataManager = function(ada) {
+        var _ = this,
+            __ = {}; {
+            __.ada = ada;
+            __.data = {};
+            if (!__.ada) { throw new Error('SessionDataManager 需要设置SessionDataAdapter'); }
+        }
+        _.get = function(name) {
+            if (!__.data[name]) {
+                __.data[name] = {};
+                __.data[name] = __.ada.fill(name);
+            }
+            return __.data[name];
+        };
+        _.data = _.get;
+        //支持 session.update('会话key',[data]);
+        _.update = function(name, data) {
+            __.data[name] = V.merge(_.data(name), V.getValue(data, {}));
+            __.ada.update(__.data[name], name);
+        };
+        //支持 session.clear('会话key',[data]);
+        _.clear = function(name) {
+            __.ada.clear(name);
+        };
+        _.updateAll = function() {
+            var ret = [];
+            for (var i in __.data) {
+                ret.push({ key: i, value: __.data[i] });
+            }
+            V.whileC(function() { ret.shift(); }, function(v) { _.update(v.key, v.value); }, function() {}, true);
+        };
+        _.isLogin = function() { return false; };
+    };
+    M.SessionDataAdapter = function(resource) {
+        var _ = this,
+            __ = {}; {
+            __.resource = resource;
+            __.ress = {};
+        }
+        _.setResource = function(name, res) {
+            __.ress[name] = res;
+        };
+        _.getResource = function(name) {
+            return __.ress[name] ? __.ress[name] : __.resource;
+        };
+        _.fill = function(name) {
+            return V.getValue(_.getResource(name).load(name), {});
+        };
+        _.update = function(data, name) {
+            _.getResource(name).save(name, V.getValue(data, {}));
+        };
+        _.clear = function(name) {
+            _.getResource(name).clear(name);
+        }
+    };
+    //专门用于继承使用
+    M.SessionDataResource = function() {
+        var _ = this,
+            __ = {}; {}
+        _.load = function(name) { return ''; };
+        _.save = function(name, data) {};
+        _.clear = function(name) {};
+    };
+    M.SessionDataResourceDecorator = function() {
+        var _ = this,
+            __ = {}; {
+            V.inherit.apply(_, [M.SessionDataResource, []]);
+            __.res = Array.prototype.slice(arguments, 0);
+            console.log(__.res);
+        }
+        _.load = function(name) {
+            var val = undefined;
+            V.each(__.res, function(v) { try { val = val ? val : v.load(name); } catch (e) {} }, null, true);
+            return val;
+        };
+        _.save = function(name, data) {
+            V.each(__.res, function(v) { try { v.save(name, data); } catch (e) {} });
+        };
+        _.clear = function(name) {
+            V.each(__.res, function(v) { try { v.clear(name); } catch (e) {} });
+        };
+    };
+    //定义时必须说明cookie.js的位置
+    M.CookieDataResource = function(param) {
+        var _ = this,
+            __ = {}; {
+            V.inherit.apply(_, [M.SessionDataResource, []]);
+            if (!$.cookie) {
+                V.include('ref/jquery.cookie.js');
+            }
+            if (!$.cookie) {
+                V.showException('下载不到jquery.cookie.js')
+            }
+            __.param = V.getValue(param, {});
+        }
+        _.load = function(name) {
+            var val = $.cookie(name);
+            var data = {};
+            if (val) {
+                var args = decodeURIComponent(val).replace(/\+/g, ' ').split('&'); // parse out name/value pairs separated via &
+                if (args.length == 1 && args[0].indexOf("{") == 0) {
+                    return eval("(" + args[0] + ")");
+                } else {
+                    // split out each name=value pair
+                    for (var i = 0; i < args.length; i++) {
+                        var pair = args[i].split('=');
+                        var name = decodeURIComponent(pair[0]);
+
+                        var value = (pair.length == 2) ?
+                            decodeURIComponent(pair[1]) :
+                            name;
+                        data[name] = value;
+                    }
+                    return data;
                 }
-                V.whileC(function() { ret.shift(); }, function(v) { _.update(v.key, v.value); }, function() {}, true);
-            };
-            _.isLogin = function() { return false; };
+            } else return {};
         };
-        M.SessionDataAdapter = function(resource) {
-            var _ = this,
-                __ = {}; {
-                __.resource = resource;
-                __.ress = {};
-            }
-            _.setResource = function(name, res) {
-                __.ress[name] = res;
-            };
-            _.getResource = function(name) {
-                return __.ress[name] ? __.ress[name] : __.resource;
-            };
-            _.fill = function(name) {
-                return V.getValue(_.getResource(name).load(name), {});
-            };
-            _.update = function(data, name) {
-                _.getResource(name).save(name, V.getValue(data, {}));
-            };
-            _.clear = function(name) {
-                _.getResource(name).clear(name);
+        _.save = function(name, data) {
+            //处理json变str
+            switch (typeof(data)) {
+                case 'string':
+                case 'String':
+                    $.cookie(name, data, __.param);
+                    break;
+                default:
+                case 'object':
+                case 'Object':
+                    $.cookie(name, V.encHtml(V.toJsonString(V.getValue(data, {}))), __.param);
+                    break;
             }
         };
-        //专门用于继承使用
-        M.SessionDataResource = function() {
-            var _ = this,
-                __ = {}; {}
-            _.load = function(name) { return ''; };
-            _.save = function(name, data) {};
-            _.clear = function(name) {};
+        _.clear = function(name) {
+            $.cookie(name, '', { expires: -1 });
         };
-        M.SessionDataResourceDecorator = function() {
-            var _ = this,
-                __ = {}; {
-                V.inherit.apply(_, [M.SessionDataResource, []]);
-                __.res = Array.prototype.slice(arguments, 0);
-                console.log(__.res);
+    };
+    //处理localStorage与sessionStorage 与 全局对象ObjectDB
+    M.StorageDataResource = function(storage, timeout) {
+        var _ = this,
+            __ = {}; {
+            V.inherit.apply(_, [M.SessionDataResource, []]);
+            __.storage = V.getValue(storage, window.sessionStorage);
+            switch (typeof(__.storage)) {
+                case 'string':
+                    __.storage = eval('(' + __.storage + ')');
+                    break;
+                case 'object':
+                    if (V.isArray(__.storage)) {
+                        throw new Error('不能使用数组作为资源');
+                    }
+                    break;
+                default:
+                    throw new Error('M.StorageDataResource 无法找到<' + storage + '>对象');
+            }
+            //默认缓存8个小时
+            __.timeout = V.getValue(timeout, { interval: 'h', number: '8' });
+            if (!storage) {
+                throw new Error('不可使用此对象缓存，当前浏览器版本不支持!');
             }
             _.load = function(name) {
-                var val = undefined;
-                V.each(__.res, function(v) { try { val = val ? val : v.load(name); } catch (e) {} }, null, true);
-                return val;
-            };
-            _.save = function(name, data) {
-                V.each(__.res, function(v) { try { v.save(name, data); } catch (e) {} });
-            };
-            _.clear = function(name) {
-                V.each(__.res, function(v) { try { v.clear(name); } catch (e) {} });
-            };
-        };
-        //定义时必须说明cookie.js的位置
-        M.CookieDataResource = function(param) {
-            var _ = this,
-                __ = {}; {
-                V.inherit.apply(_, [M.SessionDataResource, []]);
-                if (!$.cookie) {
-                    V.include('ref/jquery.cookie.js');
+                var val = null;
+                if (__.storage.getItem) {
+                    val = V.json(__.storage.getItem(name));
+                } else {
+                    val = __.storage[name];
                 }
-                if (!$.cookie) {
-                    V.showException('下载不到jquery.cookie.js')
-                }
-                __.param = V.getValue(param, {});
-            }
-            _.load = function(name) {
-                var val = $.cookie(name);
-                var data = {};
                 if (val) {
-                    var args = decodeURIComponent(val).replace(/\+/g, ' ').split('&'); // parse out name/value pairs separated via &
-                    if (args.length == 1 && args[0].indexOf("{") == 0) {
-                        return eval("(" + args[0] + ")");
-                    } else {
-                        // split out each name=value pair
-                        for (var i = 0; i < args.length; i++) {
-                            var pair = args[i].split('=');
-                            var name = decodeURIComponent(pair[0]);
-
-                            var value = (pair.length == 2) ?
-                                decodeURIComponent(pair[1]) :
-                                name;
-                            data[name] = value;
-                        }
-                        return data;
-                    }
-                } else return {};
-            };
-            _.save = function(name, data) {
-                //处理json变str
-                switch (typeof(data)) {
-                    case 'string':
-                    case 'String':
-                        $.cookie(name, data, __.param);
-                        break;
-                    default:
-                    case 'object':
-                    case 'Object':
-                        $.cookie(name, V.encHtml(V.toJsonString(V.getValue(data, {}))), __.param);
-                        break;
-                }
-            };
-            _.clear = function(name) {
-                $.cookie(name, '', { expires: -1 });
-            };
-        };
-        //处理localStorage与sessionStorage 与 全局对象ObjectDB
-        M.StorageDataResource = function(storage, timeout) {
-            var _ = this,
-                __ = {}; {
-                V.inherit.apply(_, [M.SessionDataResource, []]);
-                __.storage = V.getValue(storage, window.sessionStorage);
-                switch (typeof(__.storage)) {
-                    case 'string':
-                        __.storage = eval('(' + __.storage + ')');
-                        break;
-                    case 'object':
-                        if (V.isArray(__.storage)) {
-                            throw new Error('不能使用数组作为资源');
-                        }
-                        break;
-                    default:
-                        throw new Error('M.StorageDataResource 无法找到<' + storage + '>对象');
-                }
-                //默认缓存8个小时
-                __.timeout = V.getValue(timeout, { interval: 'h', number: '8' });
-                if (!storage) {
-                    throw new Error('不可使用此对象缓存，当前浏览器版本不支持!');
-                }
-                _.load = function(name) {
-                    var val = null;
-                    if (__.storage.getItem) {
-                        val = V.json(__.storage.getItem(name));
-                    } else {
-                        val = __.storage[name];
-                    }
-                    if (val) {
-                        if (val.date) {
-                            if (parseFloat(val.date) < new Date().getTime()) {
-                                delete __.storage[name];
-                                return null;
-                            }
-                            return val.data;
-                        }
-                    }
-                    return null;
-                };
-                _.save = function(name, str) {
-                    str = V.getValue(str, '');
-                    if (!str) {
-                        if (__.storage.removeItem) {
-                            __.storage.removeItem(name);
-                        } else {
+                    if (val.date) {
+                        if (parseFloat(val.date) < new Date().getTime()) {
                             delete __.storage[name];
+                            return null;
                         }
-                        return;
+                        return val.data;
                     }
-                    if (__.storage.setItem) {
-                        __.storage.setItem(name, V.toJsonString({
-                            data: str,
-                            date: (__.timeout ? new Date().add(__.timeout.interval, __.timeout.number).getTime() : false)
-                        }));
+                }
+                return null;
+            };
+            _.save = function(name, str) {
+                str = V.getValue(str, '');
+                if (!str) {
+                    if (__.storage.removeItem) {
+                        __.storage.removeItem(name);
                     } else {
-                        __.storage[name] = {
-                            data: str,
-                            date: (__.timeout ? new Date().add(__.timeout.interval, __.timeout.number).getTime() : false)
-                        };
+                        delete __.storage[name];
                     }
-                };
-                _.clear = function(name) { _.save(name); };
-            }
-        };
-        //todo 加解密DataResource
+                    return;
+                }
+                if (__.storage.setItem) {
+                    __.storage.setItem(name, V.toJsonString({
+                        data: str,
+                        date: (__.timeout ? new Date().add(__.timeout.interval, __.timeout.number).getTime() : false)
+                    }));
+                } else {
+                    __.storage[name] = {
+                        data: str,
+                        date: (__.timeout ? new Date().add(__.timeout.interval, __.timeout.number).getTime() : false)
+                    };
+                }
+            };
+            _.clear = function(name) { _.save(name); };
+        }
+    };
+    //todo 加解密DataResource
 
-        //todo action 对象组
-        //ValidateManager对象负责完成view.view控件对于data.validate的属性处理与默认值绑定工作。
-        //将data.validate对象按照middler定义转换成真实的判断对象，并由控件主动调用绑定其特有的input对象, 提供render中默认的valid方法只针对value进行验证
-        //注入view层对象valid方法 和三种onError,onClearError,onSuccess(因为无法进行联合的验证次数判断)和事件触发 清理异常这种事建议由各个控件自己负责,目前统一处理为下一次验证开始时就调用onClearError方法 其次view.control对象在onLoad中过滤onError事件，在render中提供valide方法支持就是调用被注入的validate(text)方法，调用ValidateManager的validate方法时需要设置node与input对象，由具体的reg决定是否跟随输入测试还是等待调用才测试。
-        //针对reg子类允许其异步查询和调用onError事件 一般就是check(func)方法，一般地 允许返回func(true/false)来进行异步判断 false就是报错
-        //针对reg子类允许remote验证 提交对应的方法和提示语 或者true false
-        //允许 data:{valldate:{IsRequired:'请输入默认的提示语',IsNumber:'',IsFloat:'',Regular:{exp:'',error:''},Remote:{exp:function(){},error:''}}}
-        //允许针对form提供统一的判断
-        W.ValidateManager = function() {
-            var _ = this,
-                __ = {}; {}
-            _.validate = function(control, input) {
-                var middler = control.middler;
-                var datas = control.get();
-                if (datas.validate) {
-                    var regs = [];
-                    V.forC(datas.validate, function(k, v) {
-                        var reg = middler.getObjectByAppName(W.APP, k);
-                        if (!reg) throw new Error('没找到对应的reg处理对象' + k);
-                        if (typeof(v) == 'string') {
-                            v = { reg: '', error: v };
-                        } else v = V.merge({ reg: '', error: '' }, v);
-                        reg.init(control, v.reg, v.error, input);
-                        regs.push(reg);
-                    }, function() {
-                        control.valid = function(text, func) {
-                            if (control.isError) {
-                                control.onClearError();
-                            }
-                            var success = true;
-                            var data = Array.prototype.slice.call(regs, 0);
-                            V.whileC2(function() { return data.shift(); }, function(reg, next) {
-                                reg.validate(text, function(suc) {
-                                    success = success && (suc && suc.length > 0);
-                                    if (success) {
-                                        next();
-                                    } else {
-                                        //警报
-                                        control.isError = true;
-                                        control.onError(reg.error);
-                                    }
-                                });
-                            }, function() {
+    //todo action 对象组
+    //ValidateManager对象负责完成view.view控件对于data.validate的属性处理与默认值绑定工作。
+    //将data.validate对象按照middler定义转换成真实的判断对象，并由控件主动调用绑定其特有的input对象, 提供render中默认的valid方法只针对value进行验证
+    //注入view层对象valid方法 和三种onError,onClearError,onSuccess(因为无法进行联合的验证次数判断)和事件触发 清理异常这种事建议由各个控件自己负责,目前统一处理为下一次验证开始时就调用onClearError方法 其次view.control对象在onLoad中过滤onError事件，在render中提供valide方法支持就是调用被注入的validate(text)方法，调用ValidateManager的validate方法时需要设置node与input对象，由具体的reg决定是否跟随输入测试还是等待调用才测试。
+    //针对reg子类允许其异步查询和调用onError事件 一般就是check(func)方法，一般地 允许返回func(true/false)来进行异步判断 false就是报错
+    //针对reg子类允许remote验证 提交对应的方法和提示语 或者true false
+    //允许 data:{valldate:{IsRequired:'请输入默认的提示语',IsNumber:'',IsFloat:'',Regular:{exp:'',error:''},Remote:{exp:function(){},error:''}}}
+    //允许针对form提供统一的判断
+    W.ValidateManager = function() {
+        var _ = this,
+            __ = {}; {}
+        _.validate = function(control, input) {
+            var middler = control.middler;
+            var datas = control.get();
+            if (datas.validate) {
+                var regs = [];
+                V.forC(datas.validate, function(k, v) {
+                    var reg = middler.getObjectByAppName(W.APP, k);
+                    if (!reg) throw new Error('没找到对应的reg处理对象' + k);
+                    if (typeof(v) == 'string') {
+                        v = { reg: '', error: v };
+                    } else v = V.merge({ reg: '', error: '' }, v);
+                    reg.init(control, v.reg, v.error, input);
+                    regs.push(reg);
+                }, function() {
+                    control.valid = function(text, func) {
+                        if (control.isError) {
+                            control.onClearError();
+                        }
+                        var success = true;
+                        var data = Array.prototype.slice.call(regs, 0);
+                        V.whileC2(function() { return data.shift(); }, function(reg, next) {
+                            reg.validate(text, function(suc) {
+                                success = success && (suc && suc.length > 0);
                                 if (success) {
-                                    control.isError = false;
-                                    control.onSuccess();
-                                    if (func) { func(); }
+                                    next();
+                                } else {
+                                    //警报
+                                    control.isError = true;
+                                    control.onError(reg.error);
                                 }
                             });
-                        };
-                    });
-                }
-            };
-        };
-        W.Regex = function(reg, error) {
-            var _ = this,
-                __ = {}; {
-                __.reg = V.getValue(reg, '');
-                __.error = V.getValue(error, '');
+                        }, function() {
+                            if (success) {
+                                control.isError = false;
+                                control.onSuccess();
+                                if (func) { func(); }
+                            }
+                        });
+                    };
+                });
             }
-            _.init = function(control, reg, error, input) {
-                _.cont = control;
-                _.reg = V.getValue(__.reg, reg);
-                _.error = V.getValue(error, __.error);
-                if (!V.isValid(_.reg)) throw new Error('Regex默认使用reg属性完成判断reg属性不能为空!');
-                else if (typeof(_.reg) == 'string') { _.reg = eval(_.reg); };
-            };
-            _.validate = function(text, func) {
-                func((text || '').match(_.reg));
-            };
         };
-    }
-
+    };
+    W.Regex = function(reg, error) {
+        var _ = this,
+            __ = {}; {
+            __.reg = V.getValue(reg, '');
+            __.error = V.getValue(error, '');
+        }
+        _.init = function(control, reg, error, input) {
+            _.cont = control;
+            _.reg = V.getValue(__.reg, reg);
+            _.error = V.getValue(error, __.error);
+            if (!V.isValid(_.reg)) throw new Error('Regex默认使用reg属性完成判断reg属性不能为空!');
+            else if (typeof(_.reg) == 'string') { _.reg = eval(_.reg); };
+        };
+        _.validate = function(text, func) {
+            func((text || '').match(_.reg));
+        };
+    };
 })(VJ, jQuery);

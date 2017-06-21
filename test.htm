@@ -8,7 +8,7 @@
     <meta name="description" content="Add multi-touch gestures to your webpage.">
     <title>VJ test</title>
     <script src="2.0/ref/jquery-1.8.0.min.js" type="text/javascript"></script>
-    <script src="2.0/VJ.js" type="text/javascript"></script>
+    <script src="2.0/VJ.min.js" type="text/javascript"></script>
     <script src="config.js" type="text/javascript"></script>
     <script src="ni.js" type="text/javascript"></script>
     <style type="text/css">
@@ -19,82 +19,82 @@
     </style>
     <script type="text/javascript">
         /*
-                		VJ.ajax({url:'http://www.sohu.com',data:{a:1},bindData:function(){alert(222);}});
-                		//VJ.each([1,2,3,4,5],function(i,v){//console.log(i+":"+v);
-                		//console.log(VJ.format('<%=i%>==<%=v%>',{i:i,v:v}));});
-                		console.log(VJ.config.getBaseConfigManager());
-                		console.log(VJ.config.getBaseConfigManager().getConfigValue('AppSettings','a'));
-                		var a = VJ.config.getApplicationConfigManagerFromObj({AppSettings:{a:1,b:2,c:3}});
-                		console.log(a.getConfigValue('AppSettings','a'));
-                		console.log(VJ.config.getBaseConfigManager().getConfigValue("AppSettings",'a'));
-                		var b = new function(){
-                			var _= this;
-                			{_['abc']=function(a,b,c){console.log(a+b+c+_.bcd);};_.bcd = 22;}
-                		};
-                		console.log(b["bcd"]);
-                		b['abc']();
-                		b.pack = 33;
-                		console.log(b['pack']);
-                		console.log("1.a.b".indexOf('\.'));
-                		b.abc.apply(b.abc,[1,2,3]);
-                		b.abc.call([1,2,3]);
-                		console.log(typeof(11223)=='number');
-                		var data = [{},1,""];
-                		for(var i in data){
-                			if(typeof(data[i])==='object'){
-                				console.log('obj');
-                			}else{console.log(data[i]);}
-                		}
-                		console.log(VJ.random());
-                		console.log(VJ.random());
-                		console.log(b);
-                		b = VJ.merge(b,{test:222});
-                		console.log(b);
-                		var a = {};
-                		a.a=1;
-                		a.b=2;
-                		for(var i in a){
-                			console.log(a[i]);
-                		}*/
+                        		VJ.ajax({url:'http://www.sohu.com',data:{a:1},bindData:function(){alert(222);}});
+                        		//VJ.each([1,2,3,4,5],function(i,v){//console.log(i+":"+v);
+                        		//console.log(VJ.format('<%=i%>==<%=v%>',{i:i,v:v}));});
+                        		console.log(VJ.config.getBaseConfigManager());
+                        		console.log(VJ.config.getBaseConfigManager().getConfigValue('AppSettings','a'));
+                        		var a = VJ.config.getApplicationConfigManagerFromObj({AppSettings:{a:1,b:2,c:3}});
+                        		console.log(a.getConfigValue('AppSettings','a'));
+                        		console.log(VJ.config.getBaseConfigManager().getConfigValue("AppSettings",'a'));
+                        		var b = new function(){
+                        			var _= this;
+                        			{_['abc']=function(a,b,c){console.log(a+b+c+_.bcd);};_.bcd = 22;}
+                        		};
+                        		console.log(b["bcd"]);
+                        		b['abc']();
+                        		b.pack = 33;
+                        		console.log(b['pack']);
+                        		console.log("1.a.b".indexOf('\.'));
+                        		b.abc.apply(b.abc,[1,2,3]);
+                        		b.abc.call([1,2,3]);
+                        		console.log(typeof(11223)=='number');
+                        		var data = [{},1,""];
+                        		for(var i in data){
+                        			if(typeof(data[i])==='object'){
+                        				console.log('obj');
+                        			}else{console.log(data[i]);}
+                        		}
+                        		console.log(VJ.random());
+                        		console.log(VJ.random());
+                        		console.log(b);
+                        		b = VJ.merge(b,{test:222});
+                        		console.log(b);
+                        		var a = {};
+                        		a.a=1;
+                        		a.b=2;
+                        		for(var i in a){
+                        			console.log(a[i]);
+                        		}*/
     </script>
     <script type="text/javascript">
         /*
-                		var hello = function(a,b){			
-                			var _ = this;
-                			var num = VJ.random();
-                			{
-                				console.log('hello create '+num);
-                				console.log(arguments);
-                				console.log(a);
-                				console.log(b);
-                			}
-                			_.firstLove = function(){console.log('firstLove');return true;};
-                			_.test = function(){console.log(num);return num;}
-                		};
-                		hello.prototype.Instance = function(){return new hello();};
-                		var test = function(a,b){
-                			var _ = this;
-                			var __ = {};
-                			{
-                				console.log('test create '+VJ.random());
-                				console.log(arguments);
-                				console.log(a);
-                				console.log(b);
-                			}
-                			_.abc = function(){
-                				console.log('test.abc');
-                			};
-                		};
-                		//console.log(VJ.create(hello,[1,2]));
-                		
-                		//var val = VJ.create2('hello',[111,2222]);eval('(new hello(args[0],args[1]))')
-                		//console.log(eval(concreate('hello',paras)));
-                		//console.log(eval('(VJ.create(hello,args))'));
-                		//console.log(hello.prototype.constructor(1,2));//.constructor.apply({},[1,2])
-                		//console.log(new function(){var _ = this;hello.apply(_,[{a:3},{b:4}]);});
-                		//var v = new function(){var _ = this;VJ.inherit.apply(_,[hello,[{a:3},{b:4}]]);};
-                		//console.log(VJ.Instance());
-                		/*测试目的，应可以支持本地对象生成，远程对象生成，支持mode为static instance pool 支持 method 为constructor，bean，factory，constructorbean，factorybean 5种方式 并支持 pack */
+                        		var hello = function(a,b){			
+                        			var _ = this;
+                        			var num = VJ.random();
+                        			{
+                        				console.log('hello create '+num);
+                        				console.log(arguments);
+                        				console.log(a);
+                        				console.log(b);
+                        			}
+                        			_.firstLove = function(){console.log('firstLove');return true;};
+                        			_.test = function(){console.log(num);return num;}
+                        		};
+                        		hello.prototype.Instance = function(){return new hello();};
+                        		var test = function(a,b){
+                        			var _ = this;
+                        			var __ = {};
+                        			{
+                        				console.log('test create '+VJ.random());
+                        				console.log(arguments);
+                        				console.log(a);
+                        				console.log(b);
+                        			}
+                        			_.abc = function(){
+                        				console.log('test.abc');
+                        			};
+                        		};
+                        		//console.log(VJ.create(hello,[1,2]));
+                        		
+                        		//var val = VJ.create2('hello',[111,2222]);eval('(new hello(args[0],args[1]))')
+                        		//console.log(eval(concreate('hello',paras)));
+                        		//console.log(eval('(VJ.create(hello,args))'));
+                        		//console.log(hello.prototype.constructor(1,2));//.constructor.apply({},[1,2])
+                        		//console.log(new function(){var _ = this;hello.apply(_,[{a:3},{b:4}]);});
+                        		//var v = new function(){var _ = this;VJ.inherit.apply(_,[hello,[{a:3},{b:4}]]);};
+                        		//console.log(VJ.Instance());
+                        		/*测试目的，应可以支持本地对象生成，远程对象生成，支持mode为static instance pool 支持 method 为constructor，bean，factory，constructorbean，factorybean 5种方式 并支持 pack */
         //本地+static+constructor+bean+pool+factory+factorybean+constructorparalength+size+pack+path
         /*var middler = VJ.middler.getMiddlerFromObj({
         	Middler:{

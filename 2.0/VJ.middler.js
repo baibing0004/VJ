@@ -115,12 +115,13 @@
             __.clearload = function() { delete __.scripts._skey; };
             __.getScript = function(key) {
                 var scr = __.scripts[key];
-                if (scr.path) {
-                    V.each(src.path.split(';'), function(v) {
+                if (scr && scr.path) {
+                    V.each(scr.path.split(';'), function(v) {
                         V.include(v);
                     }, function() { delete scr.path }, true);
                 }
-                return scr.func;
+                if ((scr && scr.func)) {} else console.log(key);
+                return (scr && scr.func) ? scr.func : null;
             };
             //切记在代码中使用V.registScript的对象在被继承时必须使用middler重新获取类型方可继承
             //todo 找不到的控件使用host方式默认加载尝试，regist应可说明自己使用前置JS和css

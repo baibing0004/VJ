@@ -454,51 +454,45 @@ if (!VJ.load)
                 }
             };
             var _merge = function(aim, source) {
-                if (!(typeof(source) == 'object' && !V.isArray(source))) { return aim; }
-                for (var i in source) {
-                    if (source[i] != undefined) {
-                        if (!V.isValid(aim[i])) {
-                            aim[i] = _clone(source[i]);
-                        } else {
-                            switch (V.getType(aim[i])) {
-                                case 'object':
-                                case 'Object':
-                                    _merge(aim[i], source[i]);
-                                    break;
-                                case 'Array':
-                                    //处理数组
-                                    var hasmergeIndex = false;
-                                    for (var i3 = 0, k = source[i][i3]; i3 < source[i].length; i3++, k = source[i][i3]) {
-                                        if (typeof(k.mergeIndex) == "number") {
-                                            hasmergeIndex = true;
-                                            if (aim[i].length < (k.mergeIndex + 1)) {
-                                                aim[i].push(k);
-                                            } else {
-                                                aim[i][i3] = _merge(aim[i][i3], k);
-                                            }
-                                        } else if (typeof(k.moveIndex) == "number") {
-                                            hasmergeIndex = true;
-                                            aim[i].splice(k.moveIndex, 0, k);
-                                        }
-                                    }
-                                    if (!hasmergeIndex) {
-                                        aim[i] = _clone(source[i]);
-                                    }
-                                    break;
-                                default:
-                                    aim[i] = source[i];
-                                    break;
+                if (aim == undefined) return source;
+                switch (V.getType(source)) {
+                    case 'Array':
+                        //处理数组
+                        var hasmergeIndex = false;
+                        for (var i3 = 0, k = source[i3]; i3 < source.length; i3++, k = source[i3]) {
+                            if (typeof(k.mergeIndex) == "number") {
+                                hasmergeIndex = true;
+                                if (aim.length < (k.mergeIndex + 1)) {
+                                    aim[aim.length] = k;
+                                } else {
+                                    aim[i3] = _merge(aim[i3], k);
+                                }
+                            } else if (typeof(k.moveIndex) == "number") {
+                                hasmergeIndex = true;
+                                aim.splice(k.moveIndex, 0, k);
                             }
                         }
-                    }
+                        if (!hasmergeIndex) {
+                            aim = _clone(source);
+                        }
+                        return aim;
+                    case 'object':
+                    case 'Object':
+                    case 'ukObject':
+                        for (var i in source)
+                            aim[i] = _merge(aim[i], source[i]);
+                        return aim;
+                    case 'null':
+                        return (source === undefined) ? aim : source;
+                    default:
+                        return source;
                 }
-                return aim;
             };
             var argu = arguments;
             if (argu.length < 2) { return argu[0] ? argu[0] : {} };
             if (argu.length > 0 && true == argu[argu.length - 1]) {
                 var _ = argu[0];
-                for (var i2 = 1; i2 < argu.length; i2++)
+                for (var i2 = 1; i2 < argu.length - 1; i2++)
                     _ = _merge(_, argu[i2]);
                 return _;
             } else {

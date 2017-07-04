@@ -39,9 +39,12 @@
             _.onLoad = function(node) {
                 V.forC(_.events, function(k, v) {
                     if (k.toLowerCase() == 'click') {
-                        _.node.on('click', 'input', function(e) { var _this = $(this);
+                        _.node.on('click', 'input', function(e) {
+                            var _this = $(this);
                             _.call('click', { e: e, vid: _this.val(), name: _this.attr('name') });
-                            V.stopProp(e); return false; });
+                            V.stopProp(e);
+                            return false;
+                        });
                         _.node.on('click', 'a,.click', function(e) {
                             var _this = $(this);
                             if (_this.attr('href') && _this.attr('href').indexOf('http://') >= 0) {
@@ -507,8 +510,10 @@
                 if (Math.abs(ev.scale - 1) < e.limit) _.am(_.node, { scale: ev.scale });
                 else { e.callevent.value = true; }
             };
-            _.onRotate = function(ev, e) { _.am(_.node, { angle: ev.rotation, scale: e.pinch ? ev.scale : 1 });
-                e.callevent.value = true; };
+            _.onRotate = function(ev, e) {
+                _.am(_.node, { angle: ev.rotation, scale: e.pinch ? ev.scale : 1 });
+                e.callevent.value = true;
+            };
             //最终执行动画并触发事件缓冲100毫秒发生			
             _.onBackAnimate = function(node, e) {
                 V.merge(e.transform, { tx: 0, ty: 0, scale: 1, angle: 0, rx: 0, ry: 0, rz: 0, startX: 0, startY: 0 }, true);
@@ -708,8 +713,10 @@
                                 _.children.width(_.node.width()).height(_.node.height()).css('overflow', 'hidden').css('position', 'relative');
                                 _.children.addClass('noactive');
                                 _.panel.empty().append(_.children);
-                                if (_.vol) { _.panel.css('height', _.length + '00%').css('width', '100%'); } else { _.panel.css('width', _.length + '00%').css('height', '100%');
-                                    _.children.css('float', 'left'); }
+                                if (_.vol) { _.panel.css('height', _.length + '00%').css('width', '100%'); } else {
+                                    _.panel.css('width', _.length + '00%').css('height', '100%');
+                                    _.children.css('float', 'left');
+                                }
                                 _.change(_.index == NaN ? 0 : _.index, true, true);
                                 lst.remove();
                             }, false);
@@ -927,8 +934,10 @@
             _.onValue = function(v, func) {
                 if (!V.isArray(v)) v = [v];
                 var sb = V.sb();
-                V.each(v, function(v2) { if (typeof(v2) == 'string') { sb.append(v2); } else sb.append(V.toJsonString(v2)); }, function() { func(sb.clear());
-                    sb = null; });
+                V.each(v, function(v2) { if (typeof(v2) == 'string') { sb.append(v2); } else sb.append(V.toJsonString(v2)); }, function() {
+                    func(sb.clear());
+                    sb = null;
+                });
             };
             _.onBackAnimate = function(node, e) {
                 V.once(function() {
@@ -1060,13 +1069,16 @@
                 __.onLoad = _.onLoad;
             }
             _.fill = function() {
-                return { checked: _.input.attr('checked') ? true : false };
+                var ret = { checked: _.input.attr('checked') ? true : false };
+                ret.value = ret.checked;
+                return ret;
             };
             _.render = function(data) {
                 data = __.render(data);
                 V.forC(data, function(key, value) {
                     switch (key) {
                         case 'checked':
+                        case 'value':
                             V.setChecked(_.input, value);
                             delete data[key];
                             break;
@@ -1133,8 +1145,11 @@
                                 var sb = V.sb();
                                 V.forC(value, function(k, v) {
                                     sb.appendFormat('<option value="{value}">{key}</option>', { key: k, value: v });
-                                }, function() { _.sel.empty().html(sb.clear());
-                                    sb = null; if (_.vm.data.value) { setValue(_.vm.data.value); } });
+                                }, function() {
+                                    _.sel.empty().html(sb.clear());
+                                    sb = null;
+                                    if (_.vm.data.value) { setValue(_.vm.data.value); }
+                                });
                             }
                             break;
                         case 'value':
@@ -1557,9 +1572,11 @@
                                     var hasfind = false;
                                     var his = Array.prototype.slice.call(__.his, 0);
                                     V.whileC(function() { return !hasfind ? his.pop() : null; }, function(v) {
-                                        if (v == value) { hasfind = true;
+                                        if (v == value) {
+                                            hasfind = true;
                                             __.his = his;
-                                            __.his.push(v); }
+                                            __.his.push(v);
+                                        }
                                     }, null, true);
                                     if (!hasfind || !V.getValue(__.vms[value].data.canActive, true)) value = null;
                                 } else {
@@ -1606,8 +1623,10 @@
                                 } else next();
                             }, function(data, next) {
                                 V.each(value, function(v2) {
-                                    v2.onActive = v2.onActive ? v2.onActive : function(D, I) { I.update({ show: D.showaction });
-                                        V.once(function() { I.call('showed'); }, 500); };
+                                    v2.onActive = v2.onActive ? v2.onActive : function(D, I) {
+                                        I.update({ show: D.showaction });
+                                        V.once(function() { I.call('showed'); }, 500);
+                                    };
                                     _.addControl(null, v2);
                                 }, function() {
                                     _.reload(_.node);

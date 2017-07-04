@@ -120,7 +120,6 @@
                         V.include(v);
                     }, function() { delete scr.path }, true);
                 }
-                if ((scr && scr.func)) {} else console.log(key);
                 return (scr && scr.func) ? scr.func : null;
             };
             //切记在代码中使用V.registScript的对象在被继承时必须使用middler重新获取类型方可继承

@@ -385,7 +385,7 @@
                     }
                     //根据name默认计算并添加对象
                     _.getValue = function(name) {
-                        _[name] = __.convertContainer(config, { path: name + '.js' }, defParam, _, pcm);
+                        _[name] = __.convertContainer(config, { path: name.replace(/[\._]/g, '/') + '.js' }, defParam, _, pcm);
                         return _[name].getValue();
                     };
                 };

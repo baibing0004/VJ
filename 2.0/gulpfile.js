@@ -10,11 +10,11 @@ const gulp = require('gulp'),
     named = require('vinyl-named'),
     combiner = require('stream-combiner2');
 
-const paths = { static: ["./VJ.*.js", "!./VJ.view.extend.js", "!./VJ.min.js"], view: ["./VJ.view.js", "./VJ.view.*.js"], dest: './', destfile: ["./VJ.js", "./*.min.js"] };
+const paths = { static: ["./VJ.*.js", "!./VJ.view.extend.js", "!./**.min.js"], view: ["./VJ.view.js", "./VJ.view.*.js", "!./**.min.js"], dest: './', destfile: ["./VJ.js", "./**.min.js"] };
 gulp.task('clean', function(cb) {
     return del(paths.destfile, cb);
 });
-gulp.task('static', ['clean'], function(cb) {
+gulp.task('static', function(cb) {
     cb.force = true;
     const combined = combiner.obj([
         gulp.src(paths.static),
@@ -32,7 +32,7 @@ gulp.task('static', ['clean'], function(cb) {
     combined.on('error', console.error.bind(console));
     return combined;
 });
-gulp.task('view', ['clean'], function(cb) {
+gulp.task('view', function(cb) {
     cb.force = true;
     const combined = combiner.obj([
         gulp.src(paths.view),
@@ -41,7 +41,7 @@ gulp.task('view', ['clean'], function(cb) {
         babel({}), //{   presets: ['es2015', 'stage-0'] },
         uglify(),
         gulp.dest(paths.dest),
-        notify({ message: 'VJ.view.min.js 同步生成' })
+        notify({ message: 'VJ.view.extend.min.js 同步生成' })
     ]);
 
     // any errors in the above streams will get caught
@@ -67,10 +67,15 @@ gulp.task('common-js', function(cb) {
     combined.on('error', console.error.bind(console));
     return combined;
 });
-gulp.task('default', ['static', 'view'], function(cb) {
-    var watcher = gulp.watch(paths.static, ['static', 'view']);
+gulp.task('default', ['clean', 'static', 'view'], function(cb) {
+    var watcher = gulp.watch(paths.static, ['static']);
     watcher.on('error', e => {
         console.log(e.stack);
-        notify({ message: "VJ.min.js 同步生成失败:" + e.message })
+        gulp.src(paths.static).pipe(notify({ message: "VJ.min.js 同步生成失败:" + e.message }));
+    });
+    watcher = gulp.watch(paths.view, ['view']);
+    watcher.on('error', e => {
+        console.log(e.stack);
+        gulp.src(paths.view).pipe(notify({ message: "VJ.view.extend.min.js 同步生成失败:" + e.message }));
     });
 });

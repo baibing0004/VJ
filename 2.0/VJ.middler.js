@@ -217,7 +217,7 @@
                         if (path) {
                             __.loadScript(type);
                             V.each(path.split(';'), function(v) {
-                                if (defParam.host && v.toLowerCase().indexOf('../') < 0 && v.toLowerCase().indexOf('http://') < 0) {
+                                if (defParam.host && v.toLowerCase().indexOf('../') < 0 && v.toLowerCase().indexOf('http://') < 0 && v.toLowerCase().indexOf('https://') < 0) {
                                     v = defParam.host + v;
                                 }
                                 V.include(v);
@@ -233,7 +233,7 @@
                             //以后可以修改 目前是有缓存的 path改为支持;号隔开的各个路径
                             __.loadScript(type);
                             V.each(path.split(';'), function(v) {
-                                if (defParam.host && v.toLowerCase().indexOf('../') < 0 && v.toLowerCase().indexOf('http://') < 0) {
+                                if (defParam.host && v.toLowerCase().indexOf('../') < 0 && v.toLowerCase().indexOf('http://') < 0 && v.toLowerCase().indexOf('https://') < 0) {
                                     v = defParam.host + v;
                                 }
                                 V.include(v);

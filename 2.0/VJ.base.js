@@ -441,6 +441,7 @@ if (!VJ.load)
                 switch (V.getType(source)) {
                     case 'Object':
                     case 'object':
+                    case 'ukObject':
                         return _merge({}, source);
                     case 'array':
                     case 'Array':
@@ -454,12 +455,13 @@ if (!VJ.load)
                 }
             };
             var _merge = function(aim, source) {
-                if (aim == undefined) return source;
+                if (aim == undefined) return _clone(source);
                 switch (V.getType(source)) {
                     case 'Array':
                         //处理数组
                         var hasmergeIndex = false;
                         for (var i3 = 0, k = source[i3]; i3 < source.length; i3++, k = source[i3]) {
+                            if (k === null || k === undefined) continue;
                             if (typeof(k.mergeIndex) == "number") {
                                 hasmergeIndex = true;
                                 if (aim.length < (k.mergeIndex + 1)) {
@@ -927,7 +929,7 @@ if (!VJ.load)
                     this.type = 2;
                 }
                 //如果读取本地文件，则使用AXObject，因为httpRequest读取本地文件会报拒绝访问
-                if (document.location.href.indexOf("http://") < 0 && window.ActiveXObject) {
+                if ((document.location.href.indexOf("http://") < 0 || document.location.href.indexOf("https://") < 0) && window.ActiveXObject) {
                     xmlhttp = new ActiveXObject("Microsoft._V_");
                     this.type = 3;
                 }
@@ -981,7 +983,7 @@ if (!VJ.load)
         todo 跨域同步
         */
         var getHost = function(url) {
-            var ret = (url + '').match(/http:\/\/[^\/]+/g) + '';
+            var ret = (url + '').match(/http[s]?:\/\/[^\/]+/g) + '';
             if (ret && ret.length > 0) { return ret.substr(7); } else { return ''; }
         };
 
@@ -1240,7 +1242,7 @@ if (!VJ.load)
                 var caller = arguments.caller;
                 var comms = S.getSettings('comms', []);
                 var func = comms[name];
-                data = V.isArray(data) ? data : [data];
+                data = V.merge([], V.isArray(data) ? data : [data]);
                 if (V.isValid(func) && typeof(func) == 'function') {
                     V.once(function() { func.apply(caller, data); });
                 } else {
@@ -1319,7 +1321,7 @@ if (!VJ.load)
                 var caller = arguments.caller;
                 var events = S.getSettings('events', []);
                 var funs = events[name];
-                data = V.isArray(data) ? data : [data];
+                data = V.merge([], V.isArray(data) ? data : [data]);
                 if (V.isValid(funs) && V.isArray(funs)) {
                     V.each(funs, function(func) {
                         //报错不下火线

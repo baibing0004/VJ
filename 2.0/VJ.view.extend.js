@@ -47,7 +47,7 @@
                         });
                         _.node.on('click', 'a,.click', function(e) {
                             var _this = $(this);
-                            if (_this.attr('href') && _this.attr('href').indexOf('http://') >= 0) {
+                            if (_this.attr('href') && (_this.attr('href').indexOf('http://') >= 0 || _this.attr('href').indexOf('https://') >= 0)) {
                                 return true;
                             } else {
                                 _.call('click', { e: e, vid: _this.attr('vid') || _this.attr('href'), name: _this.attr('name') });
@@ -1459,7 +1459,7 @@
                                             vm.update({ value: value[v] });
                                     }
                                 });
-                            }
+                            } else _.node[0].reset();
                             break;
                     }
                 }, function() {

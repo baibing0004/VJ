@@ -584,7 +584,7 @@
             var caller = arguments.caller;
             var comms = _.getSettings('comms', []);
             var func = comms[name];
-            data = V.isArray(data) ? data : [data];
+            data = V.merge([], V.isArray(data) ? data : [data]);
             if (V.isValid(func) && typeof(func) == 'function') {
                 V.once(function() { func.apply(caller, data); });
             } else {
@@ -663,7 +663,7 @@
             var caller = arguments.caller;
             var events = _.getSettings('events', []);
             var funs = events[name];
-            data = V.isArray(data) ? data : [data];
+            data = V.merge([], V.isArray(data) ? data : [data]);
             if (V.isValid(funs) && V.isArray(funs)) {
                 V.each(funs, function(func) {
                     //报错不下火线

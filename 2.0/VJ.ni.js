@@ -396,7 +396,7 @@
                     }
                     _.invoke = function(cmd, func) {
                         V.ajax(V.merge(_.params, {
-                            url: (cmd.command.indexOf('http:') >= 0 ? '' : _.params.host) + cmd.command,
+                            url: ((cmd.command.indexOf('http:') >= 0 || cmd.command.indexOf('https:') >= 0) ? '' : _.params.host) + cmd.command,
                             data: cmd.params,
                             jsonp: cmd.jsonp,
                             success: function(data, status) {

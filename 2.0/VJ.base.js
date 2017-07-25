@@ -860,84 +860,111 @@ if (!VJ.load)
         };
         /* 同步获取js模块 */
         function _V_() {}
-        /*_V_内部方法
+        // /*_V_内部方法
+        //  *-- 参数1：url， js或css的路径
+        //  *-- 参数2：获取方式get，post
+        //  *-- 参数3：post字符串
+        //  *-- 参数4：是否异步，true,false
+        //  *-- 参数5：回调方法
+        //  */
+        // _V_.prototype.create = function(URL, fun, pStr, isSyn, callBack) {
+        //         //1为新浏览器，用XMLHttpRequest；2为IE5、6，用ActiveXObject("Microsoft.XMLHTTP")；3为本地（火狐除外，fox还会用type：1来读本地xml）
+        //         this.type = null;
+        //         this.responseObj = null;
+        //         //
+        //         this.xmlURL = URL || null;
+        //         this.xmlFun = fun || "get";
+        //         this.postStr = pStr || "";
+        //         if (!this.xmlURL) return;
+        //         //获取xmlReq对象
+        //         this.xhReq = this.getXMLReq();
+        //         if (this.xhReq == null) {
+        //             alert("Your browser does not support XMLHTTP.");
+        //             return;
+        //         }
+        //         //请求处理函数，分为异步和同步分别处理，同步处理需要放在“提交请求”后，负责无效
+        //         //异步的回调处理
+        //         if (isSyn && (isSyn == true || isSyn == "true") && this.type != 3) {
+        //             //alert("异步")
+        //             //指定响应函数
+        //             this.xhReq.onreadystatechange = function() {
+        //                 if (this.readyState == 4 && (this.status == 200 || this.status == 0)) {
+        //                     if (callBack) {
+        //                         callBack(this.responseXML.documentElement);
+        //                     } else
+        //                         return this.responseXML.documentElement;
+        //                 }
+        //             };
+        //         }
+        //         //提交请求
+        //         //alert(this.type)
+        //         if (this.type != 3) {
+        //             this.xhReq.open(this.xmlFun, this.xmlURL, (isSyn && (isSyn == true || isSyn == "true")) ? true : false);
+        //             this.xhReq.send((this.xmlFun && this.xmlFun.toLowerCase() == "post") ? this.postStr : null);
+        //             this.responseObj = this.xhReq.responseText;
+        //         } else if (this.type == 3) //这是IE用来读取本地xml的方法
+        //         {
+        //             this.xhReq.open("get", this.xmlURL, "false");
+        //             this.responseObj = this.xhReq;
+        //         }
+        //         //同步的回调处理
+        //         if ((isSyn != null && (isSyn == false || isSyn == "false")) || this.type == 3) {
+        //             if (callBack)
+        //                 callBack(this.responseObj);
+        //             else
+        //                 return this.responseObj;
+        //         }
+        //     }
+        //     /*获取DOM对象兼容各个浏览器，可能不完善，继续测试
+        //      */
+        // _V_.prototype.getXMLReq = function() {
+        //         var xmlhttp = null;
+        //         if (window.XMLHttpRequest) { // code for all new browsers like IE7/8 & FF
+        //             xmlhttp = new XMLHttpRequest();
+        //             this.type = 1;
+        //         } else if (window.ActiveXObject) { // code for IE5 and IE6
+        //             xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        //             this.type = 2;
+        //         }
+        //         //如果读取本地文件，则使用AXObject，因为httpRequest读取本地文件会报拒绝访问
+        //         if (document.location.href.indexOf("http://") < 0 && window.ActiveXObject) {
+        //             xmlhttp = new ActiveXObject("Microsoft._V_");
+        //             this.type = 3;
+        //         }
+        //         return xmlhttp;
+        //     }
+        //     /*请求失败
+        //      */
+        // _V_.prototype.abort = function() {
+        //     this.xhReq.abort();
+        // };
+        /**
+         *_V_内部方法
          *-- 参数1：url， js或css的路径
          *-- 参数2：获取方式get，post
          *-- 参数3：post字符串
          *-- 参数4：是否异步，true,false
          *-- 参数5：回调方法
          */
-        _V_.prototype.create = function(URL, fun, pStr, isSyn, callBack) {
-                //1为新浏览器，用XMLHttpRequest；2为IE5、6，用ActiveXObject("Microsoft.XMLHTTP")；3为本地（火狐除外，fox还会用type：1来读本地xml）
-                this.type = null;
-                this.responseObj = null;
-                //
-                this.xmlURL = URL || null;
-                this.xmlFun = fun || "get";
-                this.postStr = pStr || "";
-                if (!this.xmlURL) return;
-                //获取xmlReq对象
-                this.xhReq = this.getXMLReq();
-                if (this.xhReq == null) {
-                    alert("Your browser does not support XMLHTTP.");
-                    return;
-                }
-                //请求处理函数，分为异步和同步分别处理，同步处理需要放在“提交请求”后，负责无效
-                //异步的回调处理
-                if (isSyn && (isSyn == true || isSyn == "true") && this.type != 3) {
-                    //alert("异步")
-                    //指定响应函数
-                    this.xhReq.onreadystatechange = function() {
-                        if (this.readyState == 4 && (this.status == 200 || this.status == 0)) {
-                            if (callBack) {
-                                callBack(this.responseXML.documentElement);
-                            } else
-                                return this.responseXML.documentElement;
-                        }
-                    };
-                }
-                //提交请求
-                //alert(this.type)
-                if (this.type != 3) {
-                    this.xhReq.open(this.xmlFun, this.xmlURL, (isSyn && (isSyn == true || isSyn == "true")) ? true : false);
-                    this.xhReq.send((this.xmlFun && this.xmlFun.toLowerCase() == "post") ? this.postStr : null);
-                    this.responseObj = this.xhReq.responseText;
-                } else if (this.type == 3) //这是IE用来读取本地xml的方法
-                {
-                    this.xhReq.open("get", this.xmlURL, "false");
-                    this.responseObj = this.xhReq;
-                }
-                //同步的回调处理
-                if ((isSyn != null && (isSyn == false || isSyn == "false")) || this.type == 3) {
-                    if (callBack)
-                        callBack(this.responseObj);
-                    else
-                        return this.responseObj;
-                }
-            }
-            /*获取DOM对象兼容各个浏览器，可能不完善，继续测试
-             */
-        _V_.prototype.getXMLReq = function() {
-                var xmlhttp = null;
-                if (window.XMLHttpRequest) { // code for all new browsers like IE7/8 & FF
-                    xmlhttp = new XMLHttpRequest();
-                    this.type = 1;
-                } else if (window.ActiveXObject) { // code for IE5 and IE6
-                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-                    this.type = 2;
-                }
-                //如果读取本地文件，则使用AXObject，因为httpRequest读取本地文件会报拒绝访问
-                if (document.location.href.indexOf("http://") < 0 && window.ActiveXObject) {
-                    xmlhttp = new ActiveXObject("Microsoft._V_");
-                    this.type = 3;
-                }
-                return xmlhttp;
-            }
-            /*请求失败
-             */
-        _V_.prototype.abort = function() {
-            this.xhReq.abort();
-        };
+        _V_.prototype.create = function (url, method, data, async, callback) {
+            //超时时间设置为6秒
+            var timeout = 6000;
+            if (!url) { throw new Error('请设置正确的url');  }
+            $.ajax({
+                url: url,
+                method: method || 'get',
+                data: data,
+                dataType: 'text',
+                async: async,
+                timeout: timeout,
+                success: function(responseText) {
+                    callback(responseText)
+                },
+                error: function(error) {
+                    callback(error)
+                },
+            });
+        }
         /*获取js代码后，添加到页面内容下
          */
         function _V_AppendScript(data, callback) {
@@ -1009,26 +1036,30 @@ if (!VJ.load)
                 //		}
                 //	});
                 //异步if 
-                if (V.isCrossdomain(url) && typeof(XDomainRequest) != 'undefined') {
-                    V.showException('跨域同步加载仅支持Chrome40以上，IE10以上版本，而且js跨域加载的IIS返回头部添加Access-Control-Allow-Origin: * 版本，如果仍然不可用请在config.js中将可能跨域请求path路径上的js的转入头部，或者在页面onStart时先获取原需要异步获取的对象!');
-                    var request = new XDomainRequest();
-                    request.open("GET", url);
-                    request.timeout = 5000;
-                    request.send();
-                    console.log('xdomainrequest');
-                    _V_AppendScript(request.responseText, callback)
-                    if (callback) {
-                        callback();
-                    }
-                } else {
-                    var thisJsDom = new _V_();
-                    thisJsDom.create(url, "get", null, false, function(data) {
-                        _V_AppendScript(data, callback)
-                    });
-                    if (callback) {
-                        callback();
-                    }
-                }
+                // if (V.isCrossdomain(url) && typeof(XDomainRequest) != 'undefined') {
+                //     V.showException('跨域同步加载仅支持Chrome40以上，IE10以上版本，而且js跨域加载的IIS返回头部添加Access-Control-Allow-Origin: * 版本，如果仍然不可用请在config.js中将可能跨域请求path路径上的js的转入头部，或者在页面onStart时先获取原需要异步获取的对象!');
+                //     var request = new XDomainRequest();
+                //     request.open("GET", url);
+                //     request.timeout = 5000;
+                //     request.send();
+                //     console.log('xdomainrequest');
+                //     _V_AppendScript(request.responseText, callback)
+                //     if (callback) {
+                //         callback();
+                //     }
+                // } else {
+                //     var thisJsDom = new _V_();
+                //     thisJsDom.create(url, "get", null, false, function(data) {
+                //         _V_AppendScript(data, callback)
+                //     });
+                //     if (callback) {
+                //         callback();
+                //     }
+                // }
+                var thisJsDom = new _V_();
+                thisJsDom.create(url, 'get', null, false, function(responseText) {
+                    _V_AppendScript(responseText, callback);
+                });
             }
             if (styleTag == "css") {
                 new_element = document.createElement("link");

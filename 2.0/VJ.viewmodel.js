@@ -3,6 +3,18 @@
     var M = V.viewmodel;
     V.view = { APP: 'VESH.view' };
     var W = V.view;
+    V.hasRight = function(name, isAdmin) {
+        //TO修改
+        if (V.getValue(isAdmin, false) && (typeof(User) == 'undefined' || !V.isValid(User))) { return false; }
+        if (User) {
+            //添加后门
+            if (!V.isValid(Pers)) { V.showException("permission.js不存在"); return false; }
+            if (V.getValue(isAdmin, false) && Pers) return true;
+            var id = V.getValue(Pers[name], '_');
+            return (V.getValue(User.PIDS, '').indexOf(',' + id + ',') >= 0);
+        }
+        return false;
+    };
     //定义业务逻辑层的两个基本对象页面与控件
     //首先页面实例化M.Page 然后 页面绑定 W.Page 然后W.Page 调用Document.ready 将界面根据middler进行设置，并针对_对象进行初始化设置并进行binding binding完成后直接发布document.ready事件
     //一般的viewmodel层通过type定义其Middler中的控件类型实现与前端的绑定
@@ -215,6 +227,18 @@
                         break;
                     case 'attr':
                         V.forC(value, function(k, v) { _.node.attr(k, v); });
+                        break;
+                    case 'hasright':
+                        if (true === value || V.hasRight(value)) {
+                            if (__.ebbody) {
+                                _.node.show().append(__.ebbody.children());
+                                __.ebbody.remove();
+                                delete __.ebbody;
+                            }
+                        } else {
+                            __.ebbody = V.newEl('div').append(_.node.children());
+                            _.node.hide().empty();
+                        };
                         break;
                     case 'enable':
                         if (value) { _.node.removeAttr('disabled'); } else { _.node.attr('disabled', 'disabled'); }
@@ -736,18 +760,6 @@
         _.middler = new V.middler.Middler(_.config);
         _.ni = new V.ni.NiTemplateManager(_.config, M.NIAPP);
         _.session = _.middler.getObjectByAppName(M.APP, 'SessionDataManager');
-        _.hasRight = function(name, isAdmin) {
-            //TO修改
-            if (V.getValue(isAdmin, false) && (typeof(User) == 'undefined' || !V.isValid(User))) { return false; }
-            if (User) {
-                //添加后门
-                if (!V.isValid(Pers)) { V.showException("permission.js不存在"); return false; }
-                //if(VJ.getValue(checkAdmin,true) && (V.isValid(pers))) return true;
-                var id = V.getValue(Pers[name], '_');
-                return (V.getValue(User.PIDS, '').indexOf(',' + id + ',') >= 0);
-            }
-            return false;
-        };
         _.getModels = function(id) { return id ? (_.vms[id] ? _.vms[id] : null) : _.vms; };
         _.setModels = function(id, v) { _.vms[id] = v; };
         __.bind = _.bind;

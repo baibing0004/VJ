@@ -3,7 +3,7 @@
         W.Box = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Control, [path || '<div></div>', vm || { border: 1 }]]);
+                V.inherit.apply(_, [W.Control, [path || '<div class="c_box"></div>', vm || { border: 1 }]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -31,7 +31,7 @@
         W.FillControl = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Control, [path || '<div></div>', vm || {}]]);
+                V.inherit.apply(_, [W.Control, [path || '<div class="c_fillControl"></div>', vm || {}]]);
                 __.onLoad = _.onLoad;
                 __.render = _.render;
                 __.replaceNode = _.replaceNode
@@ -80,7 +80,7 @@
         W.History = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Control, [path || '<span style="display:none;"></span>', vm || {}]]);
+                V.inherit.apply(_, [W.Control, [path || '<span class="c_history" style="display:none;"></span>', vm || {}]]);
                 __.onLoad = _.onLoad;
                 __.render = _.render;
             }
@@ -141,7 +141,7 @@
         W.Panel = function(path, vm, limit, limitBack, lock) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Control, [path || '<div></div>', vm || {}]]);
+                V.inherit.apply(_, [W.Control, [path || '<div class="c_panel"></div>', vm || {}]]);
                 __.onLoad = _.onLoad;
                 __.render = _.render;
                 __.hasRender = false;
@@ -607,7 +607,7 @@
             var _ = this,
                 __ = {}; {
 
-                V.inherit.apply(_, [middler.getTypeByAppName('VESH.view', 'panel'), [V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'), V.merge(V.getValue(vm, {}), {
+                V.inherit.apply(_, [middler.getTypeByAppName('VESH.view', 'panel'), [V.getValue(path, '<div style="overflow:hidden;"  class="c_pagePanel"><div style="display:none;"></div></div>'), V.merge(V.getValue(vm, {}), {
                     data: { direction: 'hor', value: 0 },
                     onLeft: function(data, self) { _.change(true); },
                     onRight: function(data, self) { _.change(false); },
@@ -755,7 +755,7 @@
         W.ScrollPanel = function(middler, path, vm, limit, limitBack) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [middler.getTypeByAppName('VESH.view', 'panel'), [V.getValue(path, '<div style="overflow:hidden;"><div style="display:none;"></div></div>'), V.merge(V.getValue(vm, {}), {
+                V.inherit.apply(_, [middler.getTypeByAppName('VESH.view', 'panel'), [V.getValue(path, '<div style="overflow:hidden;"  class="c_scrollPanel"><div style="display:none;"></div></div>'), V.merge(V.getValue(vm, {}), {
                     data: { direction: 'vol' },
                     onLeft: function(data, self) { _.call('next') },
                     onRight: function(data, self) { _.call('reload') },
@@ -973,7 +973,7 @@
         W.TextBox = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Control, [path || '<span><span style="display:none;"></span><input type="text"/></span>', vm || {}]]);
+                V.inherit.apply(_, [W.Control, [path || '<span class="c_textBox"><span style="display:none;"></span><input type="text"/></span>', vm || {}]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -1064,7 +1064,7 @@
         W.RadioBox = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.TextBox, [path || '<span><span style="display:none;"></span><input type="radio"/></span>', vm]]);
+                V.inherit.apply(_, [W.TextBox, [path || '<span class="c_radioBox"><span style="display:none;"></span><input type="radio"/></span>', vm]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -1090,13 +1090,13 @@
         W.CheckBox = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.RadioBox, [path || '<span><span style="display:none;"></span><input type="checkbox"/></span>', vm]]);
+                V.inherit.apply(_, [W.RadioBox, [path || '<span class="c_checkBox"><span style="display:none;"></span><input type="checkbox"/></span>', vm]]);
             }
         };
         W.Select = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Control, [path || '<span><span style="display:none;"></span><select></select></span>', vm]]);
+                V.inherit.apply(_, [W.Control, [path || '<span class="c_select"><span style="display:none;"></span><select></select></span>', vm]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -1172,10 +1172,10 @@
         W.RadioList = function(path, content, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Control, [path || '<span class="p_RadioList"><span></span><ul></ul></span>', vm || {}]]);
+                V.inherit.apply(_, [W.Control, [path || '<span class="c_RadioList"><span></span><ul></ul></span>', vm || {}]]);
                 __.onLoad = _.onLoad;
                 __.render = _.render;
-                _.content = V.getValue(content, '<li><span class="p_RadioList_li"><input name="{name}" type="radio" value="{value}"/><span>{key}</span></span></li>');
+                _.content = V.getValue(content, '<li><span class="c_RadioList_li"><input name="{name}" type="radio" value="{value}"/><span>{key}</span></span></li>');
             }
             _.fill = function() {
                 return { value: _.ul.find(':radio:checked').val() };
@@ -1229,10 +1229,10 @@
         W.CheckList = function(path, content, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Control, [path || '<div class="p_CheckList"><span></span><ul></ul></div>', vm || {}]]);
+                V.inherit.apply(_, [W.Control, [path || '<div class="c_CheckList"><span></span><ul></ul></div>', vm || {}]]);
                 __.onLoad = _.onLoad;
                 __.render = _.render;
-                _.content = V.getValue(content, '<li><span class="p_CheckList_li"><input name="{name}" type="checkbox" value="{value}"/><span>{key}</span></span></li>');
+                _.content = V.getValue(content, '<li><span class="c_CheckList_li"><input name="{name}" type="checkbox" value="{value}"/><span>{key}</span></span></li>');
             }
             _.fill = function() {
                 //需要兼容没有数据未创建时的错误
@@ -1297,7 +1297,7 @@
         W.Hidden = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Control, [path || '<input type="hidden"/>', vm]]);
+                V.inherit.apply(_, [W.Control, [path || '<input class="c_hidden" type="hidden"/>', vm]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -1337,7 +1337,7 @@
         W.PasswordBox = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.TextBox, [path || '<span><span style="display:none;"></span><input type="password"/></span>', vm]]);
+                V.inherit.apply(_, [W.TextBox, [path || '<span class="c_passwordBox"><span style="display:none;"></span><input type="password"/></span>', vm]]);
                 __.render = _.render;
             }
             _.render = function(data) {
@@ -1356,7 +1356,7 @@
         W.Button = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.TextBox, [path || '<span><span style="display:none;"></span><input type="button"/></span>', vm]]);
+                V.inherit.apply(_, [W.TextBox, [path || '<span class="c_button"><span style="display:none;"></span><input type="button"/></span>', vm]]);
                 __.render = _.render;
             }
             _.fill = function() { return {}; };
@@ -1381,19 +1381,19 @@
         W.Submit = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Button, [path || '<span><span style="display:none;"></span><input type="submit"/></span>', vm]]);
+                V.inherit.apply(_, [W.Button, [path || '<span class="c_submit"><span style="display:none;"></span><input type="submit"/></span>', vm]]);
             }
         };
         W.Reset = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Button, [path || '<span><span style="display:none;"></span><input type="reset"/></span>', vm]]);
+                V.inherit.apply(_, [W.Button, [path || '<span class="c_reset"><span style="display:none;"></span><input type="reset"/></span>', vm]]);
             }
         };
         W.Form = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Control, [path || '<form method="get" action=""></form>', vm || { data: { enctype: 'multipart/form-data' } }]]);
+                V.inherit.apply(_, [W.Control, [path || '<form method="get" action="" class="c_form"></form>', vm || { data: { enctype: 'multipart/form-data' } }]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
             }
@@ -1471,7 +1471,7 @@
         W.Router = function(path, vm) {
             var _ = this,
                 __ = {}; {
-                V.inherit.apply(_, [W.Panel, [path || '<div style="display:none;"></div>', vm || { data: { showaction: 'fadeInRight', hideaction: 'fadeOutRight' } }]]);
+                V.inherit.apply(_, [W.Panel, [path || '<div style="display:none;" class="c_router"></div>', vm || { data: { showaction: 'fadeInRight', hideaction: 'fadeOutRight' } }]]);
                 __.render = _.render;
                 __.onLoad = _.onLoad;
                 _.addDesc('Router:');

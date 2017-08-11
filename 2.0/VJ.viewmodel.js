@@ -11,7 +11,7 @@
             if (!V.isValid(Pers)) { V.showException("permission.js不存在"); return false; }
             if (V.getValue(isAdmin, false) && Pers) return true;
             var id = V.getValue(Pers[name], '_');
-            return (V.getValue(User.PIDS, '').indexOf(',' + id + ',') >= 0);
+            return ((',' + V.getValue(User.PIDS, '') + ',').indexOf(',' + id + ',') >= 0);
         }
         return false;
     };

@@ -1000,6 +1000,10 @@
                         _.dispose();
                         window.close();
                         break;
+                    case 'vibrate':
+                    case 'shake':
+                        if (navigator.vibrate) { navigator.vibrate(v); } else console.log('浏览器不支持此方法!');
+                        break;
                 }
             });
             return data;

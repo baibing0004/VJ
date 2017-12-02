@@ -624,7 +624,8 @@
                 _.children = _.panel.siblings();
                 //if(_.children.length==0) {}
                 _.length = _.children.length;
-                _.children.width(node.width()).height(node.height()).css('overflow', 'hidden').css('position', 'relative');
+                //_.children.width(node.width()).height(node.height()).css('overflow', 'hidden').css('position', 'relative');
+                _.children.css('height', '100%').css('width', Math.floor(10000 / _.length) / 100 + '%').css('overflow', 'hidden').css('position', 'relative');
                 _.children.addClass('noactive');
                 _.panel.append(_.children);
                 //根据direction覆盖监听操作 同时修改panelaction
@@ -635,7 +636,8 @@
                         delete _.events.left;
                         delete _.events.right;
                         //取消水平操作动画
-                        _.panel.css('height', _.length + '00%').css('width', '100%');
+                        //_.panel.css('height', _.length + '00%').css('width', '100%'););		
+                        _.panel.css('width', '100%').css('height', '100%');
                         break;
                     case 'hor':
                     default:
@@ -643,7 +645,8 @@
                         _.hor = true;
                         delete _.events.up;
                         delete _.events.down;
-                        _.panel.css('width', _.length + '00%').css('height', '100%'); //.css('display','flex');						
+                        //_.panel.css('width', _.length + '00%').css('height', '100%'); //.css('display','flex');		
+                        _.panel.css('width', '100%').css('height', '100%'); //.css('display','flex');					
                         _.children.css('float', 'left');
                         break;
                 }
@@ -698,10 +701,10 @@
                             _.lock = v;
                             break;
                         case 'height':
-                            _.panel.children().height(v);
+                            //_.panel.children().css('height', v);
                             break;
                         case 'width':
-                            _.panel.children().width(v);
+                            //_.panel.children().css('width',v);
                             break;
                         case 'values':
                             var lst = V.newEl('div', '', '').css('display', 'none;');
@@ -1161,6 +1164,9 @@
                         case 'key':
                             _.txt.text(value).show();
                             break;
+                        case 'enable':
+                            if (value) { _.sel.removeAttr('disabled'); } else { _.sel.attr('disabled', 'disabled'); }
+                            break;
                     }
                 });
                 return data;
@@ -1217,6 +1223,13 @@
                             break;
                         case 'name':
                             _.node.find(":radio").attr('name', v);
+                            break;
+                        case 'enable':
+                            if (value) {
+                                _.node.find(":radio").removeAttr('disabled');
+                            } else {
+                                _.node.find(":radio").attr('disabled', 'disabled');
+                            }
                             break;
                     }
                 });
@@ -1284,6 +1297,13 @@
                             break;
                         case 'name':
                             _.node.find(":checkbox").attr('name', v);
+                            break;
+                        case 'enable':
+                            if (value) {
+                                _.node.find(":checkbox").removeAttr('disabled');
+                            } else {
+                                _.node.find(":checkbox").attr('disabled', 'disabled');
+                            }
                             break;
                     }
                 });
@@ -1447,6 +1467,16 @@
                                 });
                             }
                             break;
+                        case 'enable':
+                            value = !!value;
+                            delete data.enable;
+                            V.each(_.cons, function(v) {
+                                var vm = _.parent.vms[v] ? _.parent.vms[v] : _.page.vms[v];
+                                if (vm) {
+                                    vm.update({ enable: value });
+                                }
+                            });
+                            break;
                         case 'value':
                             if (value) {
                                 _.vm.data.value = value;
@@ -1526,7 +1556,6 @@
                     if (_.vm.data.value) {
                         __.vms[_.vm.data.value].update({ hide: _.vm.data.hideaction, isActive: false });
                         __.vms[_.vm.data.value].call('inactive');
-                        console.log(__.vms[_.vm.data.value]);
                     }
                     if (__.vms[value]) {
                         __.vms[value].update({ showaction: _.vm.data.showaction, isActive: true });

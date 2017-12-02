@@ -198,7 +198,10 @@ if (!VJ.load)
                 next: emptyfunc
             };
             try {
-                ret.func(val, function() { return ret.next(exp, func, finalf, ret.val); });
+                var next = function() { return ret.next(exp, func, finalf, ret.val); };
+                var res = ret.func(val, next);
+                if (res === true) ret.next(exp, func, finalf, false);
+                else if (res !== undefined) next();
             } catch (err) {
                 V.showException('', err);
                 ret.next(exp, func, finalf, ret.val)
@@ -215,7 +218,10 @@ if (!VJ.load)
                     next: emptyfunc
                 };
                 try {
-                    ret.func(val, function() { ret.next(exp, func, finalf, ret.val); });
+                    var next = function() { ret.next(exp, func, finalf, ret.val); };
+                    var res = ret.func(val, next);
+                    if (res === true) ret.next(exp, func, finalf, false);
+                    else if (res !== undefined) next();
                 } catch (err) {
                     V.showException('', err);
                     ret.next(exp, func, finalf, ret.val)
@@ -284,7 +290,9 @@ if (!VJ.load)
             var i = 0;
             var funs = arguments;
             var data = {};
-            V.whileC2(function() { return funs[i++] }, function(v, next) { return (v || next || emptyfunc)(data, next) });
+            V.whileC2(function() { return funs[i++] }, function(v, next) {
+                return (v || next || emptyfunc)(data, next)
+            });
         };
 
         //类处理
@@ -392,6 +400,7 @@ if (!VJ.load)
                 son.prototype[k] = methods[k];
             }
         };
+        //使用eval方式生成对象，要求传入的为类本身 建议不使用
         V.create = function(type, args) {
             if (typeof(type) == 'function') {
                 args = V.isArray(args) ? args : [args];
@@ -407,6 +416,7 @@ if (!VJ.load)
                 return eval(ret + '))');
             } else V.showException('请传入类定义');
         };
+        //使用new 新建类，要求传入的为类本身
         V.create2 = function(type, args) {
             if (typeof(type) == 'function') {
                 args = V.isArray(args) ? args : [args];
@@ -419,6 +429,7 @@ if (!VJ.load)
                 })() : new function() { type.apply(this, args) };
             } else V.showException('请传入类定义');
         };
+        //使用eval方式生成对象，要求类定义在this域中
         V.create3 = function(type, args) {
             var ret = '(new ' + type + '(';
             if (V.isArray(args)) {
@@ -1062,16 +1073,21 @@ if (!VJ.load)
                 i['q'] = i['y'] * 4 + Math.floor(objDate2.getMonth() / 4) - Math.floor(d.getMonth() / 4);
                 i['m'] = i['y'] * 12 + objDate2.getMonth() - d.getMonth();
                 i['ms'] = objDate2.getTime() - d.getTime();
-                i['w'] = Math.floor((t2 + 345600000) / (604800000)) - Math.floor((t + 345600000) / (604800000));
-                i['d'] = Math.floor(t2 / 86400000) - Math.floor(t / 86400000);
-                i['h'] = Math.floor(t2 / 3600000) - Math.floor(t / 3600000);
-                i['n'] = Math.floor(t2 / 60000) - Math.floor(t / 60000);
-                i['s'] = Math.floor(t2 / 1000) - Math.floor(t / 1000);
+                // i['w'] = Math.floor((t2 + 345600000) / (604800000)) - Math.floor((t + 345600000) / (604800000));
+                // i['d'] = Math.floor(t2 / 86400000) - Math.floor(t / 86400000);
+                // i['h'] = Math.floor(t2 / 3600000) - Math.floor(t / 3600000);
+                // i['n'] = Math.floor(t2 / 60000) - Math.floor(t / 60000);
+                // i['s'] = Math.floor(t2 / 1000) - Math.floor(t / 1000);
+                i['w'] = Math.floor((t2 - t) / (604800000.0));
+                i['d'] = Math.floor((t2 - t) / 86400000.0);
+                i['h'] = Math.floor((t2 - t) / 3600000.0);
+                i['n'] = Math.floor((t2 - t) / 60000.0);
+                i['s'] = Math.floor((t2 - t) / 1000.0);
                 return i[interval];
             }
             /* 计算两日期相差的日期年月日等 new Date().diff('h',new Date().add('d',1)); */
         Date.prototype.sub = function(interval, objDate2) {
-                return -1 * Date.prototype.diff.apply(this, [interval, objDate2]);
+                return Date.prototype.diff.apply(objDate2, [interval, this]);
             }
             /* 计算两日期相差的日期年月日等 new Date().toString('yyyy-MM-dd'); */
         Date.prototype.toString = function(fmt) {
@@ -1497,15 +1513,14 @@ if (!VJ.load)
             return parseInt('' + (new Date()).getTime() + (index++));
         };
 
-        //json2
-
-        if (!JSON)
-            V.include('../../Script/json.js');
         V.toJsonString = function(obj) {
+            if (!JSON)
+                V.include('../../Script/json.js');
             return JSON.stringify(obj);
         };
         V.json = function(txt) {
+            if (!JSON)
+                V.include('../../Script/json.js');
             return JSON.parse(txt);
         };
-
     })(VJ, jQuery);

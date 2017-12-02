@@ -518,8 +518,8 @@
                                         __.callfunc(val._id);
                                     } else {
                                         V.showException('未找到消息处理者' + V.toJsonString(val));
-
                                     }
+                                    return false;
                                 });
                             }
                         };
@@ -528,6 +528,7 @@
                             if (oCall && oCall.datas.length > 0 && oCall.func) {
                                 V.whileC(function() { return oCall.datas.shift(); }, function(val) {
                                     oCall.func(val, oCall.index);
+                                    return false;
                                 }, function() { //delete __.calls[index]; 
                                 });
                             }
@@ -550,7 +551,7 @@
                         };
                         __.callsend = function() {
                             if (_.isOpen) {
-                                V.whileC(function() { return __.senddatas.shift() }, function(v) { __.conn.send(v); });
+                                V.whileC(function() { return __.senddatas.shift() }, function(v) { __.conn.send(v); return false; });
                             }
                         };
                     }

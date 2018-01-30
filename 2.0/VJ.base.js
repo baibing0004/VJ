@@ -492,9 +492,13 @@ if (!VJ.load)
                     case 'object':
                     case 'Object':
                     case 'ukObject':
-                        for (var i in source)
-                            aim[i] = _merge(aim[i], source[i]);
-                        return aim;
+                        if (typeof(aim) == 'string') return source;
+                        else {
+                            for (var i in source)
+                                aim[i] = _merge(aim[i], source[i]);
+                            return aim;
+                        }
+                        break;
                     case 'null':
                         return (source === undefined) ? aim : source;
                     default:
@@ -517,8 +521,6 @@ if (!VJ.load)
         };
 
         //自动判断获取userAgent状态
-
-
         V.userAgent = {
             ie: false,
             firefox: false,
@@ -1165,7 +1167,7 @@ if (!VJ.load)
                     chr = '\\' + chr;
                     break;
             }　　
-            return this.replace(V.isValid(chr) ? new RegExp('(^' + chr + '+)|(' + chr + '+$)') : /(^\s+)|(\s+$)/g, "");　　
+            return this.replace(V.isValid(chr) ? new RegExp('(^' + chr + '+)|(' + chr + '+$)', 'g') : /(^\s+)|(\s+$)/g, "");　　
         }
 
         /**

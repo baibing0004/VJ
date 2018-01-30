@@ -58,7 +58,13 @@
     }
     //分离NiTemplate进行连续事务提交和顺序操作
     {
-        N.NiTemplate = function(res, cm) {
+        /**
+         * 
+         * @param {数据源} res 
+         * @param {ni对象configManager对象} cm 
+         * @param {转换URL地址的后缀 默认'.tjson?_n=MT'} defExt 
+         */
+        N.NiTemplate = function(res, cm, defExt) {
             var _ = this,
                 __ = this; {
                 _.lstCmd = [];
@@ -67,6 +73,7 @@
                 _.transaction = false;
                 _.res = res;
                 _.cm = cm;
+                _.defExt = defExt || '.tjson?_n=MT';
             }
         };
         N.NiTemplate.inherit2 = true;
@@ -74,13 +81,16 @@
             _addCommand: function(name, params, func) {
                 var _ = this;
                 var cmd = _.cm.getConfigValue(_.KEY, name);
-                var command = name;
+                var command = name || '';
                 var template = "";
                 if (cmd) {
                     command = cmd.command;
                     params = cmd.merge(cmd.params, V.getValue(params, {}));
                     template = cmd.template;
-                }
+                } else if (command.indexOf('http') < 0 || command.startWith('/')) {
+                    //如果没有覆盖那么采用默认路径转换
+                    command = '/' + command.replace(/[\.\/\\]/g, '/').trim('/') + _.defExt;
+                } //如果注明绝对路径或者相对路径那么直接访问
                 _.lstCmd.push({ name: command, params: params, func: func, template: template, key: name, jsonp: (cmd && cmd.jsonp) ? cmd.jsonp : false, dbtype: (cmd && cmd.dbtype) ? cmd.dbtype : "tjson" });
             },
             _excute: function() {

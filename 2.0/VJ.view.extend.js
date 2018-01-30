@@ -606,7 +606,7 @@
         W.PagePanel = function(middler, path, vm, limit, limitBack) {
             var _ = this,
                 __ = {}; {
-
+                //width:100%;height:100%;
                 V.inherit.apply(_, [middler.getTypeByAppName('VESH.view', 'panel'), [V.getValue(path, '<div style="overflow:hidden;"  class="c_pagePanel"><div style="display:none;"></div></div>'), V.merge(V.getValue(vm, {}), {
                     data: { direction: 'hor', value: 0 },
                     onLeft: function(data, self) { _.change(true); },
@@ -625,7 +625,7 @@
                 //if(_.children.length==0) {}
                 _.length = _.children.length;
                 //_.children.width(node.width()).height(node.height()).css('overflow', 'hidden').css('position', 'relative');
-                _.children.css('height', '100%').css('width', Math.floor(10000 / _.length) / 100 + '%').css('overflow', 'hidden').css('position', 'relative');
+                _.children.css('overflow', 'hidden').css('position', 'relative');
                 _.children.addClass('noactive');
                 _.panel.append(_.children);
                 //根据direction覆盖监听操作 同时修改panelaction
@@ -636,8 +636,8 @@
                         delete _.events.left;
                         delete _.events.right;
                         //取消水平操作动画
-                        //_.panel.css('height', _.length + '00%').css('width', '100%'););		
-                        _.panel.css('width', '100%').css('height', '100%');
+                        _.panel.css('height', _.length + '00%').css('width', '100%');
+                        _.children.css('height', Math.floor(10000 / _.length) / 100 + '%').css('width', '100%')
                         break;
                     case 'hor':
                     default:
@@ -645,9 +645,8 @@
                         _.hor = true;
                         delete _.events.up;
                         delete _.events.down;
-                        //_.panel.css('width', _.length + '00%').css('height', '100%'); //.css('display','flex');		
-                        _.panel.css('width', '100%').css('height', '100%'); //.css('display','flex');					
-                        _.children.css('float', 'left');
+                        _.panel.css('width', _.length + '00%').css('height', '100%'); //.css('display','flex');			
+                        _.children.css('width', Math.floor(10000 / _.length) / 100 + '%').css('height', '100%').css('float', 'left');
                         break;
                 }
                 V.forC(_.events, function(k, v) {
@@ -701,10 +700,10 @@
                             _.lock = v;
                             break;
                         case 'height':
-                            //_.panel.children().css('height', v);
+                            //_.panel.children().height(v);
                             break;
                         case 'width':
-                            //_.panel.children().css('width',v);
+                            //_.panel.children().width(v);
                             break;
                         case 'values':
                             var lst = V.newEl('div', '', '').css('display', 'none;');
@@ -713,11 +712,16 @@
                             }, function() {
                                 _.children = lst.children();
                                 _.length = _.children.length;
-                                _.children.width(_.node.width()).height(_.node.height()).css('overflow', 'hidden').css('position', 'relative');
+                                _.children.css('overflow', 'hidden').css('position', 'relative');
                                 _.children.addClass('noactive');
                                 _.panel.empty().append(_.children);
-                                if (_.vol) { _.panel.css('height', _.length + '00%').css('width', '100%'); } else {
+                                if (_.vol) {
+                                    _.panel.css('height', _.length + '00%').css('width', '100%');
+                                    _.children.css('height', Math.floor(10000 / _.length) / 100 + '%').css('width', '100%');
+
+                                } else {
                                     _.panel.css('width', _.length + '00%').css('height', '100%');
+                                    _.children.css('width', Math.floor(10000 / _.length) / 100 + '%').css('height', '100%');
                                     _.children.css('float', 'left');
                                 }
                                 _.change(_.index == NaN ? 0 : _.index, true, true);

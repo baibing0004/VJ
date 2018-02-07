@@ -64,7 +64,7 @@
          * @param {ni对象configManager对象} cm 
          * @param {转换URL地址的后缀 默认'.tjson?_n=MT'} defExt 
          */
-        N.NiTemplate = function(res, cm, defExt) {
+        N.NiTemplate = function(res, cm, defExt, merge) {
             var _ = this,
                 __ = this; {
                 _.lstCmd = [];
@@ -74,6 +74,12 @@
                 _.res = res;
                 _.cm = cm;
                 _.defExt = defExt || '.tjson?_n=MT';
+                _.merge = merge || function() {
+                    var ret = VJ.merge.apply(this, arguments);
+                    //mysql特有
+                    if (!ret.hasMarge && ret.PageIndex) { ret.hasMarge = true, ret.PageIndex = ret.PageIndex * ret.PageSize; }
+                    return ret;
+                };
             }
         };
         N.NiTemplate.inherit2 = true;
@@ -89,7 +95,8 @@
                     template = cmd.template;
                 } else if (command.indexOf('http') < 0 || command.startWith('/')) {
                     //如果没有覆盖那么采用默认路径转换
-                    command = '/' + command.replace(/[\.\/\\]/g, '/').trim('/') + _.defExt;
+                    command = command.replace(/[\.\/\\]/g, '/') + _.defExt;
+                    params = V.getValue(params, {});
                 } //如果注明绝对路径或者相对路径那么直接访问
                 _.lstCmd.push({ name: command, params: params, func: func, template: template, key: name, jsonp: (cmd && cmd.jsonp) ? cmd.jsonp : false, dbtype: (cmd && cmd.dbtype) ? cmd.dbtype : "tjson" });
             },
@@ -800,10 +807,10 @@
     }
     //NiTemplateDecorator NiMultiTemplateDecorator 装饰类 使得TemplateDecorator可以添加缓存，NiMultiTemplateDecorator可以根据Ni文件中定义的template进行操作
     {
-        N.NiTemplateDecorator = function(res, cacheres, cm, params) {
+        N.NiTemplateDecorator = function(res, cacheres, cm, params, defExt, merge) {
             var _ = this,
                 __ = this; {
-                N.NiTemplate.apply(_, [res, cm]);
+                N.NiTemplate.apply(_, [res, cm, defExt, merge]);
                 _.KEY = 'Ni';
                 _.lstCmd2 = {};
                 __.params = V.getValue(params, {});
@@ -969,13 +976,13 @@
             }
         });
         //用于先读取缓存同步请求真实数据的情况
-        N.NiLazyTemplateDecorator = function(res, cacheres, cm, params) {
+        N.NiLazyTemplateDecorator = function(res, cacheres, cm, params, defExt, merge) {
             var _ = this,
                 __ = this; {
                 __.lazyExp = V.getValue(params.lazyExp, function(p) { return true; });
                 params = V.merge({}, params);
                 if (params && params.lazyExp) { delete params.lazyExp; }
-                N.NiTemplateDecorator.apply(_, [res, cacheres, cm, params]);
+                N.NiTemplateDecorator.apply(_, [res, cacheres, cm, params, defExt, merge]);
             }
         };
         V.inherit2(N.NiLazyTemplateDecorator, N.NiTemplateDecorator, {
@@ -1066,10 +1073,10 @@
             }
         });
         //使用很多Template来完成相关操作，否则就使用默认值进行处理
-        N.NiMultiTemplateDecorator = function(res, cm, relcm, appName) {
+        N.NiMultiTemplateDecorator = function(res, cm, relcm, appName, defExt, merge) {
             var _ = this,
                 __ = this; {
-                N.NiTemplate.apply(_, [res, cm]);
+                N.NiTemplate.apply(_, [res, cm, defExt, merge]);
                 _.KEY = V.getValue(appName, 'Ni');
                 __.ni = new N.NiTemplateManager(relcm, _.KEY);
                 //__._addCommand = _._addCommand;

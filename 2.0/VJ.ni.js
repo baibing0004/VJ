@@ -74,6 +74,9 @@
                 _.res = res;
                 _.cm = cm;
                 _.defExt = defExt || '.tjson?_n=MT';
+                _.dbtype = _.defExt.split('?')[0].trim('.');
+                _.jsonp = _.dbtype.indexOf('jsonp') >= 0 ? '_bk' : false;
+                _.dbtype = _.dbtype.trim('p');
                 _.merge = merge || function() {
                     var ret = VJ.merge.apply(this, arguments);
                     //mysql特有
@@ -87,18 +90,26 @@
             _addCommand: function(name, params, func) {
                 var _ = this;
                 var cmd = _.cm.getConfigValue(_.KEY, name);
-                var command = name || '';
-                var template = "";
                 if (cmd) {
-                    command = cmd.command;
-                    params = cmd.merge(cmd.params, V.getValue(params, {}));
-                    template = cmd.template;
-                } else if (command.indexOf('http') < 0 || command.startWith('/')) {
+                    _.lstCmd.push(V.merge(cmd, {
+                        name: cmd.command,
+                        params: (cmd.merge || _.merge)(cmd.params, V.getValue(params, {})),
+                        func: func,
+                        key: name,
+                        jsonp: cmd.jsonp || _.jsonp,
+                        dbtype: cmd.dbtype || _.dbtype
+                    }));
+                } else {
                     //如果没有覆盖那么采用默认路径转换
-                    command = command.replace(/[\.\/\\]/g, '/') + _.defExt;
-                    params = V.getValue(params, {});
-                } //如果注明绝对路径或者相对路径那么直接访问
-                _.lstCmd.push({ name: command, params: params, func: func, template: template, key: name, jsonp: (cmd && cmd.jsonp) ? cmd.jsonp : false, dbtype: (cmd && cmd.dbtype) ? cmd.dbtype : "tjson" });
+                    _.lstCmd.push({
+                        name: (name.indexOf('http') < 0 || name.startWith('/')) ? (name.replace(/[\.\/\\]/g, '/') + _.defExt) : (name || ''),
+                        params: _.merge(V.getValue(params, {})),
+                        func: func,
+                        key: name,
+                        jsonp: _.jsonp,
+                        dbtype: _.dbtype
+                    })
+                }
             },
             _excute: function() {
                 var _ = this,
@@ -396,6 +407,497 @@
                 }
             };
         };
+    }
+    //NiTemplateDecorator NiMultiTemplateDecorator 装饰类 使得TemplateDecorator可以添加缓存，NiMultiTemplateDecorator可以根据Ni文件中定义的template进行操作
+    {
+        N.NiTemplateDecorator = function(res, cacheres, cm, params, defExt, merge) {
+            var _ = this,
+                __ = this; {
+                N.NiTemplate.apply(_, [res, cm, defExt, merge]);
+                _.KEY = 'Ni';
+                _.lstCmd2 = {};
+                __.params = V.getValue(params, {});
+                _.cacheres = cacheres;
+            }
+        };
+        V.inherit2(N.NiTemplateDecorator, N.NiTemplate, {
+            setCommand: function(res, params) {
+                var _ = this,
+                    __ = this;
+                params = V.merge(__.params, params);
+                //兼容localStorage不可用的状态
+                try {
+                    if (res.setItem) {
+                        res.setItem(params.cacheKey, V.toJsonString({
+                            data: params.cacheValue,
+                            date: (params.timeout ? new Date().add(params.timeout.interval, params.timeout.number).getTime() : false)
+                        }));
+                    } else {
+                        res[params.cacheKey] = V.toJsonString({
+                            data: params.cacheValue,
+                            date: (params.timeout ? new Date().add(params.timeout.interval, params.timeout.number).getTime() : false)
+                        });
+                    }
+                } catch (error) {
+                    console.log('localStorage/sessionStorage可能不被支持或者跨域:' + e.message);
+                }
+                return null;
+            },
+            //可以根据业务逻辑改为根据某个公共字段进行删除
+            clearCommand: function(res, params) {
+                try {
+                    if (res.removeItem) {
+                        res.removeItem(params.cacheKey, null);
+                    } else if (res[params.cacheKey]) {
+                        delete res[params.cacheKey];
+                    }
+                    return null;
+                } catch (error) {
+                    console.log('localStorage/sessionStorage可能不被支持或者跨域:' + e.message);
+                }
+            },
+            cacheCommand: function(res, params) {
+                try {
+                    var val = null;
+                    if (res.getItem) {
+                        val = V.json(res.getItem(params.cacheKey));
+                    } else {
+                        if (res[params.cacheKey]) {
+                            val = V.json(res[params.cacheKey]);
+                        }
+                    }
+                    if (val) {
+                        if (val.date) {
+                            if (parseFloat(val.date) < new Date().getTime()) {
+                                delete res[params.cacheKey];
+                                return null;
+                            }
+                        }
+                        return val.data;
+                    } else return null;
+                } catch (error) {
+                    console.log('localStorage/sessionStorage可能不被支持或者跨域:' + e.message);
+                }
+            },
+            _addCommand: function(name, params, func) {
+                var _ = this,
+                    __ = this;
+                var index = _.lstCmd.length;
+                N.NiTemplateDecorator._addCommand.apply(_, [name, params, func]);
+                if (_.lstCmd.length != index) {
+                    var command = null;
+                    var cmd = _.cm.getConfigValue(_.KEY, name + '.Cache');
+                    if (!cmd) {
+                        cmd = _.cm.getConfigValue(_.KEY, name + '.Clear');
+                        if (cmd) {
+                            command = cmd.command || _.clearCommand;
+                        }
+                    } else {
+                        command = cmd.command || _.cacheCommand;
+                    }
+                    if (cmd) {
+                        _.lstCmd2[index] = {
+                            name: command,
+                            key: name,
+                            params: cmd.merge(_.lstCmd[_.lstCmd.length - 1].params, { cacheKey: V.hash(name + '.Set.' + V.toJsonString(_.lstCmd[_.lstCmd.length - 1].params)) })
+                        }
+                    }
+                }
+            },
+            _excute: function() {
+                var _ = this,
+                    __ = this;
+                var _cms = _.lstCmd;
+                _.lstCmd = [];
+                if (_cms.length > 0) {
+                    V.tryC(function() {
+                        var conn = _res.getDBConnection();
+                        var cmd = _.res.getDBCommand();
+                        cmd.connection = conn;
+                        var func = function(v, next) {
+                            cmd.command = v.name;
+                            cmd.params = v.params;
+                            cmd.dbtype = v.dbtype;
+                            cmd.jsonp = v.jsonp;
+                            var _func = v.func;
+                            cmd.excute(_.result, function(data) {
+                                V.tryC(function() {
+                                    _.result.add(data ? data : false, v.key);
+                                    if (_func) {
+                                        V.tryC(function() {
+                                            _func(_.result);
+                                        });
+                                    }
+                                });
+                                if (data && data.length > 0 && !(data.length == 1 && data[0].length == 0)) {
+                                    //新增缓存
+                                    var _nicmd = cm.getConfigValue(_.KEY, v.key + '.Set');
+                                    if (_nicmd) {
+                                        var _conn = _.cacheres.getDBConnection();
+                                        var _cmd = _.cacheres.getDBCommand();
+                                        _cmd.connection = _conn;
+                                        _cmd.command = V.getValue(_nicmd.command, _.setCommand);
+                                        _cmd.params = _nicmd.merge(_nicmd.params, cmd.params, {
+                                            cacheKey: V.hash(v.key + '.Set.' + V.toJsonString(cmd.params)),
+                                            cacheValue: data
+                                        });
+                                        _cmd.excute(_.result, function(data) {
+                                            V.tryC(function() { _.cacheres.backDBConnection(_conn); });
+                                        });
+                                    }
+                                }
+                                i++;
+                                next();
+                            });
+                        };
+                        var i = 0;
+                        V.whileC2(function() { return _cms.shift(); }, function(v, next) {
+                            var _nicmd = _.lstCmd2[i];
+                            //准备处理缓存
+                            if (_nicmd) {
+                                i++;
+                                var _conn = _.cacheres.getDBConnection();
+                                var _cmd = _.cacheres.getDBCommand();
+                                _cmd.connection = _conn;
+                                _cmd.command = _nicmd.name;
+                                _cmd.params = V.merge(_nicmd.params, v.params);
+                                _cmd.excute(_.result, function(data) {
+                                    V.tryC(function() {
+                                        try { _.cacheres.backDBConnection(_conn); } catch (e) {}
+                                        if (data) {
+                                            _.result.add(data, v.key);
+                                            if (v.func) {
+                                                V.tryC(function() {
+                                                    v.func(_.result);
+                                                });
+                                            }
+                                            next();
+                                        } else {
+                                            func(v, next);
+                                        }
+                                    });
+                                });
+                            } else {
+                                i++;
+                                func(v, next);
+                            }
+                        }, function() {
+                            _.res.backDBConnection(conn);
+                        });
+                    });
+                } else { V.showException('不能调用空的命令对象!'); }
+                return _.result;
+            }
+        });
+        /**
+         * 使用一致的缓存命令和设置命令 继承自NiTemplateDecorator
+         * @param {*} res 
+         * @param {*} cacheres 
+         * @param {*} cm 
+         * @param {*} params 
+         * @param {*} defExt 
+         * @param {*} merge 
+         * @param {*} cachecommand 
+         * @param {*} setcommand 
+         */
+        N.NiTemplateCacheDecorator = function(res, cacheres, cm, params, defExt, merge, cachecommand, setcommand) {
+            N.NiTemplateDecorator.apply(_, [res, cacheres, cm, defExt, merge]);
+            _.cachecommand = cachecommand;
+            _.setcommand = setcommand;
+        };
+        V.inherit2(N.NiTemplateCacheDecorator, N.NiTemplateDecorator, {
+            _addCommand: function(name, params, func) {
+                var _ = this,
+                    __ = this;
+                var index = _.lstCmd.length;
+                N.NiTemplate._addCommand.apply(_, [name, params, func]);
+                if (_.lstCmd.length != index) {
+                    var command = null;
+                    var cmd = _.cm.getConfigValue(_.KEY, _.cachecommand);
+                    if (cmd) {
+                        command = cmd.command || _.cacheCommand;
+                        _.lstCmd2[index] = {
+                            name: command,
+                            key: name,
+                            params: cmd.merge(_.lstCmd[_.lstCmd.length - 1].params, { cacheKey: V.hash(name + '.Set.' + V.toJsonString(_.lstCmd[_.lstCmd.length - 1].params)) })
+                        }
+                    }
+                }
+            },
+            _excute: function() {
+                var _ = this,
+                    __ = this;
+                var _cms = _.lstCmd;
+                _.lstCmd = [];
+                if (_cms.length > 0) {
+                    V.tryC(function() {
+                        var conn = _res.getDBConnection();
+                        var cmd = _.res.getDBCommand();
+                        cmd.connection = conn;
+                        var func = function(v, next) {
+                            cmd.command = v.name;
+                            cmd.params = v.params;
+                            cmd.dbtype = v.dbtype;
+                            cmd.jsonp = v.jsonp;
+                            var _func = v.func;
+                            cmd.excute(_.result, function(data) {
+                                V.tryC(function() {
+                                    _.result.add(data ? data : false, v.key);
+                                    if (_func) {
+                                        V.tryC(function() {
+                                            _func(_.result);
+                                        });
+                                    }
+                                });
+                                if (data && data.length > 0 && !(data.length == 1 && data[0].length == 0)) {
+                                    //新增缓存
+                                    var _nicmd = cm.getConfigValue(_.KEY, _.setcommand);
+                                    if (_nicmd) {
+                                        var _conn = _.cacheres.getDBConnection();
+                                        var _cmd = _.cacheres.getDBCommand();
+                                        _cmd.connection = _conn;
+                                        _cmd.command = V.getValue(_nicmd.command, _.setCommand);
+                                        _cmd.params = _nicmd.merge(_nicmd.params, cmd.params, {
+                                            cacheKey: V.hash(v.key + '.Set.' + V.toJsonString(cmd.params)),
+                                            cacheValue: data
+                                        });
+                                        _cmd.excute(_.result, function(data) {
+                                            V.tryC(function() { _.cacheres.backDBConnection(_conn); });
+                                        });
+                                    }
+                                }
+                                i++;
+                                next();
+                            });
+                        };
+                        var i = 0;
+                        V.whileC2(function() { return _cms.shift(); }, function(v, next) {
+                            var _nicmd = _.lstCmd2[i];
+                            //准备处理缓存
+                            if (_nicmd) {
+                                i++;
+                                var _conn = _.cacheres.getDBConnection();
+                                var _cmd = _.cacheres.getDBCommand();
+                                _cmd.connection = _conn;
+                                _cmd.command = _nicmd.name;
+                                _cmd.params = V.merge(_nicmd.params, v.params);
+                                _cmd.excute(_.result, function(data) {
+                                    V.tryC(function() {
+                                        try { _.cacheres.backDBConnection(_conn); } catch (e) {}
+                                        if (data) {
+                                            _.result.add(data, v.key);
+                                            if (v.func) {
+                                                V.tryC(function() {
+                                                    v.func(_.result);
+                                                });
+                                            }
+                                            next();
+                                        } else {
+                                            func(v, next);
+                                        }
+                                    });
+                                });
+                            } else {
+                                i++;
+                                func(v, next);
+                            }
+                        }, function() {
+                            _.res.backDBConnection(conn);
+                        });
+                    });
+                } else { V.showException('不能调用空的命令对象!'); }
+                return _.result;
+            }
+        });
+        //用于先读取缓存同步请求真实数据的情况
+        N.NiLazyTemplateDecorator = function(res, cacheres, cm, params, defExt, merge) {
+            var _ = this,
+                __ = this; {
+                __.lazyExp = V.getValue(params.lazyExp, function(p) { return true; });
+                params = V.merge({}, params);
+                if (params && params.lazyExp) { delete params.lazyExp; }
+                N.NiTemplateDecorator.apply(_, [res, cacheres, cm, params, defExt, merge]);
+            }
+        };
+        V.inherit2(N.NiLazyTemplateDecorator, N.NiTemplateDecorator, {
+            _excute: function() {
+                var _ = this,
+                    __ = this;
+                var _cms = _.lstCmd;
+                _.lstCmd = [];
+                if (_cms.length > 0) {
+                    V.tryC(function() {
+                        var conn = _.res.getDBConnection();
+                        var cmd = _.res.getDBCommand();
+                        cmd.connection = conn;
+                        var i = 0;
+                        var func = function(v) {
+                            cmd.command = v.name;
+                            cmd.params = v.params;
+                            cmd.dbtype = v.dbtype;
+                            cmd.jsonp = v.jsonp;
+                            var _func = v.func;
+                            cmd.excute(_.result, function(data) {
+                                V.tryC(function() {
+                                    if (!data) {
+                                        data = false;
+                                    }
+                                    _.result.add(data, v.key);
+                                    if (_func) {
+                                        V.tryC(function() {
+                                            _func(_.result);
+                                        });
+                                    }
+                                });
+                                if (data && data.length > 0 && !(data.length == 1 && data[0].length == 0) && __.lazyExp(v.params)) {
+                                    //新增缓存
+                                    var _nicmd = _.cm.getConfigValue(_.KEY, v.key + '.Set');
+                                    if (_nicmd) {
+                                        var _conn = _.cacheres.getDBConnection();
+                                        var _cmd = _.cacheres.getDBCommand();
+                                        _cmd.connection = _conn;
+                                        _cmd.command = V.getValue(_nicmd.command, _.setCommand);
+                                        _cmd.params = _nicmd.merge(_nicmd.params, cmd.params, {
+                                            cacheKey: V.hash(v.key + '.Set.' + V.toJsonString(cmd.params)),
+                                            cacheValue: data
+                                        });
+                                        _cmd.excute(_.result, function(data) {
+                                            V.tryC(function() { cacheres.backDBConnection(_conn); });
+                                        });
+                                    }
+                                }
+                            });
+                        };
+                        V.whileC2(function() { return _cms.shift(); }, function(v, next) {
+                            var _nicmd = _.lstCmd2[i];
+                            //准备处理缓存
+                            if (_nicmd && __.lazyExp(v.params)) {
+                                i++;
+                                var _conn = _.cacheres.getDBConnection();
+                                var _cmd = _.cacheres.getDBCommand();
+                                _cmd.connection = _conn;
+                                _cmd.command = _nicmd.name;
+                                _cmd.params = V.merge(_nicmd.params, v.params);
+                                _cmd.excute(_.result, function(data) {
+                                    V.tryC(function() {
+                                        try { _.cacheres.backDBConnection(_conn); } catch (e) {}
+                                        if (!data) {
+                                            data = false;
+                                        }
+                                        if (data) {
+                                            _.result.add(data, v.key);
+                                            if (v.func) {
+                                                V.tryC(function() {
+                                                    v.func(_.result);
+                                                });
+                                            }
+                                        }
+                                        func(v, next);
+                                    });
+                                });
+                            } else {
+                                i++;
+                                func(v, next);
+                            }
+                        }, function() {
+                            _.res.backDBConnection(conn);
+                        });
+                    });
+                } else { V.showException('不能调用空的命令对象!'); }
+                return _.result;
+            }
+        });
+        /**
+         * 使用很多Template来完成相关操作，否则就使用默认值进行处理
+         * @param {真实数据源} res 
+         * @param {ni.js的ConfigManager} cm 
+         * @param {config.js的ConfigManager} relcm 
+         * @param {config.js的AppName} appName 
+         * @param {自动扩展后缀} defExt 
+         * @param {参数过滤方法} merge 
+         * @param {默认模板 如果不设置 那么使用真实数据源} template 
+         */
+        N.NiMultiTemplateDecorator = function(res, cm, relcm, appName, defExt, merge, template) {
+            var _ = this,
+                __ = this; {
+                N.NiTemplate.apply(_, [res, cm, defExt, merge]);
+                _.KEY = V.getValue(appName, 'Ni');
+                __.ni = new N.NiTemplateManager(relcm, _.KEY);
+                //__._addCommand = _._addCommand;
+                //__._excute = _._excute;
+                __.lstCmd2 = {};
+                _.template = template || false;
+            }
+        };
+        V.inherit2(N.NiMultiTemplateDecorator, N.NiTemplate, {
+            _addCommand: function(name, params, func) {
+                var _ = this,
+                    __ = this;
+                var index = _.lstCmd.length;
+                N.NiMultiTemplateDecorator._addCommand.apply(_, [name, params, func]);
+                if (_.lstCmd.length != index) {
+                    var cmd = _.lstCmd[_.lstCmd.length - 1];
+                    cmd.template = cmd.template || _.template;
+                    if (cmd.template) {
+                        //调用templdate优先 复用其次
+                        __.lstCmd2[index] = true;
+                    }
+                }
+            },
+            _excute: function() {
+                var _ = this,
+                    __ = this;
+                var _cms = _.lstCmd;
+                _.lstCmd = [];
+                if (_cms.length > 0) {
+                    V.tryC(function() {
+                        var conn = _.res.getDBConnection();
+                        var cmd = _.res.getDBCommand();
+                        cmd.connection = conn;
+                        var func = function(v, next) {
+                            cmd.command = v.name;
+                            cmd.params = v.params;
+                            cmd.dbtype = v.dbtype;
+                            cmd.jsonp = v.jsonp;
+                            var _func = v.func;
+                            cmd.excute(_.result, function(data) {
+                                V.tryC(function() {
+                                    _.result.add(data ? data : false, v.key);
+                                    if (_func) {
+                                        _func(_.result);
+                                    }
+                                });
+                                next();
+                            });
+                        };
+                        var i = 0;
+                        var _cms2 = __.lstCmd2;
+                        __.lstCmd2 = {};
+                        V.whileC2(function() { return _cms.shift(); }, function(_v, next) {
+                            var v = _v;
+                            //准备处理缓存
+                            if (_cms2[i]) {
+                                i++;
+                                __.ni.excute(v.template, v.key, v.params, function(result) {
+                                    V.tryC(function() {
+                                        _.result.add((result && result.get(v.key)) ? result.get(v.key) : [], v.key);
+                                        v.func(_.result);
+                                    });
+                                    next();
+                                });
+                            } else {
+                                i++;
+                                func(v, next);
+                            }
+                        }, function() {
+                            _.res.backDBConnection(conn);
+                            _cms2 = null;
+                        });
+                    });
+                } else { V.showException('不能调用空的命令对象!'); }
+                return _.result;
+            }
+        })
     }
     //分离NiDBFactory产生NiDBConnection(Invoke) ajax localStorage sessionStorage js jsonp/getScript websocket Sqlite ObjectDB等各种资源
     {
@@ -804,351 +1306,5 @@
             }
             _.createDBConnection = function() { return new __.SqliteConnection(); };
         };
-    }
-    //NiTemplateDecorator NiMultiTemplateDecorator 装饰类 使得TemplateDecorator可以添加缓存，NiMultiTemplateDecorator可以根据Ni文件中定义的template进行操作
-    {
-        N.NiTemplateDecorator = function(res, cacheres, cm, params, defExt, merge) {
-            var _ = this,
-                __ = this; {
-                N.NiTemplate.apply(_, [res, cm, defExt, merge]);
-                _.KEY = 'Ni';
-                _.lstCmd2 = {};
-                __.params = V.getValue(params, {});
-                _.cacheres = cacheres;
-            }
-        };
-        V.inherit2(N.NiTemplateDecorator, N.NiTemplate, {
-            setCommand: function(res, params) {
-                var _ = this,
-                    __ = this;
-                params = V.merge(__.params, params);
-                //兼容localStorage不可用的状态
-                try {
-                    /*if(res.setItem){
-                    	res.setItem(params.cacheKey,V.toJsonString({
-                    		data:params.cacheValue,
-                    		date:(params.timeout?new Date().add(params.timeout.interval,params.timeout.number).getTime():false)
-                    	}));
-                    } else {*/
-                    res[params.cacheKey] = V.toJsonString({
-                        data: params.cacheValue,
-                        date: (params.timeout ? new Date().add(params.timeout.interval, params.timeout.number).getTime() : false)
-                    });
-                    //}
-                } catch (error) { console.log('localStorage可能不被支持'); }
-                return null;
-            },
-            //可以根据业务逻辑改为根据某个公共字段进行删除
-            clearCommand: function(res, params) {
-                if (res.removeItem) {
-                    res.removeItem(params.cacheKey, null);
-                } else if (res[params.cacheKey]) {
-                    delete res[params.cacheKey];
-                }
-                return null;
-            },
-            cacheCommand: function(res, params) {
-                var val = null;
-                /*if(res.getItem){
-                	val = V.json(res.getItem(params.cacheKey));
-                } else {*/
-                if (res[params.cacheKey]) {
-                    val = V.json(res[params.cacheKey]);
-                }
-                //}						
-                if (val) {
-                    if (val.date) {
-                        if (parseFloat(val.date) < new Date().getTime()) {
-                            delete res[params.cacheKey];
-                            return null;
-                        }
-                    }
-                    return val.data;
-                } else return null;
-            },
-            _addCommand: function(name, params, func) {
-                var _ = this,
-                    __ = this;
-                var index = _.lstCmd.length;
-                N.NiTemplateDecorator._addCommand.apply(_, [name, params, func]);
-                if (_.lstCmd.length != index) {
-                    var command = null;
-                    var cmd = _.cm.getConfigValue(_.KEY, name + '.Cache');
-                    if (!cmd) {
-                        cmd = _.cm.getConfigValue(_.KEY, name + '.Clear');
-                        if (cmd) {
-                            command = cmd.command || _.clearCommand;
-                        }
-                    } else {
-                        command = cmd.command || _.cacheCommand;
-                    }
-                    if (cmd) {
-                        _.lstCmd2[index] = {
-                            name: command,
-                            key: name,
-                            params: cmd.merge(_.lstCmd[_.lstCmd.length - 1].params, { cacheKey: V.hash(name + '.Set.' + V.toJsonString(_.lstCmd[_.lstCmd.length - 1].params)) })
-                        }
-                    }
-                }
-            },
-            _excute: function() {
-                var _ = this,
-                    __ = this;
-                var _cms = _.lstCmd;
-                _.lstCmd = [];
-                if (_cms.length > 0) {
-                    V.tryC(function() {
-                        var conn = _res.getDBConnection();
-                        var cmd = _.res.getDBCommand();
-                        cmd.connection = conn;
-                        var func = function(v, next) {
-                            cmd.command = v.name;
-                            cmd.params = v.params;
-                            cmd.dbtype = v.dbtype;
-                            var _func = v.func;
-                            cmd.excute(_.result, function(data) {
-                                V.tryC(function() {
-                                    _.result.add(data ? data : false, v.key);
-                                    if (_func) {
-                                        V.tryC(function() {
-                                            _func(_.result);
-                                        });
-                                    }
-                                });
-                                if (data && data.length > 0 && !(data.length == 1 && data[0].length == 0)) {
-                                    //新增缓存
-                                    var _nicmd = cm.getConfigValue(_.KEY, v.key + '.Set');
-                                    if (_nicmd) {
-                                        var _conn = _.cacheres.getDBConnection();
-                                        var _cmd = _.cacheres.getDBCommand();
-                                        _cmd.connection = _conn;
-                                        _cmd.command = V.getValue(_nicmd.command, _.setCommand);
-                                        _cmd.params = _nicmd.merge(_nicmd.params, cmd.params, {
-                                            cacheKey: V.hash(v.key + '.Set.' + V.toJsonString(cmd.params)),
-                                            cacheValue: data
-                                        });
-                                        _cmd.excute(_.result, function(data) {
-                                            V.tryC(function() { _.cacheres.backDBConnection(_conn); });
-                                        });
-                                    }
-                                }
-                                i++;
-                                next();
-                            });
-                        };
-                        var i = 0;
-                        V.whileC2(function() { return _cms.shift(); }, function(v, next) {
-                            var _nicmd = _.lstCmd2[i];
-                            //准备处理缓存
-                            if (_nicmd) {
-                                i++;
-                                var _conn = _.cacheres.getDBConnection();
-                                var _cmd = _.cacheres.getDBCommand();
-                                _cmd.connection = _conn;
-                                _cmd.command = _nicmd.name;
-                                _cmd.params = V.merge(_nicmd.params, v.params);
-                                _cmd.excute(_.result, function(data) {
-                                    V.tryC(function() {
-                                        try { _.cacheres.backDBConnection(_conn); } catch (e) {}
-                                        if (data) {
-                                            _.result.add(data, v.key);
-                                            if (v.func) {
-                                                V.tryC(function() {
-                                                    v.func(_.result);
-                                                });
-                                            }
-                                            next();
-                                        } else {
-                                            func(v, next);
-                                        }
-                                    });
-                                });
-                            } else {
-                                i++;
-                                func(v, next);
-                            }
-                        }, function() {
-                            _.res.backDBConnection(conn);
-                        });
-                    });
-                } else { V.showException('不能调用空的命令对象!'); }
-                return _.result;
-            }
-        });
-        //用于先读取缓存同步请求真实数据的情况
-        N.NiLazyTemplateDecorator = function(res, cacheres, cm, params, defExt, merge) {
-            var _ = this,
-                __ = this; {
-                __.lazyExp = V.getValue(params.lazyExp, function(p) { return true; });
-                params = V.merge({}, params);
-                if (params && params.lazyExp) { delete params.lazyExp; }
-                N.NiTemplateDecorator.apply(_, [res, cacheres, cm, params, defExt, merge]);
-            }
-        };
-        V.inherit2(N.NiLazyTemplateDecorator, N.NiTemplateDecorator, {
-            _excute: function() {
-                var _ = this,
-                    __ = this;
-                var _cms = _.lstCmd;
-                _.lstCmd = [];
-                if (_cms.length > 0) {
-                    V.tryC(function() {
-                        var conn = _.res.getDBConnection();
-                        var cmd = _.res.getDBCommand();
-                        cmd.connection = conn;
-                        var i = 0;
-                        var func = function(v) {
-                            cmd.command = v.name;
-                            cmd.params = v.params;
-                            cmd.dbtype = v.dbtype;
-                            var _func = v.func;
-                            cmd.excute(_.result, function(data) {
-                                V.tryC(function() {
-                                    if (!data) {
-                                        data = false;
-                                    }
-                                    _.result.add(data, v.key);
-                                    if (_func) {
-                                        V.tryC(function() {
-                                            _func(_.result);
-                                        });
-                                    }
-                                });
-                                if (data && data.length > 0 && !(data.length == 1 && data[0].length == 0) && __.lazyExp(v.params)) {
-                                    //新增缓存
-                                    var _nicmd = _.cm.getConfigValue(_.KEY, v.key + '.Set');
-                                    if (_nicmd) {
-                                        var _conn = _.cacheres.getDBConnection();
-                                        var _cmd = _.cacheres.getDBCommand();
-                                        _cmd.connection = _conn;
-                                        _cmd.command = V.getValue(_nicmd.command, _.setCommand);
-                                        _cmd.params = _nicmd.merge(_nicmd.params, cmd.params, {
-                                            cacheKey: V.hash(v.key + '.Set.' + V.toJsonString(cmd.params)),
-                                            cacheValue: data
-                                        });
-                                        _cmd.excute(_.result, function(data) {
-                                            V.tryC(function() { cacheres.backDBConnection(_conn); });
-                                        });
-                                    }
-                                }
-                            });
-                        };
-                        V.whileC2(function() { return _cms.shift(); }, function(v, next) {
-                            var _nicmd = _.lstCmd2[i];
-                            //准备处理缓存
-                            if (_nicmd && __.lazyExp(v.params)) {
-                                i++;
-                                var _conn = _.cacheres.getDBConnection();
-                                var _cmd = _.cacheres.getDBCommand();
-                                _cmd.connection = _conn;
-                                _cmd.command = _nicmd.name;
-                                _cmd.params = V.merge(_nicmd.params, v.params);
-                                _cmd.excute(_.result, function(data) {
-                                    V.tryC(function() {
-                                        try { _.cacheres.backDBConnection(_conn); } catch (e) {}
-                                        if (!data) {
-                                            data = false;
-                                        }
-                                        if (data) {
-                                            _.result.add(data, v.key);
-                                            if (v.func) {
-                                                V.tryC(function() {
-                                                    v.func(_.result);
-                                                });
-                                            }
-                                        }
-                                        func(v, next);
-                                    });
-                                });
-                            } else {
-                                i++;
-                                func(v, next);
-                            }
-                        }, function() {
-                            _.res.backDBConnection(conn);
-                        });
-                    });
-                } else { V.showException('不能调用空的命令对象!'); }
-                return _.result;
-            }
-        });
-        //使用很多Template来完成相关操作，否则就使用默认值进行处理
-        N.NiMultiTemplateDecorator = function(res, cm, relcm, appName, defExt, merge) {
-            var _ = this,
-                __ = this; {
-                N.NiTemplate.apply(_, [res, cm, defExt, merge]);
-                _.KEY = V.getValue(appName, 'Ni');
-                __.ni = new N.NiTemplateManager(relcm, _.KEY);
-                //__._addCommand = _._addCommand;
-                //__._excute = _._excute;
-                __.lstCmd2 = {};
-            }
-        };
-        V.inherit2(N.NiMultiTemplateDecorator, N.NiTemplate, {
-            _addCommand: function(name, params, func) {
-                var _ = this,
-                    __ = this;
-                var index = _.lstCmd.length;
-                N.NiMultiTemplateDecorator._addCommand.apply(_, [name, params, func]);
-                if (_.lstCmd.length != index) {
-                    var cmd = _.lstCmd[_.lstCmd.length - 1];
-                    if (cmd.template) {
-                        //调用templdate优先 复用其次
-                        __.lstCmd2[index] = true;
-                    }
-                }
-            },
-            _excute: function() {
-                var _ = this,
-                    __ = this;
-                var _cms = _.lstCmd;
-                _.lstCmd = [];
-                if (_cms.length > 0) {
-                    V.tryC(function() {
-                        var conn = _.res.getDBConnection();
-                        var cmd = _.res.getDBCommand();
-                        cmd.connection = conn;
-                        var func = function(v, next) {
-                            cmd.command = v.name;
-                            cmd.params = v.params;
-                            var _func = v.func;
-                            cmd.excute(_.result, function(data) {
-                                V.tryC(function() {
-                                    _.result.add(data ? data : false, v.key);
-                                    if (_func) {
-                                        _func(_.result);
-                                    }
-                                });
-                                next();
-                            });
-                        };
-                        var i = 0;
-                        var _cms2 = __.lstCmd2;
-                        __.lstCmd2 = {};
-                        V.whileC2(function() { return _cms.shift(); }, function(_v, next) {
-                            var v = _v;
-                            //准备处理缓存
-                            if (_cms2[i]) {
-                                i++;
-                                __.ni.excute(v.template, v.key, v.params, function(result) {
-                                    V.tryC(function() {
-                                        _.result.add((result && result.get(v.key)) ? result.get(v.key) : [], v.key);
-                                        v.func(_.result);
-                                    });
-                                    next();
-                                });
-                            } else {
-                                i++;
-                                func(v, next);
-                            }
-                        }, function() {
-                            _.res.backDBConnection(conn);
-                            _cms2 = null;
-                        });
-                    });
-                } else { V.showException('不能调用空的命令对象!'); }
-                return _.result;
-            }
-        })
     }
 })(VJ, jQuery);

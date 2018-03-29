@@ -75,8 +75,8 @@
                 _.cm = cm;
                 _.defExt = defExt || '.tjson?_n=MT';
                 _.dbtype = _.defExt.split('?')[0].trim('.');
-                _.jsonp = _.dbtype.indexOf('jsonp') >= 0 ? '_bk' : false;
-                _.dbtype = _.dbtype.trim('p');
+                _.jsonp = _.dbtype.indexOf('p') >= 0 ? '_bk' : false;
+                _.dbtype = _.dbtype.indexOf('tjson') >= 0 ? 'tjson' : 'json';
                 _.merge = merge || function() {
                     var ret = VJ.merge.apply(this, arguments);
                     //mysql特有
@@ -240,11 +240,11 @@
                     return false;
                 })() : (__.datas.length > 0 && (function() {
                     var hasData = false;
-                    V.each(__.datas, function(v) {
+                    __.datas.forEach(function(v) {
                         if (!hasData && v) {
                             for (var k in v) hasData = true;
                         }
-                    }, null, true);
+                    });
                     return hasData;
                 })());
             }

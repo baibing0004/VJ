@@ -1,0 +1,121 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node', '/usr/local/bin/npm', 'publish' ]
+2 info using npm@3.10.9
+3 info using node@v6.9.2
+4 verbose publish [ '.' ]
+5 silly cache add args [ '.', null ]
+6 verbose cache add spec .
+7 silly cache add parsed spec Result {
+7 silly cache add   raw: '.',
+7 silly cache add   scope: null,
+7 silly cache add   escapedName: null,
+7 silly cache add   name: null,
+7 silly cache add   rawSpec: '.',
+7 silly cache add   spec: '/Users/baibing/work/VJ/2.0',
+7 silly cache add   type: 'directory' }
+8 verbose addLocalDirectory /Users/baibing/.npm/vj/2.1.0/package.tgz not in flight; packing
+9 verbose correctMkdir /Users/baibing/.npm correctMkdir not in flight; initializing
+10 info lifecycle vj@2.1.0~prepublish: vj@2.1.0
+11 silly lifecycle vj@2.1.0~prepublish: no script for prepublish, continuing
+12 verbose tar pack [ '/Users/baibing/.npm/vj/2.1.0/package.tgz',
+12 verbose tar pack   '/Users/baibing/work/VJ/2.0' ]
+13 verbose tarball /Users/baibing/.npm/vj/2.1.0/package.tgz
+14 verbose folder /Users/baibing/work/VJ/2.0
+15 verbose addLocalTarball adding from inside cache /Users/baibing/.npm/vj/2.1.0/package.tgz
+16 verbose correctMkdir /Users/baibing/.npm correctMkdir not in flight; initializing
+17 silly cache afterAdd vj@2.1.0
+18 verbose afterAdd /Users/baibing/.npm/vj/2.1.0/package/package.json not in flight; writing
+19 verbose correctMkdir /Users/baibing/.npm correctMkdir not in flight; initializing
+20 verbose afterAdd /Users/baibing/.npm/vj/2.1.0/package/package.json written
+21 silly publish { name: 'vj',
+21 silly publish   version: '2.1.0',
+21 silly publish   description: 'VESH\'s JavaScript Framework',
+21 silly publish   main: 'VJ.js',
+21 silly publish   scripts: { init: 'npm i', watch: 'gulp' },
+21 silly publish   keywords: [ 'VJ', 'VESH' ],
+21 silly publish   author: { name: 'baibing' },
+21 silly publish   license: 'ISC',
+21 silly publish   dependencies:
+21 silly publish    { 'babel-core': '^6.24.0',
+21 silly publish      'babel-loader': '^6.4.1',
+21 silly publish      'babel-plugin-transform-runtime': '^6.23.0',
+21 silly publish      'babel-preset-es2015': '^6.24.0',
+21 silly publish      'babel-preset-stage-0': '^6.22.0',
+21 silly publish      babelify: '^7.3.0',
+21 silly publish      browserify: '^14.1.0',
+21 silly publish      del: '^2.2.2',
+21 silly publish      gulp: '^3.9.1',
+21 silly publish      'gulp-babel': '^6.1.2',
+21 silly publish      'gulp-concat': '^2.6.1',
+21 silly publish      'gulp-notify': '^3.0.0',
+21 silly publish      'gulp-rename': '^1.2.2',
+21 silly publish      'gulp-replace': '^0.5.4',
+21 silly publish      'gulp-rev': '^7.1.2',
+21 silly publish      'gulp-rev-collector': '^1.1.1',
+21 silly publish      'gulp-uglify': '^2.1.0',
+21 silly publish      'gulp-watch': '^4.3.11',
+21 silly publish      'stream-combiner2': '^1.1.1',
+21 silly publish      'vinyl-named': '^1.1.0' },
+21 silly publish   readme: 'ERROR: No README data found!',
+21 silly publish   _id: 'vj@2.1.0',
+21 silly publish   _shasum: '064c110fb5c53a8d677f9f202e8f796746021675',
+21 silly publish   _from: '.' }
+22 verbose getPublishConfig undefined
+23 silly mapToRegistry name vj
+24 silly mapToRegistry using default registry
+25 silly mapToRegistry registry https://registry.npmjs.org/
+26 silly mapToRegistry data Result {
+26 silly mapToRegistry   raw: 'vj',
+26 silly mapToRegistry   scope: null,
+26 silly mapToRegistry   escapedName: 'vj',
+26 silly mapToRegistry   name: 'vj',
+26 silly mapToRegistry   rawSpec: '',
+26 silly mapToRegistry   spec: 'latest',
+26 silly mapToRegistry   type: 'tag' }
+27 silly mapToRegistry uri https://registry.npmjs.org/vj
+28 verbose publish registryBase https://registry.npmjs.org/
+29 silly publish uploading /Users/baibing/.npm/vj/2.1.0/package.tgz
+30 verbose request uri https://registry.npmjs.org/vj
+31 verbose request sending authorization for write operation
+32 info attempt registry request try #1 at 22:26:29
+33 verbose request using bearer token for auth
+34 verbose request id 75e7f3a9862a84e8
+35 http request PUT https://registry.npmjs.org/vj
+36 http 403 https://registry.npmjs.org/vj
+37 verbose headers { 'content-type': 'application/json',
+37 verbose headers   'cache-control': 'max-age=300',
+37 verbose headers   'content-length': '96',
+37 verbose headers   'accept-ranges': 'bytes',
+37 verbose headers   date: 'Wed, 28 Mar 2018 14:26:48 GMT',
+37 verbose headers   via: '1.1 varnish',
+37 verbose headers   connection: 'keep-alive',
+37 verbose headers   'x-served-by': 'cache-hnd18720-HND',
+37 verbose headers   'x-cache': 'MISS',
+37 verbose headers   'x-cache-hits': '0',
+37 verbose headers   'x-timer': 'S1522247192.467774,VS0,VE16065',
+37 verbose headers   vary: 'Accept-Encoding, Accept' }
+38 verbose request invalidating /Users/baibing/.npm/registry.npmjs.org/vj on PUT
+39 error publish Failed PUT 403
+40 verbose stack Error: You do not have permission to publish "vj". Are you logged in as the correct user? : vj
+40 verbose stack     at makeError (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:302:12)
+40 verbose stack     at CachingRegistryClient.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:290:14)
+40 verbose stack     at Request._callback (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:210:14)
+40 verbose stack     at Request.self.callback (/usr/local/lib/node_modules/npm/node_modules/request/request.js:187:22)
+40 verbose stack     at emitTwo (events.js:106:13)
+40 verbose stack     at Request.emit (events.js:191:7)
+40 verbose stack     at Request.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1048:10)
+40 verbose stack     at emitOne (events.js:96:13)
+40 verbose stack     at Request.emit (events.js:188:7)
+40 verbose stack     at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:969:12)
+41 verbose statusCode 403
+42 verbose pkgid vj
+43 verbose cwd /Users/baibing/work/VJ/2.0
+44 error Darwin 17.3.0
+45 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "publish"
+46 error node v6.9.2
+47 error npm  v3.10.9
+48 error code E403
+49 error You do not have permission to publish "vj". Are you logged in as the correct user? : vj
+50 error If you need help, you may report this error at:
+50 error     <https://github.com/npm/npm/issues>
+51 verbose exit [ 1, true ]

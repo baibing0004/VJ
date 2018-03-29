@@ -4,7 +4,6 @@
     V.view = { APP: 'VESH.view' };
     var W = V.view;
     V.hasRight = function(name, isAdmin) {
-        //TO修改
         if (V.getValue(isAdmin, false) && (typeof(User) == 'undefined' || !V.isValid(User))) { return false; }
         if (User) {
             //添加后门
@@ -33,48 +32,47 @@
                 _.ni = _.v.ni;
                 _.session = _.v.session;
             };
-            _.data = V.getValue(_.data, {});
+            _.data = _.data || {};
         }
     };
     var WTemplates = {};
+    var FuncTmp = function() {
+        var _ = this;
+        _.__ = { funs: [], node: $('<div style="display:none;"></div>').appendTo(window.document.body) }
+    };
+    V.merge(FuncTmp.prototype, {
+        addCallback: function(fun) {
+            var _ = this,
+                __ = _.__;
+            (__.template) ? fun($(__.template)): fun && (__.funs[__.funs.length] = fun);
+        },
+        callback: function() {
+            var __ = this.__;
+            V.whileC(function() { return __.funs.shift() }, function(v) { v($(__.template)); });
+        },
+        init: function(path) {
+            var _ = this,
+                __ = this.__;
+            if (path.indexOf('<') >= 0) {
+                __.node.append(path);
+                __.template = __.node[0].innerHTML;
+                __.node.remove();
+            } else {
+                __.node.load(path, function() {
+                    __.template = __.node[0].innerHTML
+                    __.node.remove();
+                    _.callback();
+                });
+            }
+        }
+    }, true);
     W.getTemplate = function(path, func) {
         if (!V.isValid(path) || V.getType(path) != 'string') {
             throw new Error('控件模板不能为空或者非字符串!');
         }
         if (!WTemplates[path]) {
-            WTemplates[path] = new function() {
-                var _ = this,
-                    __ = {}; {
-                    __.funs = [];
-                    //__.node = $(window.document.createDocumentFragment()); 因为在某些页面jQuery无法操作此种节点						
-                    __.node = $('<div style="display:none;"></div>').appendTo(window.document.body);
-                }
-                _.addCallback = function(fun) {
-                    if (__.template) {
-                        fun($(__.template));
-                    } else {
-                        if (fun) {
-                            __.funs.push(fun);
-                        }
-                    }
-                };
-                _.callback = function() {
-                    V.whileC(function() { return __.funs.shift() }, function(v) { v($(__.template)); }, function() {
-                        //这里处理加载完成
-                    });
-                };
-                if (path.indexOf('<') >= 0) {
-                    __.node.append(path);
-                    __.template = __.node[0].innerHTML;
-                    __.node.remove();
-                } else {
-                    __.node.load(path, function() {
-                        __.template = __.node[0].innerHTML
-                        __.node.remove();
-                        _.callback();
-                    });
-                }
-            };
+            WTemplates[path] = new FuncTmp();
+            WTemplates[path].init(path);
         }
         WTemplates[path].addCallback(func);
     };
@@ -91,48 +89,20 @@
         this.go = function(node, func) {
             if (V.isValid(__.css)) {
                 node = $(node);
-                var _f = func; {
-                    node.off('webkitAnimationEnd').on('webkitAnimationEnd', function() {
-                        node.off('animationend').css('-webkit-animation', '').css('-moz-animation', '').css('-o-animation', '');
-                        if (_f) {
-                            var _s = _f;
-                            _f = null;
-                            _s();
-                        };
-                    });
-                    node.off('mozAnimationEnd').on('mozAnimationEnd', function() {
-                        node.off('animationend').css('-webkit-animation', '').css('-moz-animation', '').css('-o-animation', '');
-                        if (_f) {
-                            var _s = _f;
-                            _f = null;
-                            _s();
-                        };
-                    });
-                    node.off('MSAnimationEnd').on('MSAnimationEnd', function() {
-                        node.off('MSAnimationEnd').css('-webkit-animation', '').css('-moz-animation', '').css('-o-animation', '');
-                        if (_f) {
-                            var _s = _f;
-                            _f = null;
-                            _s();
-                        };
-                    });
-                    node.off('oanimationend').on('oanimationend', function() {
-                        node.off('oanimationend').css('-webkit-animation', '').css('-moz-animation', '').css('-o-animation', '');
-                        if (_f) {
-                            var _s = _f;
-                            _f = null;
-                            _s();
-                        };
-                    });
-                    node.off('animationend').on('animationend', function() {
-                        node.off('animationend').css('-webkit-animation', '').css('-moz-animation', '').css('-o-animation', '');
-                        if (_f) {
-                            var _s = _f;
-                            _f = null;
-                            _s();
-                        };
-                    });
-                }
+                var _f = func;
+                var _c = function() {
+                    node.off('animationend').css('-webkit-animation', '').css('-moz-animation', '').css('-o-animation', '');
+                    if (_f) {
+                        var _s = _f;
+                        _f = null;
+                        _s();
+                    };
+                };
+                node.off('webkitAnimationEnd').on('webkitAnimationEnd', _c);
+                node.off('mozAnimationEnd').on('mozAnimationEnd', _c);
+                node.off('MSAnimationEnd').on('MSAnimationEnd', _c);
+                node.off('oanimationend').on('oanimationend', _c);
+                node.off('animationend').on('animationend', _c);
                 node.css('animation', css).css('-webkit-animation', css).css('-webkit-animation-play-state', 'running').css('-moz-animation', css).css('-moz-animation-play-state', 'running').css('-o-animation', css).css('-o-animation-play-state', 'running');
             }
         };
@@ -160,41 +130,38 @@
         };
         //初始化viewmodel操作
         _.bind = function(vm) {
-            {
-                //完成配置合并
-                _.vm = V.merge(_.params, V.getValue(vm, { data: {} }));
-                V.forC(_.vm, function(k, v) {
-                    vm[k] = v;
-                    if (k.toLowerCase().indexOf('on') == 0) {
-                        _.events[k.toLowerCase().substring(2)] = v;
-                    }
-                }, function() {
-                    _.vm = vm;
-                }, true);
-                //用于获取绑定对象的数据
-                _.get = function() { return _.vm.data; }
-                    //完成类型名注入
-                _.vm.nodeName = _.nodeName;
-                //完成方法注入
-                _.vm.update = function() {
-                    if (arguments.length == 0) {
-                        _.vm.data = V.merge(_.vm.data, _.fill());
-                    } else {
-                        var as = Array.prototype.slice.call(arguments);
-                        //as = V.getValue(as, [null]);
-                        if (as[0]) V.merge(_.vm.data, as[0], true);
-                        as[0] = as[0] ? as[0] : V.merge({}, _.vm.data);
-                        _.render.apply(_, as);
-                    }
-                    return _.vm.data;
-                };
-                _.vm.call = function() { _.call.apply(_.parent.vms, arguments); };
-                _.vm.add = function() { _.addControl.apply(_, arguments); };
-                _.vm.remove = function() { _.removeControl.apply(_, arguments); };
-                _.vm.desc = function() { _.desc(); };
-                _.vm.get = function(key) { _.vm.data = V.merge(_.vm.data, _.fill()); return key ? _.vm.data[key] : _.vm.data; };
-                _.vm.bind(_);
-            }
+            //完成配置合并
+            _.vm = V.merge(_.params, vm || { data: {} });
+            V.forC(_.vm, function(k, v) {
+                vm[k] = v;
+                (k.toLowerCase().indexOf('on') == 0) && (
+                    _.events[k.toLowerCase().substring(2)] = v
+                )
+            }, null, true);
+            _.vm = vm;
+            //用于获取绑定对象的数据
+            _.get = function() { return _.vm.data; }
+                //完成类型名注入
+            _.vm.nodeName = _.nodeName;
+            //完成方法注入
+            _.vm.update = function() {
+                if (arguments.length == 0) {
+                    _.vm.data = V.merge(_.vm.data, _.fill());
+                } else {
+                    var as = Array.prototype.slice.call(arguments);
+                    //as = V.getValue(as, [null]);
+                    if (as[0]) V.merge(_.vm.data, as[0], true);
+                    as[0] = as[0] ? as[0] : V.merge({}, _.vm.data);
+                    _.render.apply(_, as);
+                }
+                return _.vm.data;
+            };
+            _.vm.call = function() { _.call.apply(_.parent.vms, arguments); };
+            _.vm.add = function() { _.addControl.apply(_, arguments); };
+            _.vm.remove = function() { _.removeControl.apply(_, arguments); };
+            _.vm.desc = function() { _.desc(); };
+            _.vm.get = function(key) { _.vm.data = V.merge(_.vm.data, _.fill()); return key ? _.vm.data[key] : _.vm.data; };
+            _.vm.bind(_);
             if (_.path) {
                 W.getTemplate(_.path, function(node) {
                     _.replaceNode(node);
@@ -208,9 +175,9 @@
         //处理控件下载完成后的操作
         _.onLoad = function(node) {
             _.render(V.merge({}, _.vm.data));
-            //防止call与onload彼此冲突
             _.call('load');
         };
+
         //在更新_.vm.data
         _.fill = function() {
             return {};
@@ -284,9 +251,10 @@
                         }
                         break;
                     case 'globalposition':
+                        value += '';
                         //此方法不支持重复设置
                         if (_.node.attr('position')) {
-                            V.showException('W.Control.data.postion 不允许重复设置!' + _.node.attr('position'));
+                            V.showException('W.Control.data.globalposition 不允许重复设置!' + _.node.attr('position'));
                         } else {
                             _.node.attr('position', value.toLowerCase());
                             _.node.css('position', 'absolute');
@@ -309,6 +277,7 @@
                         }
                         break;
                     case 'position':
+                        value += '';
                         //此方法不支持重复设置
                         if (_.node.attr('position')) {
                             V.showException('W.Control.data.postion 不允许重复设置!' + _.node.attr('position'));
@@ -379,14 +348,13 @@
         };
         _.initControls = function(vm, node) {
             //此处进行内部控件生成需要判定controls属性
-            if (vm.controls || node.find('[_]').length > 0) {
-                var cons = V.getValue(vm.controls, {});
+            (vm.controls || node.find('[_]').length > 0) && (function() {
+                var cons = vm.controls || {};
                 _.controls = [];
                 _.vs = {};
                 _.vms = cons;
                 _.models = _.vms;
-                var p = node.find('[_]').toArray();
-                V.each(p, function(v1) {
+                V.each(node.find('[_]').toArray(), function(v1) {
                     var v = $(v1);
                     var id = v.attr('id');
                     var json = eval("({" + v.attr('_') + "})");
@@ -397,7 +365,7 @@
                     if (!obj) V.showException('配置文件中没有找到对象类型定义:' + nodeName);
                     obj.init(_, v, V.isValid(v.attr('_')) ? json : null);
                     obj.page = _.page;
-                    _.controls.push(obj);
+                    _.controls[_.controls.length] = (obj);
                     if (!id) {
                         id = nodeName + V.random();
                     }
@@ -418,16 +386,14 @@
                             node.append(node2);
                             obj.init(_, node2, null);
                             obj.page = _.page;
-                            _.controls.push(obj);
+                            _.controls[_.controls.length] = (obj);
                             _.vs[key] = obj;
                             V.inherit.apply(v, [M.Control, []]);
                             obj.bind(v);
                         }
-                    }, function() {
-                        //彻底初始化完成
-                    });
+                    }, null, true)
                 }, true);
-            }
+            })();
         };
         _.replaceNode = function(node) {
             node = $(node);
@@ -448,7 +414,7 @@
                             n.attr(v.key, ((V.isValid(n.attr(v.key)) && n.attr(v.key) != v.val) ? n.attr(v.key) + " " : "") + v.val);
                         }
                     }
-                }, function() {}, true);
+                }, null, true);
             }
             _.initControls(_.vm, node);
             node.append(_.node.children());
@@ -466,19 +432,17 @@
             }
         };
         _.call = function(name, param, tparam) {
-            //所有的事件调用全部采用异步调用方式 V.once	
-            V.merge(_.vm.data, _.fill(), param || {}, true);
-            param = V.merge(_.vm.data, tparam || {});
             name = name.toLowerCase();
-            if (_.events[name]) {
-                V.once(function() {
-                    var val = _.events[name].apply(_.parent.vms, [param, _.vm]);
-                    if (val && val != {}) {
-                        V.merge(_.vm.data, val, true)
-                        _.render(val);
-                    }
-                });
-            }
+            //所有的事件调用全部采用异步调用方式 V.once
+            (_.events[name]) && V.once(function() {
+                V.merge(_.vm.data, _.fill(), param || {}, true);
+                param = V.merge(_.vm.data, tparam || {});
+                var val = _.events[name].apply(_.parent.vms, [param, _.vm]);
+                if (val && val != {}) {
+                    V.merge(_.vm.data, val, true)
+                    _.render(val);
+                }
+            });
         };
         //这里提供子类用于覆盖同名函数，修改动画对象。
         _.animate = function(name, func) {
@@ -523,7 +487,7 @@
             node = node ? node : V.newEl('div').appendTo(_.node);
             obj.init(_, node, v.data);
             obj.page = _.page;
-            _.controls.push(obj);
+            _.controls[_.controls.length] = (obj);
             var key = V.getValue(v.id, V.random());
             if (_.vs[key]) { V.showException('控件id为' + key + '的子控件已经存在，请更换id名'); return; }
             node.attr('id', key);
@@ -540,7 +504,7 @@
                 delete _.vs[id];
                 _.controls = $.grep(_.controls, function(v, i) { return v != val; });
                 if (val) val.dispose();
-                //V.tryC(function(){_.vs[id].node.remove();});
+                V.tryC(function() { val.node.remove(); });
             }
         };
         _.clearControl = function() {
@@ -670,9 +634,9 @@
                 }
             };
             if (V.isArray(name)) {
-                V.each(name, function(v) {
+                name.forEach(function(v) {
                     fun(v, func, isTop);
-                }, null, true);
+                });
             } else {
                 fun(name, func, isTop);
             }
@@ -730,6 +694,163 @@
             delete events[name];
         };
     };
+
+    {
+
+        //配置JSON数据格式定义的控件
+        /**
+     * 
+     * VJ.registScript(path,function(){
+    var __ = {};
+    var _ = this;
+    VJ.inherit.apply(_,[VJ.view.WControl,	{
+		template:'',
+		vm:{
+			data:{},
+			controls:{}
+			onLoad:function(D,I){}
+		},
+		onLoad:{k:function(node){}}, // {}
+		fill:function(){ return {} },// {}
+		render:{k:function(v,data){}},//{}
+	}]);
+})
+     * @param {*} json 
+     */
+        W.Control2 = function(json) {
+            var __ = V.merge({
+                template: '',
+                vm: {},
+                onLoad: {},
+                render: {}
+            }, json);
+            var _ = this; {
+                V.inherit.apply(this, [W.Control, [__.template, __.vm]]);
+                __.prerender = _.render;
+                __.preonLoad = _.onLoad;
+                _.fill = __.fill || _.fill;
+                //todo 定义所有可监听的事件 默认这里未添加BindEvent的默认内容
+                _.Events = {};
+                //todo 定义所有属性 默认这里属性和方法必须决定是否同步或者异步执行 应该先取代再瘦身
+                //todo 父子类无法简单继承 要求 父类的json和子类的json不是覆盖关系
+                _.Propertis = {};
+                __.async = {};
+                __.sync = {};
+                __.finally = {};
+                V.forC(__.render || {}, function(k, v) {
+                    var k2 = k.toLowerCase();
+                    v = typeof(v) === 'function' ? {
+                        Desc: '属性没有任何描述',
+                        sync: true, //默认为同步处理,
+                        finally: false, //finally一定是异步的
+                        override: false, //是否覆盖父类方法
+                        Method: v
+                    } : v;
+                    //Method为false或者未定义则不可作为可用属性出现
+                    v && (function() {
+                        v.Method = v.Method || function() {};
+                        _.Propertis[k] = v.Desc;
+                        var poi = v.finally ? 'finally' : v.sync ? 'sync' : 'async';
+                        __[poi][k2] = v;
+                        v.as && (V.isArray(v.as) ? v.as : [v.as]).forEach(function(v2) {
+                            __[poi][v2.toLowerCase()] = v;
+                        });
+                    })();
+                }, null, true);
+            }
+            _.onLoad = function(node) {
+                var em = V.merge({}, __.onLoad);
+                V.forC(em, function(k, v) {
+                    v = typeof(v) === 'function' ? {
+                        Desc: '没有任何描述',
+                        Method: v
+                    } : v;
+                    em[k.toLowerCase()] = v;
+                    _.Events[k] = v.Desc;
+                }, function() {
+                    //提供load方法作为控件初始化使用
+                    em['init'] && em['init'].Method.apply(_, [node]);
+                    V.forC(_.events, function(k, v) {
+                        k = k.toLowerCase();
+                        em[k] ? (em[k].Method || _.bindEvent).apply(_, [node, k, v]) : _.bindEvent.apply(_, [node, k, v]);
+                    }, function() {
+                        __.preonLoad(node);
+                        em['finally'] && em['finally'].Method.apply(_, [node]);
+                    }, true);
+                }, true);
+            };
+            _.render = function(data) {
+                //如何实现在这种情况下对父类方法的覆盖和复用?
+                var ret = { async: [], sync: [], finally: [] };
+                var rdata = {};
+                V.forC(data, function(k, v) {
+                    var k2 = k.toLowerCase();
+                    var name = !!__.sync[k2] ? 'sync' : (!!__.async[k2] ? 'async' : !!__.finally[k2] ? 'finally' : false);
+                    name ? ret[name][ret[name].length] = { func: __[name][k2].Method, data: v } : rdata[k2] = v;
+                }, function() {
+                    rdata = __.prerender(rdata);
+                    //保证同异步同时启动 一般会是同步先执行完 然后 执行异步 最后是finally方法
+                    ret.sync.forEach(function(v) {
+                        v.func.apply(_, [v.data, data]);
+                    });
+                    V.each(ret.async, function(v) {
+                        v.func.apply(_, [v.data, data]);
+                    }, function() {
+                        V.each(ret.finally, function(v) {
+                            v.func.apply(_, [v.data, data]);
+                        })
+                    });
+                }, true);
+                return rdata;
+            };
+        };
+        //专门为Control2继承而使用
+        var _mergefunc = function(_, ret, json, json2, name) {
+                ret[name] = !!json[name] && !!json2[name] ? (function() {
+                    var em = json[name];
+                    var em2 = json2[name];
+                    var data = {};
+                    V.forC(em, function(k, v) {
+                        data[k] = !!em2[k] ? (function() {
+                            var v1 = typeof(v) == 'function' ? { Method: v, override: false } : v,
+                                v2 = typeof(em2[k]) == 'function' ? { Method: em2[k], override: false } : em2[k];
+                            delete em2[k];
+                            var data2 = V.merge(v1, v2);
+                            data2.Method = v2.override ? data2.Method : function() {
+                                return v1.Method.apply(this, arguments) & v2.Method.apply(this, arguments);
+                            };
+                            return data2;
+                        })() : v;
+                    }, function() {
+                        data = V.merge(data, em2);
+                    }, true);
+                    return data;
+                })() : (json[name] || ret[name]);
+            }
+            /**
+             * 专门为Control2继承而使用
+             * @param {*} json 
+             * @param {*} json 
+             */
+        var _merge = function(json, json2) {
+            var _ = this;
+            var ret = V.merge(json, json2);
+            ret.template = json2.template || json.template;
+            _mergefunc(_, ret, json, json2, 'onLoad');
+            _mergefunc(_, ret, json, json2, 'fill');
+            _mergefunc(_, ret, json, json2, 'render');
+            ret.fill && (ret.fill = (ret.fill.Method || ret.fill));
+            return ret;
+        };
+        W.Control2.merge = function() {
+            var _ = this;
+            var as = (arguments.length > 0 ? Array.prototype.slice.call(arguments) : [{}])
+            as.forEach(function(v, i) {
+                i > 0 && (as[0] = _merge.apply(_, [as[0], v]));
+            });
+            return as[0];
+        };
+    }
     //分别定义view与viewmodel的Page
     M.Page = function(cm, data) {
         var _ = this,
@@ -738,8 +859,8 @@
         _.models = _.vms;
         //默认使用配置作为事件定义
         V.inherit.apply(_, [M.Control, []]);
-        _.page = _.vms.page ? _.vms.page : {};
-        _.data = _.page.data ? _.page.data : {};
+        _.page = _.vms.page || {};
+        _.data = _.page.data || {};
         if (cm) {
             switch (V.getType(cm)) {
                 case 'object':
@@ -800,9 +921,10 @@
                         _.vm.data = V.merge(_.vm.data, _.fill());
                     } else {
                         var as = Array.prototype.slice.call(arguments);
-                        as = V.getValue(as, [null]);
-                        if (as[0]) V.merge(_.vm.data, as[0], true);
-                        as[0] = as[0] ? as[0] : V.merge({}, _.vm.data);
+                        as[0] = (as.length > 0 && as[0]) ? (function() {
+                            V.merge(_.vm.data, as[0], true);
+                            return as[0];
+                        })() : V.merge({}, _.vm.data);
                         _.render.apply(_, as);
                     }
                     return _.vm.data;
@@ -883,8 +1005,7 @@
         //用于绑定对应的控件
         _.bindControl = function(node) {
             //这里应该由真实的View层调用使用document.ready实现
-            var p = node.find('[_]').toArray();
-            V.whileC(function() { return p.shift(); }, function(v1) {
+            V.each(node.find('[_]').toArray(), function(v1) {
                 var v = $(v1);
                 var id = v.attr('id');
                 var json = eval("({" + v.attr('_') + "})");
@@ -895,6 +1016,7 @@
                 if (!obj) V.showException('配置文件中没有找到对象类型定义:' + nodeName);
                 obj.init(_, v, V.isValid(v.attr('_')) ? json : null);
                 obj.page = _;
+                _.controls[_.controls.length] = (obj);
                 if (!id) {
                     id = nodeName + V.random();
                 }
@@ -915,7 +1037,7 @@
                         node.append(node2);
                         obj.init(_, node2, null);
                         obj.page = _;
-                        _.controls.push(obj);
+                        _.controls[_.controls.length] = (obj);
                         _.vs[key] = obj;
                         V.inherit.apply(v, [M.Control, []]);
                         obj.bind(v);
@@ -933,7 +1055,7 @@
             node = node ? node : V.newEl('div').appendTo(_.node);
             obj.init(_, node, v.data);
             obj.page = _;
-            _.controls.push(obj);
+            _.controls[_.controls.length](obj);
             var key = V.getValue(v.id, V.random());
             if (_.vs[key]) { V.showException('控件id为' + key + '的控件已经存在，请更换id名'); return; }
             _.vs[key] = obj;
@@ -965,29 +1087,32 @@
             _.models = _.vm.vms;
         };
         _.onLoad = function(node) {
-                V.forC(_.events, function(k, v) {
-                    switch (k) {
-                        case 'size':
-                            $(window).resize(function() {
-                                V.userAgent.refresh();
-                                _.call('size', {
-                                    height: V.userAgent.height,
-                                    width: V.userAgent.width
-                                });
+            V.forC(_.events, function(k, v) {
+                switch (k) {
+                    case 'size':
+                        $(window).resize(function() {
+                            V.userAgent.refresh();
+                            _.call('size', {
+                                height: V.userAgent.height,
+                                width: V.userAgent.width
                             });
-                            break;
-                        case 'wheel':
-                            var wheelEvent = "onwheel" in document.createElement("div") ? "wheel" : document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll";
-                            //todo 兼容版本 判断为向下
-                            node[0].addEventListener(wheelEvent, function(e) { _.call('wheel', { e: e, isDown: e.wheelDelta < 0 }) }, false);
-                            break;
-                        default:
-                            _.bindEvent(node, k, v);
-                            break;
-                    }
-                }, function() { __.onLoad(node); }, true);
-            }
-            //可以将数据更新
+                        });
+                        break;
+                    case 'wheel':
+                        var wheelEvent = "onwheel" in document.createElement("div") ? "wheel" : document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll";
+                        //todo 兼容版本 判断为向下
+                        node[0].addEventListener(wheelEvent, function(e) { _.call('wheel', { e: e, isDown: e.wheelDelta < 0 }) }, false);
+                        break;
+                    default:
+                        _.bindEvent(node, k, v);
+                        break;
+                }
+            }, function() {
+                __.onLoad(node);
+            }, true);
+        }
+
+        //可以将数据更新
         _.render = function(data) {
             data = __.render(data);
             V.forC(data, function(key, value) {
@@ -1082,7 +1207,7 @@
         }
         _.load = function(name) {
             var val = undefined;
-            V.each(__.res, function(v) { try { val = val ? val : v.load(name); } catch (e) {} }, null, true);
+            __.res.forEach(function(v) { try { val = val ? val : v.load(name); } catch (e) {} });
             return val;
         };
         _.save = function(name, data) {

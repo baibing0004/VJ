@@ -9,8 +9,7 @@ const gulp = require('gulp'),
     del = require('del'), //删除文件插件
     named = require('vinyl-named'),
     combiner = require('stream-combiner2');
-
-const paths = { static: ["./VJ.*.js", "!./VJ.view.extend.js", "!./**.min.js"], view: ["./VJ.view.js", "./VJ.view.*.js", "!./**.min.js"], dest: './', destfile: ["./VJ.js", "./**.min.js"] };
+const paths = { static: ["./VJ.*.js", "!./VJ.collection.js", "!./VJ.view.extend.js", "!./**.min.js"], view: ["./VJ.view.js", "./VJ.view.*.js", "!./**.min.js"], coll: ["./VJ.collection.js", "!./**.min.js"], dest: './', destfile: ["./VJ.js", "./**.min.js"] };
 gulp.task('clean', function(cb) {
     return del(paths.destfile, cb);
 });
@@ -49,6 +48,23 @@ gulp.task('view', function(cb) {
     combined.on('error', console.error.bind(console));
     return combined;
 });
+gulp.task('collection', function(cb) {
+    cb.force = true;
+    const combined = combiner.obj([
+        gulp.src(paths.coll),
+        gulp.dest(paths.dest),
+        rename({ extname: ".min.js" }),
+        babel({}), //{   presets: ['es2015', 'stage-0'] },
+        uglify(),
+        gulp.dest(paths.dest),
+        notify({ message: 'VJ.collection.min.js 同步生成' })
+    ]);
+
+    // any errors in the above streams will get caught
+    // by this listener, instead of being thrown:
+    combined.on('error', console.error.bind(console));
+    return combined;
+});
 gulp.task('common-js', function(cb) {
     cb.force = true;
     const combined = combiner.obj([
@@ -67,7 +83,7 @@ gulp.task('common-js', function(cb) {
     combined.on('error', console.error.bind(console));
     return combined;
 });
-gulp.task('default', ['clean', 'static', 'view'], function(cb) {
+gulp.task('default', ['clean', 'view', 'collection', 'static'], function(cb) {
     var watcher = gulp.watch(paths.static, ['static']);
     watcher.on('error', e => {
         console.log(e.stack);

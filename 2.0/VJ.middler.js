@@ -141,7 +141,9 @@
                     for (var i in params) {
                         var val = params[i];
                         if (typeof(val) == 'object') {
-                            if (val.ref) {
+                            if (val === null || val === undefined) {
+                                paras[paras.length] = null;
+                            } else if (val.ref) {
                                 var index = val.ref.indexOf('/') >= 0 ? val.ref.indexOf('/') : val.ref.indexOf('\\') >= 0 ? val.ref.indexOf('\\') : -1;
                                 var appName = index >= 0 ? val.ref.substr(0, index) : defParam.app;
                                 var name = appName ? val.ref.substr(index + 1) : val.ref;
@@ -179,9 +181,7 @@
                         var ret = [];
                         for (var i in paras) {
                             var val = paras[i];
-                            if (val.ref) {
-                                val = config.getValueByName(val.ref, val.name);
-                            }
+                            (val !== null && val !== undefined && val.ref) && (val = config.getValueByName(val.ref, val.name));
                             ret.push(val);
                         }
                         return ret;
@@ -353,6 +353,7 @@
                                     return new function() {
                                     var _ = this;
                                     _.getType = getType;
+                                    V.collection && V.include('/scripts/VJ.collection.min.js');
                                     var pool = new V.collection.Pool(size, function() { return creater.getValue(); });
                                     _.getValue = function() {
                                         return pool.getValue();

@@ -108,7 +108,7 @@ String.prototype.trim = function(chr) {
             chr = '\\' + chr;
             break;
     }　　
-    return this.replace(VJ.isValid(chr) ? new RegExp('(^' + chr + '+)|(' + chr + '+$)', 'g') : /(^\s+)|(\s+$)/g, "");　　
+    return this.replace(VJ.isValid(chr) ? new RegExp('(^(' + chr + ')+)|((' + chr + ')+$)', 'g') : /(^\s+)|(\s+$)/g, "");
 }
 String.prototype.loadVJ = true;
 /**

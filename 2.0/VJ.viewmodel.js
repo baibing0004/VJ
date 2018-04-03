@@ -786,18 +786,18 @@
                 V.forC(data, function(k, v) {
                     var k2 = k.toLowerCase();
                     var name = !!__.sync[k2] ? 'sync' : (!!__.async[k2] ? 'async' : !!__.finally[k2] ? 'finally' : false);
-                    name ? ret[name][ret[name].length] = { func: __[name][k2].Method, data: v } : rdata[k2] = v;
+                    name ? ret[name][ret[name].length] = { func: __[name][k2].Method, data: v, name: k2 } : rdata[k2] = v;
                 }, function() {
                     rdata = __.prerender(rdata);
                     //保证同异步同时启动 一般会是同步先执行完 然后 执行异步 最后是finally方法
                     ret.sync.forEach(function(v) {
-                        v.func.apply(_, [v.data, data]);
+                        v.func.apply(_, [v.data, data, v.name]);
                     });
                     V.each(ret.async, function(v) {
-                        v.func.apply(_, [v.data, data]);
+                        v.func.apply(_, [v.data, data, v.name]);
                     }, function() {
                         V.each(ret.finally, function(v) {
-                            v.func.apply(_, [v.data, data]);
+                            v.func.apply(_, [v.data, data, v.name]);
                         })
                     });
                 }, true);

@@ -110,7 +110,7 @@
     //html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 控件均支持先创建 再init 然后bind绑定的过程 再调用onLoad和render事件
     W.Control = function(path, params) {
         var _ = this,
-            __ = {}; {
+            __ = { drag: {}, drop: {} }; {
             _.path = path;
             _.vm = null;
             _.events = {};
@@ -119,65 +119,11 @@
             _.addDesc = function(d) { __.desc += (d + "\r\n"); };
             _.desc = function() { console.log(__.desc + 'VJ.view.Control\r\n数据定义：\r\npath:html模板定义\r\nvm:虚拟控件对象\r\nevents:事件对象\r\nparams:默认参数对象\r\n'); };
         }
-        _.init = function(parent, node, params) {
-            _.parent = parent;
-            _.config = _.parent.config;
-            _.middler = _.parent.middler;
-            _.ni = _.parent.ni;
-            _.session = _.parent.session;
-            _.node = node;
-            _.params = V.merge(_.params, { data: V.getValue(params, {}) });
-        };
-        //初始化viewmodel操作
-        _.bind = function(vm) {
-            //完成配置合并
-            _.vm = V.merge(_.params, vm || { data: {} });
-            V.forC(_.vm, function(k, v) {
-                vm[k] = v;
-                (k.toLowerCase().indexOf('on') == 0) && (
-                    _.events[k.toLowerCase().substring(2)] = v
-                )
-            }, null, true);
-            _.vm = vm;
-            //用于获取绑定对象的数据
-            _.get = function() { return _.vm.data; }
-                //完成类型名注入
-            _.vm.nodeName = _.nodeName;
-            //完成方法注入
-            _.vm.update = function() {
-                if (arguments.length == 0) {
-                    _.vm.data = V.merge(_.vm.data, _.fill());
-                } else {
-                    var as = Array.prototype.slice.call(arguments);
-                    //as = V.getValue(as, [null]);
-                    if (as[0]) V.merge(_.vm.data, as[0], true);
-                    as[0] = as[0] ? as[0] : V.merge({}, _.vm.data);
-                    _.render.apply(_, as);
-                }
-                return _.vm.data;
-            };
-            _.vm.call = function() { _.call.apply(_.parent.vms, arguments); };
-            _.vm.add = function() { _.addControl.apply(_, arguments); };
-            _.vm.remove = function() { _.removeControl.apply(_, arguments); };
-            _.vm.desc = function() { _.desc(); };
-            _.vm.get = function(key) { _.vm.data = V.merge(_.vm.data, _.fill()); return key ? _.vm.data[key] : _.vm.data; };
-            _.vm.bind(_);
-            if (_.path) {
-                W.getTemplate(_.path, function(node) {
-                    _.replaceNode(node);
-                    _.onLoad(node);
-                });
-            } else {
-                _.node.show();
-                _.onLoad(_.node);
-            }
-        };
         //处理控件下载完成后的操作
         _.onLoad = function(node) {
             _.render(V.merge({}, _.vm.data));
             _.call('load');
         };
-
         //在更新_.vm.data
         _.fill = function() {
             return {};
@@ -187,7 +133,7 @@
             V.forC(data, function(key, value) {
                 switch (key.toLowerCase()) {
                     case 'dispose':
-                        if (value) _.dispose();
+                        (value) && _.dispose();
                         break;
                     case 'css':
                         V.forC(value, function(k, v) { _.node.css(k, v); });
@@ -225,6 +171,16 @@
                         break;
                     case 'removeclass':
                         _.node.removeClass(value);
+                        break;
+                    case 'drag':
+                        //drag node说明可移动的对象,mode true,false是否许可继续进行 move,copy,none(默认),func可产生移动对象
+                        value = value.node ? value : { mode: value };
+                        !!value.mode ? _.drag(value.node || _.node, value.mode) : _.clearDrag(value.node || _.node);
+                        break;
+                    case 'drop':
+                        //drop node说明可移动的对象,mode true,false是否许可继续进行 move,copy,none(默认)可产生移动对象
+                        value = value.node ? value : { mode: value };
+                        !!value.mode ? _.drop(value.node || _.node, value.mode) : _.clearDrop(value.node || _.node);
                         break;
                     case 'animate':
                         //仅处理简单类型的动画 譬如一次性调用的动画名或者一个动画名带一个回调函数，可支持多个
@@ -268,7 +224,6 @@
                                     break;
                                 case 'bottom':
                                     parent.scroll(function() {
-                                        console.log(document.body.scrollTop + ':' + $(window).height() + ':' + _.node.height() + ':' + (document.body.scrollTop + $(window).height() - _.node.height()));
                                         _.node.css('top', (document.body.scrollTop + $(window).height() - _.node.height()) + "px");
                                     });
                                     _.node.css('top', (document.body.scrollTop + $(window).height() - _.node.height()) + "px");
@@ -288,16 +243,15 @@
                             switch (value.toLowerCase()) {
                                 case 'top':
                                     parent.scroll(function() {
-                                        console.log('scroll');
-                                        _.node.css('top', parent.get(0).scrollTop + "px");
+                                        _.node.css('top', parent[0].scrollTop + "px");
                                     });
-                                    _.node.css('top', parent.get(0).scrollTop + "px");
+                                    _.node.css('top', parent[0].scrollTop + "px");
                                     break;
                                 case 'bottom':
                                     parent.scroll(function() {
-                                        _.node.css('top', (parent.get(0).scrollTop + $(document).height() - _.node.height()) + "px");
+                                        _.node.css('top', (parent[0].scrollTop + $(document).height() - _.node.height()) + "px");
                                     });
-                                    _.node.css('top', (parent.get(0).scrollTop + $(document).height() - _.node.height()) + "px");
+                                    _.node.css('top', (parent[0].scrollTop + $(document).height() - _.node.height()) + "px");
                                     break;
                             }
                         }
@@ -318,11 +272,64 @@
                         });
                         break;
                     case 'desc':
-                        if (value) _.desc();
+                        (value) && _.desc();
                         break;
                 }
             });
             return data;
+        };
+        _.init = function(parent, node, params) {
+            _.parent = parent;
+            _.config = _.parent.config;
+            _.middler = _.parent.middler;
+            _.ni = _.parent.ni;
+            _.session = _.parent.session;
+            _.node = node;
+            _.params = V.merge(_.params, { data: V.getValue(params, {}) });
+        };
+        //初始化viewmodel操作
+        _.bind = function(vm) {
+            //完成配置合并
+            _.vm = V.merge(_.params, vm || { data: {} });
+            V.forC(_.vm, function(k, v) {
+                vm[k] = v;
+                (k.toLowerCase().indexOf('on') == 0) && (
+                    _.events[k.toLowerCase().substring(2)] = v
+                )
+            }, null, true);
+            _.vm = vm;
+            //用于获取绑定对象的数据
+            _.get = function() { return _.vm.data; }
+                //完成类型名注入
+            _.vm.nodeName = _.nodeName;
+            //完成方法注入
+            _.vm.update = function() {
+                if (arguments.length == 0) {
+                    _.vm.data = V.merge(_.vm.data, _.fill());
+                } else {
+                    var as = Array.prototype.slice.call(arguments);
+                    //as = V.getValue(as, [null]);
+                    if (as[0]) V.merge(_.vm.data, as[0], true);
+                    as[0] = as[0] ? as[0] : V.merge({}, _.vm.data);
+                    _.render.apply(_, as);
+                }
+                return _.vm.data;
+            };
+            _.vm.call = function() { return _.call.apply(_.parent.vms, arguments); };
+            _.vm.add = function() { _.addControl.apply(_, arguments); };
+            _.vm.remove = function() { _.removeControl.apply(_, arguments); };
+            _.vm.desc = function() { _.desc(); };
+            _.vm.get = function(key) { _.vm.data = V.merge(_.vm.data, _.fill()); return key ? _.vm.data[key] : _.vm.data; };
+            _.vm.bind(_);
+            if (_.path) {
+                W.getTemplate(_.path, function(node) {
+                    _.replaceNode(node);
+                    _.onLoad(node);
+                });
+            } else {
+                _.node.show();
+                _.onLoad(_.node);
+            }
         };
         //用于扩展给主要对象绑定事件使用 一般用于bind事件的默认值
         _.bindEvent = function(node, k, v) {
@@ -331,19 +338,29 @@
                 ($._data(node[0], "events"));
             } catch (e) { console.log('发现有极端情况会报nodeName错误!'); return; }
             if (typeof(node[k]) == 'function' && (!$._data(node[0], "events") || !$._data(node[0], "events")[k])) {
-                if (k.toLowerCase() == 'hover') {
-                    if ((!$._data(node[0], "events") || (!$._data(node[0], "events")['mouseenter']) && !$._data(node[0], "events")['mouseleave']))
+                switch (k.toLowerCase()) {
+                    case 'hover':
+                        if ((!$._data(node[0], "events") || (!$._data(node[0], "events")['mouseenter']) && !$._data(node[0], "events")['mouseleave']))
+                            node[k](function(e) {
+                                if (node.attr('disabled') || node.parents("[disabled]").length > 0) return;
+                                _.call(k, { e: e, hover: true });
+                            }, function(e) {
+                                if (node.attr('disabled') || node.parents("[disabled]").length > 0) return;
+                                _.call(k, { e: e, hover: false });
+                            });
+                        break;
+                    case 'resize':
+                        node[0].onresize = function(e) {
+                            if (node.attr('disabled') || node.parents('[disabled]').length > 0) return;
+                            _.call(k, { e: e, width: node.width, height: node.height() });
+                        }
+                        break;
+                    default:
                         node[k](function(e) {
-                            if (node.attr('disabled') || node.parents("[disabled]").length > 0) return;
-                            _.call(k, { e: e, hover: true });
-                        }, function(e) {
-                            if (node.attr('disabled') || node.parents("[disabled]").length > 0) return;
-                            _.call(k, { e: e, hover: false });
+                            if (node.attr('disabled') || node.parents('[disabled]').length > 0) return;
+                            _.call(k, { e: e });
                         });
-                } else node[k](function(e) {
-                    if (node.attr('disabled') || node.parents('[disabled]').length > 0) return;
-                    _.call(k, { e: e });
-                });
+                }
             }
         };
         _.initControls = function(vm, node) {
@@ -425,24 +442,27 @@
             }
             _.node = node;
         };
-        _.validate = function(input) {
-            if (_.middler) {
-                var obj = _.middler.getObjectByAppName(W.APP, 'ValidateManager');
-                if (obj) { obj.validate(_, input); }
-            }
-        };
         _.call = function(name, param, tparam) {
             name = name.toLowerCase();
+            var val = null;
             //所有的事件调用全部采用异步调用方式 V.once
-            (_.events[name]) && V.once(function() {
+            (_.events[name]) && V.tryC(function() {
                 V.merge(_.vm.data, _.fill(), param || {}, true);
                 param = V.merge(_.vm.data, tparam || {});
-                var val = _.events[name].apply(_.parent.vms, [param, _.vm]);
-                if (val && val != {}) {
+                val = _.events[name].apply(_.parent.vms, [param, _.vm]);
+                if (val && V.toJsonString(val).length > 2) {
                     V.merge(_.vm.data, val, true)
                     _.render(val);
                 }
             });
+            return val;
+        };
+        _.dispose = function(e) {
+            V.tryC(function() {
+                _.call('dispose', { e: e });
+                _.clearControl();
+            });
+            _.node.remove();
         };
         //这里提供子类用于覆盖同名函数，修改动画对象。
         _.animate = function(name, func) {
@@ -454,6 +474,13 @@
             var action = _.middler.getObjectByAppName(W.APP, name);
             if (action) {
                 action.go(node ? node : _.node, func || null);
+            }
+        };
+        //用于绑定验证控件
+        _.validate = function(input) {
+            if (_.middler) {
+                var obj = _.middler.getObjectByAppName(W.APP, 'ValidateManager');
+                if (obj) { obj.validate(_, input); }
             }
         };
         //用于说明错误提示
@@ -468,13 +495,7 @@
             delete _.get().isError;
             _.call('success')
         };
-        _.dispose = function() {
-            V.tryC(function() {
-                _.call('dispose');
-                _.clearControl();
-            });
-            _.node.remove();
-        };
+        //控件处理
         _.addControl = function(node, v) {
             if (!_.controls) {
                 _.controls = [];
@@ -525,174 +546,190 @@
                 _.vs = {};
             }
         };
-        _._settings = {};
-        _._exSettings = {};
-        //设置默认配置
-        _.getSettings = function(key, data) {
-            if (!V.isValid(_._settings[key])) {
-                if (V.isValid(_._exSettings[key])) {
-                    _._settings[key] = V.merge(V.getValue(data, {}), _._exSettings[key]);
-                    delete _._exSettings[key];
-                } else
-                    _._settings[key] = V.getValue(data, {});
-            }
-            return _._settings[key];
-        };
-        //扩展默认配置
-        _.extendSettings = function(key, data) {
-            if (V.isValid(_._settings[key])) {
-                _._settings[key] = V.merge(_._settings[key], data);
-            } else {
-                if (V.exSettings[key]) {
-                    _._exSettings[key] = V.merge(_._exSettings[key], V.getValue(data, {}));
-                } else {
-                    _._exSettings[key] = V.getValue(data, {});
+        V.applyCommandAndEvent(this);
+        _.getPosition = function(node) {
+            var docs = node;
+            var pos = { x: docs.offsetLeft, y: docs.offsetTop };
+            docs = docs.offsetParent;
+            while (docs) {
+                var off = [];
+                if (docs.style.transform && docs.style.transform.indexOf('translate3d') >= 0) {
+                    docs.style.transform.replace(/[+-]\d+(px)/g, function(v) {
+                        //一般第一个是 x 第二个是y
+                        off[off.length] = parseInt(v);
+                    });
                 }
+                pos.x += (off[0] ? off[0] : 0) + docs.offsetLeft; //不断叠加与祖先级的距离
+                pos.y += (off[1] ? off[1] : 0) + docs.offsetTop;
+                docs = docs.offsetParent;
             }
+            return pos;
         };
-        /*
-        V用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
-        --案例
-        V.registCommand('showXXList',getData)
-        */
-        _.registCommand = function(name, func) {
-            var comms = _.getSettings('comms', []);
-            var data = comms[name];
-            if (V.isValid(data) && typeof(data) != 'function') {
-                func.apply(null, data);
-            }
-            comms[name] = func;
+        //实现自定义拖拽
+        _.clearDrag = function(node) {
+            $(node).attr('_draggable', false).removeClass('g_drag');
         };
-        /*
-        V用于调用被调用页面注册的命令以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
-        --案例
-        V.callCommand('showXXList',[{id:1}])
-        */
-        _.callCommand = function(name, data) {
-            var caller = arguments.caller;
-            var comms = _.getSettings('comms', []);
-            var func = comms[name];
-            data = V.merge([], V.isArray(data) ? data : [data]);
-            if (V.isValid(func) && typeof(func) == 'function') {
-                V.once(function() { func.apply(caller, data); });
-            } else {
-                comms[name] = data;
-            }
-        };
-        /*
-        用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false;
-        --案例
-        if (!V.hasCommand('editor.open')) V.part("/FileServer/layout/editor/editor.htm");
-        */
-        _.hasCommand = function(name) {
-            var comms = _.getSettings('comms', []);
-            var func = comms[name];
-            return (V.isValid(func) && typeof(func) == 'function');
+        _.clearDrop = function(node) {
+            $(node).attr('_dropable', false).removeClass('g_drop');
         };
 
-        /*
-        仅限iframe方式调用时，先取消原页面添加的方法
-        //业务逻辑深度交叉，iframe落后的控件连接方式时使用
-        一定要在part前
-        --案例
-        V.cleanCommand('editor.open');
-        V.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){});
-        */
-        _.cleanCommand = function(name) {
-            var comms = _.getSettings('comms', []);
-            delete comms[name];
-        };
-        /*
-        V用于被调用页面注册命令以处理异步命令调用,当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
-        并约定1分钟内 允许注册者多次被触发
-        --案例
-        V.registEvent('showXXList',getData),V.registEvent(['showXXList',''],getData)
-        */
-        _.registEvent = function(name, func, isTop) {
-            var fun = function(name, func, isTop) {
-                var events = _.getSettings('events', []);
-                var funs = events[name];
-                if (!V.isValid(funs)) {
-                    funs = [];
-                    events[name] = funs;
-                }
-                if (typeof(func) == 'function') {
-                    if (isTop && !funs.top) {
-                        funs.top = func;
-                        funs.unshift(func);
-                    } else {
-                        if (isTop && funs.top) { V.showException('V.registEvent:' + name + ' 事件已经有订阅者被置顶!'); }
-                        funs.push(func);
-                    }
-                    var ecall = _.getSettings('eventcall', {});
-                    ecall = ecall[name] ? ecall[name] : {};
-                    if (ecall.time && ecall.time >= (new Date().getTime())) {
-                        V.once(function() {
-                            func.apply(ecall.caller, ecall.data);
-                        });
-                    }
-                }
-            };
-            if (V.isArray(name)) {
-                name.forEach(function(v) {
-                    fun(v, func, isTop);
-                });
-            } else {
-                fun(name, func, isTop);
+        //drag:true/move/copy/none/function(){}
+        _.drag = function(node, mode, getData) {
+            node = $(node);
+            var id = node.attr('_dragid') || V.random();
+            if (!(mode === true && node.attr('_dragid'))) {
+                mode = mode === true ? 'move' : mode;
+                node.attr('_dragid') && delete __.drag[node.attr('_dragid')];
+                __.drag[id] = {
+                    mode: (mode + '').toLowerCase(),
+                    getData: getData || function(e) { return _.vm.data.dragData || _.vm.data.value || {}; },
+                    func: typeof(mode) == 'function' ? mode :
+                        (function() {
+                            switch ((mode + '').toLowerCase()) {
+                                case 'move':
+                                    return function(e) {
+                                        var _n = $(e.target).clone();
+                                        $(e.target).hide();
+                                        return _n;
+                                    };
+                                case 'copy':
+                                    return function(e) { return $(e.target).clone(); };
+                                case 'none':
+                                default:
+                                    return function(e) { return null; };
+                            }
+                        })()
+                };
             }
-        };
-        /*
-        V用于调用被调用页面注册的事件以处理异步命令调用，当命令尚未注册而已经被调用时，参数会先被缓存下来，然后当命令注册时，已知的参数再被调用。
-        并约定1分钟内 允许注册者多次被触发
-        --案例
-        V.callEvent('showXXList',[{id:1}])
-        */
-        _.callEvent = function(name, data) {
-            var caller = arguments.caller;
-            var events = _.getSettings('events', []);
-            var funs = events[name];
-            data = V.merge([], V.isArray(data) ? data : [data]);
-            if (V.isValid(funs) && V.isArray(funs)) {
-                V.each(funs, function(func) {
-                    //报错不下火线
-                    V.tryC(function() {
-                        func.apply(caller, data);
+
+            node.attr('_draggable') === undefined &&
+                node.on('mousedown', function(e) {
+                    if (node.attr('_draggable') != 'true') return;
+                    V.cancel(e), V.stopProp(e);
+                    var back = V.newEl('div').appendTo(document.body).css({
+                        width: '100%',
+                        height: '100%',
+                        top: 0,
+                        left: 0,
+                        position: 'fixed',
+                        cursor: 'point'
+                    });
+                    //防止同一对象多次设置drag状态或者对多个对象设置drag状态时无法生效
+                    var id = node.attr('_dragid');
+                    e.oriTarget = e.target;
+                    e.target = node;
+                    //开始启动拖拽
+                    W.Control.drag = {
+                        enable: true,
+                        id: id,
+                        Data: V.toJsonString(__.drag[id].getData(e, _.vm)),
+                        Point: { X: e.offsetX || e.pageX, Y: e.offsetY || e.pageY, left: e.offsetX || e.pageX, top: e.offsetY || e.pageY },
+                        val: {},
+                        mode: __.drag[id].mode,
+                        node: node,
+                        time: new Date().getTime(),
+                        dragNode: __.drag[id] && __.drag[id].func(e, _.vm)
+                    };
+                    var val = _.call('dragstart', V.merge({ e: e, dragNode: W.Control.drag.dragNode }, W.Control.drag.Point)) || W.Control.drag.Point;
+                    W.Control.drag.dragNode && W.Control.drag.dragNode.appendTo(back).css({
+                        left: val.left,
+                        top: val.top,
+                        position: 'absolute'
+                    });
+                    back.on('mousemove', function(e) {
+                        V.cancel(e), V.stopProp(e);
+                        if (!W.Control.drag) return;
+                        W.Control.drag.val = {
+                            left: e.pageX - W.Control.drag.Point.X,
+                            top: e.pageY - W.Control.drag.Point.Y,
+                            X: e.pageX,
+                            Y: e.pageY
+                        };
+                        var val = _.call('drag', V.merge({ e: e, dragNode: W.Control.drag.dragNode }, W.Control.drag.val)) || W.Control.drag.val;
+                        W.Control.drag.val = val;
+                        W.Control.drag.dragNode && W.Control.drag.dragNode.css({
+                            left: val.left,
+                            top: val.top
+                        });
+                    });
+                    back.on('mouseup', function(e) {
+                        V.cancel(e), V.stopProp(e);
+                        W.Control.drag.val = {
+                            left: e.pageX - W.Control.drag.Point.X,
+                            top: e.pageY - W.Control.drag.Point.Y,
+                            X: e.pageX,
+                            Y: e.pageY
+                        };
+                        var val = _.call('dragend', V.merge({ e: e, dragData: V.json(W.Control.drag.Data) || {}, dragNode: W.Control.drag.mode == 'move' ? W.Control.drag.node : W.Control.drag.dragNode }, W.Control.drag.val)) || W.Control.drag.val;
+                        W.Control.drag.val = val;
+                        val.Data && (W.Control.drag.Data = V.toJsonString(V.merge(V.json(W.Control.drag.Data), val.Data)));
+                        delete val.Data;
+                        W.Control.drag.node && W.Control.drag.node.show();
+                        back.remove();
+                        back = null;
+                        var allowDrop = true;
+                        V.forC(val || {}, function(k, v) {
+                            if (k.toLowerCase() == 'allowdrop' && v === false) {
+                                allowDrop = false;
+                            }
+                        }, null, true);
+                        allowDrop && (W.Control.drop = W.Control.drag,
+                            V.once(function() {
+                                //限期响应
+                                delete W.Control.drop;
+                            }, 500));
+                        delete W.Control.drag;
                     });
                 });
-            }
-            var ecall = _.getSettings('eventcall', {});
-            if (!ecall[name]) { ecall[name] = {}; }
-            ecall = ecall[name];
-            ecall.time = new Date().add('n', 1).getTime();
-            ecall.data = data;
-            ecall.caller = caller;
+            node.attr('_dragid', id).attr('_draggable', true).addClass('g_drag');
         };
-        /*
-        用来判断是否调用页面,当已经调用过(part)，返回true,否则返回false;
-        --案例
-        if (!V.hasEvent('editor.open')) V.part("/FileServer/layout/editor/editor.htm");
-        */
-        _.hasEvent = function(name) {
-            var events = _.getSettings('events', []);
-            var funs = events[name];
-            if (V.isValid(funs) && V.isArray(funs)) {
-                return true;
+        //drop:true/move/copy/none
+        _.drop = function(node, mode) {
+            node = $(node);
+            var id = node.attr('_dropid') || V.random();
+            if (!(mode === true && node.attr('_dropid'))) {
+                node.attr('_dropid') && delete __.drop[node.attr('_dropid')];
+                mode = mode === true ? 'move' : mode;
+                __.drop[id] = {
+                    mode: (mode + '').toLowerCase(),
+                    candrop: true,
+                    func: typeof(mode) == 'function' ? mode :
+                        (function() {
+                            switch ((mode + '').toLowerCase()) {
+                                case 'move':
+                                    return function(e) { _.node.append(W.Control.drop.node || $(e.target)); };
+                                case 'copy':
+                                    return function(e) { _.node.append(W.Control.drop.dragNode || $(e.target).clone()); };
+                                case 'none':
+                                default:
+                                    return function(e) {};
+                            }
+                        })()
+                };
             }
-            return false;
+            typeof(node.attr('_dropable')) === 'undefined' && (node.on('mouseover', function(e) {
+                if (!W.Control.drop || node.attr('_dropable') != 'true') return;
+                V.cancel(e), V.stopProp(e);
+                var id = node.attr('_dropid');
+                var val = _.call('drop', V.merge({ e: e, dragData: V.json(W.Control.drop.Data), dragNode: __.drop[id].mode == 'copy' ? W.Control.drop.dragNode : W.Control.drop.node }, W.Control.drop.val)) || W.Control.drop.val;
+                __.drop[id] && __.drop[id].func(e, _.vm);
+                delete W.Control.drop;
+            }));
+            node.attr('_dropid', id).attr('_dropable', true).addClass('g_drop');
         };
 
-        /*
-        仅限iframe方式调用时，先取消原页面添加的方法
-        //业务逻辑深度交叉，iframe落后的控件连接方式时使用
-        一定要在part前
-        --案例
-        V.cleanEvent('editor.open');
-        V.part("/FileServer/layout/editor/editor.htm",null,"iframe",function(){});
-        */
-        _.cleanEvent = function(name) {
-            var events = _.getSettings('events', []);
-            delete events[name];
-        };
+        _.wheel = function(node, func) {
+            var $node = $(node);
+            //不兼容FF
+            $node.on('mousewheel', function(e) {
+                V.cancel(e);
+                var data = Math.abs(e.originalEvent.deltaY);
+                (Math.floor(data) == data) ?
+                func({ name: 'wheel', e: e, deltaX: e.originalEvent.deltaX, deltaY: e.originalEvent.deltaY }):
+                    func({ name: 'scale', e: e, scale: e.originalEvent.wheelDelta > 0 ? 1 : -1 });
+            });
+            $node.on('mousemove', function(e) { $node.select(); })
+        }
     };
 
     {
@@ -737,6 +774,7 @@
                 __.async = {};
                 __.sync = {};
                 __.finally = {};
+                __.merge = {};
                 V.forC(__.render || {}, function(k, v) {
                     var k2 = k.toLowerCase();
                     v = typeof(v) === 'function' ? {
@@ -744,6 +782,7 @@
                         sync: true, //默认为同步处理,
                         finally: false, //finally一定是异步的
                         override: false, //是否覆盖父类方法
+                        merge: false, //是否采用深度复制
                         Method: v
                     } : v;
                     //Method为false或者未定义则不可作为可用属性出现
@@ -752,12 +791,34 @@
                         _.Propertis[k] = v.Desc;
                         var poi = v.finally ? 'finally' : v.sync ? 'sync' : 'async';
                         __[poi][k2] = v;
+                        v.merge === true && (__.merge[k2] = true);
                         v.as && (V.isArray(v.as) ? v.as : [v.as]).forEach(function(v2) {
                             __[poi][v2.toLowerCase()] = v;
                         });
                     })();
                 }, null, true);
             }
+            _.call = function(name, param, tparam) {
+                name = name.toLowerCase();
+                var val = null;
+                //所有的事件调用全部采用异步调用方式 V.once
+                (_.events[name]) && V.tryC(function() {
+                    V.merge(_.vm.data, _.fill(), true);
+                    var mgData = {};
+                    V.forC(param || {},
+                        function(k, v) {!__.merge[k.toLowerCase()] ? (_.vm.data[k] = v) : (mgData[k] = v); },
+                        function() {
+                            V.merge(_.vm.data, mgData, true);
+                        }, true);
+                    param = V.merge(_.vm.data, tparam || {});
+                    val = _.events[name].apply(_.parent.vms, [param, _.vm]);
+                    if (val && V.toJsonString(val).length > 2) {
+                        V.merge(_.vm.data, val, true)
+                        _.render(val);
+                    }
+                });
+                return val;
+            };
             _.onLoad = function(node) {
                 var em = V.merge({}, __.onLoad);
                 V.forC(em, function(k, v) {
@@ -786,7 +847,9 @@
                 V.forC(data, function(k, v) {
                     var k2 = k.toLowerCase();
                     var name = !!__.sync[k2] ? 'sync' : (!!__.async[k2] ? 'async' : !!__.finally[k2] ? 'finally' : false);
-                    name ? ret[name][ret[name].length] = { func: __[name][k2].Method, data: v, name: k2 } : rdata[k2] = v;
+                    name ? ret[name][ret[name].length] = { func: __[name][k2].Method, data: v, name: k2 } : rdata[k2] = v.Method || v;
+                    //保证完整赋值
+                    !__.merge[k2] && (_.vm.data[k] = v);
                 }, function() {
                     rdata = __.prerender(rdata);
                     //保证同异步同时启动 一般会是同步先执行完 然后 执行异步 最后是finally方法
@@ -891,6 +954,7 @@
             //初始化操作
         var _page = _.middler.getObjectByAppName(W.APP, 'page');
         if (!_page) { throw new Error('没有找到page对应的页面view层对象'); }
+        //所有页面的操作起点
         _page.ready(function() {
             _page.init(_, $(document.body));
             _page.bind(_);
@@ -906,6 +970,16 @@
             __.onLoad = _.onLoad;
             __.dispose = _.dispose;
         }
+        //用于重载触发方式 ready{init,bind(replace,onload),bindControl{onReady}}
+        _.ready = function(func) {
+            $(function() {
+                func();
+                _.bindControl(_.node);
+            });
+            window.onbeforeunload = function(e) {
+                _.events['close'] ? (e.returnValue = _.vm.get().close || '请稍等……', _.call('close', { e: e })) : _.dispose();
+            };
+        };
         //一般调用M.Page对象都比较特殊
         _.bind = function(page) {
             var vm = page.page;
@@ -929,7 +1003,7 @@
                     }
                     return _.vm.data;
                 };
-                _.vm.call = function() { _.call.apply(_.page.getModels(), arguments); };
+                _.vm.call = function() { return _.call.apply(_.page.getModels(), arguments); };
                 _.vm.add = function() { _.addControl.apply(_, arguments); };
                 _.vm.remove = function() { _.removeControl.apply(_, arguments); };
                 _.vm.desc = function() { _.desc(); };
@@ -968,39 +1042,33 @@
             _.ni = page.ni;
             _.session = page.session;
             _.config = page.config;
-        }
-        _.dispose = function() {
-            _.session.updateAll();
-            _.call('dispose');
-            $('body').empty();
         };
-        //用于重载触发方式
-        _.ready = function(func) {
-            $(function() {
-                func();
-                _.bindControl(_.node);
-            });
-            window.onbeforeunload = _.dispose;
-        };
-        //用于覆盖引起页面布局改变
-        _.onReady = function() {};
-
-        _.call = function(name, param, imme) {
-            //所有的事件调用全部采用异步调用方式 V.once				
-            param = V.getValue(param, {});
-            V.merge(_.vm.data, _.fill(), param, true);
-            param = V.merge(_.vm.data, param);
-            name = name.toLowerCase();
-            if (_.events[name]) {
-                V.once(function() {
-                    var val = _.events[name].apply(_.parent.getModels(), [imme ? param : _.vm.data, _.vm]);
-                    if (imme) V.merge(_.vm.data, param, true);
-                    if (val && val != {}) {
-                        V.merge(_.vm.data, val, true)
-                        _.render(val);
-                    }
-                });
-            }
+        _.onLoad = function(node) {
+            V.forC(_.events, function(k, v) {
+                switch (k) {
+                    case 'close':
+                        break;
+                    case 'size':
+                        $(window).resize(function() {
+                            V.userAgent.refresh();
+                            _.call('size', {
+                                height: V.userAgent.height,
+                                width: V.userAgent.width
+                            });
+                        });
+                        break;
+                    case 'wheel':
+                        var wheelEvent = "onwheel" in document.createElement("div") ? "wheel" : document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll";
+                        //todo 兼容版本 判断为向下
+                        node[0].addEventListener(wheelEvent, function(e) { _.call('wheel', { e: e, isDown: e.wheelDelta < 0 }) }, false);
+                        break;
+                    default:
+                        _.bindEvent(node, k, v);
+                        break;
+                }
+            }, function() {
+                __.onLoad(node);
+            }, true);
         };
         //用于绑定对应的控件
         _.bindControl = function(node) {
@@ -1048,6 +1116,52 @@
                 }, true);
             });
         };
+        _.dispose = function(e) {
+            _.session.updateAll();
+            _.call('dispose');
+            $('body').empty();
+        };
+        //用于覆盖引起页面布局改变
+        _.onReady = function() {};
+        _.call = function(name, param, imme) {
+            //所有的事件调用全部采用异步调用方式 V.once				
+            param = V.getValue(param, {});
+            V.merge(_.vm.data, _.fill(), param, true);
+            param = V.merge(_.vm.data, param);
+            name = name.toLowerCase();
+            var val = null;
+            if (_.events[name]) V.tryC(function() {
+                val = _.events[name].apply(_.parent.getModels(), [imme ? param : _.vm.data, _.vm]);
+                imme && V.merge(_.vm.data, param, true);
+                if (val && V.toJsonString(val).length > 2) {
+                    V.merge(_.vm.data, val, true)
+                    _.render(val);
+                }
+            });
+            return val;
+        };
+
+        //可以将数据更新
+        _.render = function(data) {
+            data = __.render(data);
+            V.forC(data, function(key, value) {
+                switch (key) {
+                    case 'title':
+                        document.title = value;
+                        if (data != _.vm.data) { delete data[key]; }
+                        break;
+                    case 'close':
+                        _.dispose();
+                        window.close();
+                        break;
+                    case 'vibrate':
+                    case 'shake':
+                        if (navigator.vibrate) { navigator.vibrate(v); } else console.log('浏览器不支持此方法!');
+                        break;
+                }
+            });
+            return data;
+        };
         //动态添加控件到指定位置 如果不指定那么会添加到最后
         _.addControl = function(node, v) {
             var obj = _.middler.getObjectByAppName(W.APP, v.type);
@@ -1055,7 +1169,7 @@
             node = node ? node : V.newEl('div').appendTo(_.node);
             obj.init(_, node, v.data);
             obj.page = _;
-            _.controls[_.controls.length](obj);
+            _.controls[_.controls.length] = (obj);
             var key = V.getValue(v.id, V.random());
             if (_.vs[key]) { V.showException('控件id为' + key + '的控件已经存在，请更换id名'); return; }
             _.vs[key] = obj;
@@ -1085,53 +1199,6 @@
             _.vs = {};
             _.vm.vms = {};
             _.models = _.vm.vms;
-        };
-        _.onLoad = function(node) {
-            V.forC(_.events, function(k, v) {
-                switch (k) {
-                    case 'size':
-                        $(window).resize(function() {
-                            V.userAgent.refresh();
-                            _.call('size', {
-                                height: V.userAgent.height,
-                                width: V.userAgent.width
-                            });
-                        });
-                        break;
-                    case 'wheel':
-                        var wheelEvent = "onwheel" in document.createElement("div") ? "wheel" : document.onmousewheel !== undefined ? "mousewheel" : "DOMMouseScroll";
-                        //todo 兼容版本 判断为向下
-                        node[0].addEventListener(wheelEvent, function(e) { _.call('wheel', { e: e, isDown: e.wheelDelta < 0 }) }, false);
-                        break;
-                    default:
-                        _.bindEvent(node, k, v);
-                        break;
-                }
-            }, function() {
-                __.onLoad(node);
-            }, true);
-        }
-
-        //可以将数据更新
-        _.render = function(data) {
-            data = __.render(data);
-            V.forC(data, function(key, value) {
-                switch (key) {
-                    case 'title':
-                        document.title = value;
-                        if (data != _.vm.data) { delete data[key]; }
-                        break;
-                    case 'close':
-                        _.dispose();
-                        window.close();
-                        break;
-                    case 'vibrate':
-                    case 'shake':
-                        if (navigator.vibrate) { navigator.vibrate(v); } else console.log('浏览器不支持此方法!');
-                        break;
-                }
-            });
-            return data;
         };
     };
     //sessionAdapter添加处理业务逻辑 供人重新赋值

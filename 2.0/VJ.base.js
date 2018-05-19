@@ -27,7 +27,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
 (!VJ.load) ? (function(V, $) {
     V.load = true;
     V.isValid = function(data) {
-        return (typeof(data) != "undefined" && data != null && data != 'null' && ((data.replace && data.replace(/\s/g, '') != '') || data.replace == undefined));
+        return (typeof(data) != "undefined" && data != null && data != 'null' && data !== false && ((data.replace && data.replace(/\s/g, '').length > 0) || data.replace == undefined));
     };
     V.getValue = function(data, defaultData) {
         return V.isValid(data) ? data : defaultData;
@@ -563,13 +563,15 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
         var ver = V.userAgent.ie;
         eval('VJ.userAgent.ie' + ver + ' = true;V.userAgent.name=\'ie' + ver + '\';');
     }
+    var __s = null;
     V.watch = function(restart) {
-        if (!start || restart) {
-            start = new Date();
-            console.log('VJ.watch开始' + start);
+        if (!__s || restart) {
+            __s = new Date();
+            console.log('VJ.watch开始' + __s);
         } else {
-            console.log('VJ.watch 持续了:' + start.diff('ms', new Date()));
+            console.log('VJ.watch 持续了:' + __s.diff('ms', new Date()));
         }
+        return __s.diff('ms', new Date());
     };
 
     //DOM处理
@@ -966,10 +968,12 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
         var host = getHost(url);
         return !(host.eq('') || host.eq(getHost(window.location.href) + ''));
     };
+    V.includeversion = '';
     V.include = function(url, tag, callback) {
         //如果已经使用本方法加载过 就不再加载。
         if (V.getSettings("include")[url]) return;
         V.getSettings("include")[url] = true;
+        V.includeversion && url.indexOf('?') < 0 && (url = url + (url.indexOf('?') > 0 ? '&' : '?') + V.includeversion);
         if (tag == null) { tag = 'head'; }
         var parentNode = document.getElementsByTagName(tag).item(0);
         var s = url.split('.');
@@ -1197,23 +1201,22 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
     V.getTarget = function(event) {
         return event.target || event.srcElement;
     };
-    V.cancel = function(event) {
-        if (event.preventDefault) {
-            event.preventDefault();
+    V.cancel = function(e) {
+        if (e.preventDefault) {
+            e.preventDefault();
         } else {
-            event.returnValue = false;
+            e.returnValue = false;
         }
     };
-    V.stopProp = function(event) {
-        if (event.stopPropagation) {
-            event.stopPropagation();
+    V.stopProp = function(e) {
+        if (e.stopPropagation) {
+            e.stopPropagation();
         } else {
-            event.cancelBobble = true;
+            e.cancelBobble = true;
         }
     };
 
     //业务优化
-
     V.formatPrice = function(number, decimals, dec_point, thousands_sep) {
         number = (number + '').replace(/[^0-9+-Ee.]/g, '');
         var n = !isFinite(+number) ? 0 : +number,

@@ -460,7 +460,8 @@
                     (_.cons) &&
                     _.cons.forEach(function(v) {
                         var vm = _.parent.vms[v] ? _.parent.vms[v] : _.page.vms[v];
-                        (vm && vm.nodeName != 'fill') && (value[v] = vm.get().value);
+                        //todo 处理控件异步初始化 导致执行事件时内部控件未初始化完成。
+                        (vm && vm.nodeName != 'fill' && vm.get) && (value[v] = vm.get().value);
                     });
                     return { value: value };
                 },
@@ -726,7 +727,7 @@
                                                     break;
                                             }
                                         })()
-                                        (!__.finalMove) && (function() {
+                                        if (!__.finalMove) {
                                             //这里会出现闪烁，除非立即设定现在的位置 按理说finalMove应保护最终动画的完成
                                             _.node.removeClass('animate').find('.animate').removeClass('animate');
                                             switch (ev.type) {
@@ -807,7 +808,7 @@
                                                     V.once(function() { __.finalMove = false; }, 300);
                                                 }, 100);
                                             }
-                                        })();
+                                        };
                                     });
                                 __.mc.on("hammer.input", function(ev) {
                                     (ev.isFinal && !__.finalMove) && (function() {

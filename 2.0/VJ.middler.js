@@ -73,8 +73,10 @@
             } else return null;
         };
         _.getTypeByName = function(app, name) {
-            if (_.data[app] && _.data[app][name]) {
-                return _.data[app][name].getType();
+            if (_.data[app]) {
+                if (_.data[app][name])
+                    return _.data[app][name].getType();
+                else return _.data[app].getType(name);
             } else return null;
         };
     };
@@ -111,21 +113,24 @@
             //继承关系需要以后由Middler管理	
             V.inherit.apply(_, [V.config.ConfigConvert, []]);
             __.scripts = {}, __.spascripts = [];
-            __.loadScript = function(key) { if (__.scripts[key]) { console.log(key + '代码已经注入'); } else if (__.scripts._skey) { console.log(__.scripts._skey + '已注册但是尚未有代码注入'); } else if (__.spascripts.length > 0) { __.scripts[key] = __.spascripts.pop(); } else __.scripts._skey = key; };
+            __.loadScript = function(key) {
+                if (__.scripts[key]) { console.log(key + '代码已经注入'); } else if (__.scripts._skey) { console.log(__.scripts._skey + '已注册但是尚未有代码注入'); } else if (__.spascripts.length > 0) { __.scripts[key] = __.spascripts.pop(); } else __.scripts._skey = key;
+            };
             __.clearload = function() { delete __.scripts._skey; };
-            __.getScript = function(key) {
+            __.hasScript = function(key) { return __.scripts[key] };
+            __.getScript = function(key, config) {
                 var scr = __.scripts[key];
                 if (scr && scr.path) {
-                    V.each(scr.path.split(';'), function(v) {
+                    V.each(scr.path.replace(/,/g, ';').split(';'), function(v) {
                         V.include(v);
-                    }, function() { delete scr.path }, true);
+                    }, function() { delete scr.path; }, true);
                 }
-                return (scr && scr.func) ? scr.func : null;
+                return (scr && scr.func) ? { inherit: scr.inherit, func: scr.func } : null;
             };
             //切记在代码中使用V.registScript的对象在被继承时必须使用middler重新获取类型方可继承
             //todo 找不到的控件使用host方式默认加载尝试，regist应可说明自己使用前置JS和css
             V.registScript = __.registScript = function() {
-                var args = arguments.length > 1 ? { path: arguments[0], func: arguments[1] } : { func: arguments[0] };
+                var args = arguments.length > 2 ? { path: arguments[0], inherit: arguments[1].replace(/,/g, ';').split(';'), func: arguments[2], regist: true } : arguments.length > 1 ? { path: arguments[0], func: arguments[1], regist: true } : { func: arguments[0], regist: true };
                 if (__.scripts._skey) {
                     var key = __.scripts._skey;
                     delete __.scripts._skey;
@@ -188,6 +193,18 @@
                     };
                 };
             };
+            __.createValue = function(type, paras, pcm) {
+                var script = __.hasScript(type);
+                if (script.regist && !paras.length)
+                    paras = [null, null];
+                script = __.getScript(type);
+                if (script.inherit) script.inherit.map(function(v) {
+                    paras[paras.length] = pcm.Middler.getTypeByAppName(V.view.APP || 'VESH.view', v);
+                    return null;
+                });
+                script = script.func;
+                return V.create2(script, paras)
+            };
             //生成生成器
             __.convertCreater = function(config, v, defParam, app, pcm) {
                 var method = V.getValue(v.method, defParam.method);
@@ -224,9 +241,11 @@
                             }, function() {
                                 __.clearload();
                             }, true);
+                        } else if (spapath) {
+                            __.spaloadScript(type);
                         }
                         var paras = para.getParas();
-                        return __.getScript(type) ? __.getScript(type) : eval('(' + type + ')');
+                        return __.hasScript(type) ? __.getScript(type).func : eval('(' + type + ')');
                     };
                     _.getValue = function() {
                         if (path) {
@@ -251,9 +270,9 @@
                                 return paras;
                             default:
                             case 'constructor':
-                                return __.getScript(type) ? V.create2(__.getScript(type), paras) : V.create3(type, paras);
+                                return __.hasScript(type) ? __.createValue(type, paras, pcm) : V.create3(type, paras);
                             case 'bean':
-                                var val = __.getScript(type) ? V.create2(__.getScript(type), []) : eval('(new ' + type + '())');
+                                var val = __.hasScript(type) ? __.createValue(type, [], pcm) : eval('(new ' + type + '())');
                                 //bean设置出错
                                 if (val && paras) {
                                     for (var i in paras) {
@@ -270,9 +289,31 @@
                                 }
                                 return val;
                             case 'factory':
-                                return __.getScript(type) ? __.getScript(type).apply(__.getScript(type), paras) : eval('(' + type + '.apply(' + type + ',paras))');
+                                var script = __.hasScript(type);
+                                if (script) {
+                                    if (script.regist && !paras.length)
+                                        paras = [null, null];
+                                    script = __.getScript(type);
+                                    if (script.inherit) script.inherit.map(function(v) {
+                                        paras[paras.length] = pcm.Middler.getTypeByAppName(V.view || 'VESH.view', v);
+                                        return null;
+                                    });
+                                    script = script.func;
+                                }
+                                return script ? script.apply(script, paras) : eval('(' + type + '.apply(' + type + ',paras))');
                             case 'factorybean':
-                                var val = __.getScript(type) ? __.getScript(type).apply(__.getScript(type), paras) : eval('(' + type + '.apply(' + type + ',paras))');
+                                var script = __.hasScript(type);
+                                if (script) {
+                                    if (script.regist && !paras.length)
+                                        paras = [null, null];
+                                    script = __.getScript(type);
+                                    if (script.inherit) script.inherit.map(function(v) {
+                                        paras[paras.length] = pcm.Middler.getTypeByAppName(V.view || 'VESH.view', v);
+                                        return null;
+                                    });
+                                    script = script.func;
+                                }
+                                var val = script ? script.apply(script, paras) : eval('(' + type + '.apply(' + type + ',paras))');
                                 if (paras && val) {
                                     for (var i in paras) {
                                         if ((!constructorparalength || i >= constructorparalength) && typeof(paras[i]) === 'object') {
@@ -288,7 +329,7 @@
                                 }
                                 return val;
                             case 'constructorbean':
-                                var val = __.getScript(type) ? V.create2(__.getScript(type), paras) : V.create3(type, paras);
+                                var val = __.hasScript(type) ? __.createValue(type, paras, pcm) : V.create3(type, paras);
                                 if (paras && val) {
 
                                     for (var i in paras) {
@@ -383,16 +424,21 @@
                             _[i] = __.convertContainer(config, v[i], defParam, _, pcm);
                         }
                     }
-                    //根据name默认计算并添加对象
+                    //根据name默认计算并添加对象 对应registScirpt使用
                     _.getValue = function(name) {
                         _[name] = __.convertContainer(config, { path: name.replace(/[\._]/g, '/') + '.js' }, defParam, _, pcm);
                         return _[name].getValue();
+                    };
+                    _.getType = function(name) {
+                        _[name] = __.convertContainer(config, { path: name.replace(/[\._]/g, '/') + '.js' }, defParam, _, pcm);
+                        return _[name].getType();
                     };
                 };
             };
         }
         _.toConfig = function(val, pcm) {
             var config = new M.MiddlerConfig();
+            if (!pcm.Middler) pcm.Middler = new M.Middler(pcm);
             for (var i in val) {
                 //处理app
                 var app = __.convertApp(config, val[i], i, pcm);

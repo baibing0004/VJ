@@ -595,7 +595,9 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
     V.encHtml = function(html) {
         //20120328 白冰 只转换标点符号!    
         //return encodeURIComponent(V.getValue(html, '').replace(/\r\n/g, ''));
-        return (V.getValue(html, '').replace(/[\r\n]+/g, '>v>j>').replace(/\s+/g, ' ').replace(/>v>j>/g, '\r\n').replace(new RegExp('<|>|~|(\r\n)|!|@|#|\\$|%|\\^|;|\\*|\\(|\\)|_|\\+|\\{|\\}|\\||:|\"|\\?|`|\\-|=|\\[|\\]|\\\|;|\'|,|\\.|/|，|；', 'g'), function(a) { return encodeURIComponent(a); }));
+        //*()_-'. encodeURIComponent 不能替换
+        var other = { "(": "%28", ")": "%29", "*": "%2a", "'": '%27', ".": "%2e", "-": "%2d", "_": "%5f" };
+        return (V.getValue(html, '').replace(/[\r\n]+/g, '>v>j>').replace(/\s+/g, ' ').replace(/>v>j>/g, '\r\n').replace(/<|>|~|(\r\n)|!|@|#|\$|%|\^|;|&|\*|\(|\)|_|\+|{|}|\||:|\"|\?|`|\-|=|\[|\]|\\|;|\'|,|\.|\/|，|；/g, function(e) { return other[e] || encodeURIComponent(e) }));
     };
     //对字符串进行解码
     V.decHtml = function(html) {
@@ -818,6 +820,12 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
             };
             V.getRemoteJSON(data.url + (data.url.indexOf('?') >= 0 ? '&' : '?') + (data.jsonp == true ? '_bk' : data.jsonp) + '=VJ._ajaxcall[' + random + ']&' + $.param(data.data));
         } else {
+            data.cross && (
+                funcsucc.crossDomain = true,
+                funcsucc.xhrFields = {
+                    withCredentials: true
+                }
+            )
             $.ajax(funcsucc);
         }
     };
@@ -971,8 +979,14 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
     V.includeversion = '';
     V.include = function(url, tag, callback) {
         //如果已经使用本方法加载过 就不再加载。
+        if ((url || '').startWith('~') && V.getSettings("include")['last']) {
+            var prefix = V.getSettings("include")['last'].split('/');
+            prefix.pop();
+            url = prefix.join('/') + url.replace(/~/, '');
+        }
         if (V.getSettings("include")[url]) return;
         V.getSettings("include")[url] = true;
+        V.getSettings("include")['last'] = url;
         V.includeversion && url.indexOf('?') < 0 && (url = url + (url.indexOf('?') > 0 ? '&' : '?') + V.includeversion);
         if (tag == null) { tag = 'head'; }
         var parentNode = document.getElementsByTagName(tag).item(0);
@@ -1065,11 +1079,14 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
         --案例
         S.callCommand('showXXList',[{id:1}])
         */
-        S.callCommand = function(name, data) {
+        S.callCommand = function(name) {
             var caller = arguments.caller;
             var comms = S.getSettings('comms', []);
             var func = comms[name];
-            data = V.merge([], V.isArray(data) ? data : [data]);
+            var data = [];
+            for (var i = 1; i < arguments.length; i++) data[i - 1] = arguments[i];
+            //主动降维 兼容旧版代码 但是存在可能降错维度的可能
+            V.isArray(data[0]) && data.length == 1 && (data = data[0]);
             if (V.isValid(func) && typeof(func) == 'function') {
                 V.once(function() { func.apply(caller, data); });
             } else {
@@ -1144,11 +1161,14 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
         --案例
         S.callEvent('showXXList',[{id:1}])
         */
-        S.callEvent = function(name, data) {
+        S.callEvent = function(name) {
             var caller = arguments.caller;
             var events = S.getSettings('events', []);
             var funs = events[name];
-            data = V.merge([], V.isArray(data) ? data : [data]);
+            var data = [];
+            for (var i = 1; i < arguments.length; i++) data[i - 1] = arguments[i];
+            //主动降维 兼容旧版代码 但是存在可能降错维度的可能
+            V.isArray(data[0]) && data.length == 1 && (data = data[0]);
             if (V.isValid(funs) && V.isArray(funs)) {
                 V.each(funs, function(func) {
                     //报错不下火线

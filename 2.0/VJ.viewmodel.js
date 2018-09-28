@@ -58,6 +58,11 @@
                 __.template = __.node[0].innerHTML;
                 __.node.remove();
             } else {
+                if ((path || '').startWith('~') && V.getSettings("include")['last']) {
+                    var prefix = V.getSettings("include")['last'].split('/');
+                    prefix.pop();
+                    path = prefix.join('/') + path.replace(/~/, '');
+                }
                 __.node.load(path, function() {
                     __.template = __.node[0].innerHTML
                     __.node.remove();
@@ -352,7 +357,7 @@
                     case 'resize':
                         node[0].onresize = function(e) {
                             if (node.attr('disabled') || node.parents('[disabled]').length > 0) return;
-                            _.call(k, { e: e, width: node.width, height: node.height() });
+                            _.call(k, { e: e, width: node.width(), height: node.height() });
                         }
                         break;
                     default:
@@ -446,9 +451,9 @@
             name = name.toLowerCase();
             var val = null;
             //所有的事件调用全部采用异步调用方式 V.once
+            V.merge(_.vm.data, _.fill(), param || {}, true);
+            param = V.merge(_.vm.data, tparam || {});
             (_.events[name]) && V.tryC(function() {
-                V.merge(_.vm.data, _.fill(), param || {}, true);
-                param = V.merge(_.vm.data, tparam || {});
                 val = _.events[name].apply(_.parent.vms, [param, _.vm]);
                 if (val && V.toJsonString(val).length > 2) {
                     V.merge(_.vm.data, val, true)
@@ -553,7 +558,7 @@
             docs = docs.offsetParent;
             while (docs) {
                 var off = [];
-                if (docs.style.transform && docs.style.transform.indexOf('translate3d') >= 0) {
+                if (docs.style && docs.style.transform && docs.style.transform.indexOf('translate3d') >= 0) {
                     docs.style.transform.replace(/[+-]\d+(px)/g, function(v) {
                         //一般第一个是 x 第二个是y
                         off[off.length] = parseInt(v);
@@ -622,7 +627,7 @@
                     W.Control.drag = {
                         enable: true,
                         id: id,
-                        Data: V.toJsonString(__.drag[id].getData(e, _.vm)),
+                        Data: __.drag[id].getData(e, _.vm),
                         Point: { X: e.offsetX || e.pageX, Y: e.offsetY || e.pageY, left: e.offsetX || e.pageX, top: e.offsetY || e.pageY },
                         val: {},
                         mode: __.drag[id].mode,
@@ -630,12 +635,14 @@
                         time: new Date().getTime(),
                         dragNode: __.drag[id] && __.drag[id].func(e, _.vm)
                     };
-                    var val = _.call('dragstart', V.merge({ e: e, dragNode: W.Control.drag.dragNode }, W.Control.drag.Point)) || W.Control.drag.Point;
+                    //dragstart可以修改left,top,dragData等拖拽参数
+                    var val = _.call('dragstart', V.merge({ e: e, dragData: W.Control.drag.Data, dragNode: W.Control.drag.dragNode }, W.Control.drag.Point)) || W.Control.drag.Point;
                     W.Control.drag.dragNode && W.Control.drag.dragNode.appendTo(back).css({
                         left: val.left,
                         top: val.top,
                         position: 'absolute'
                     });
+                    W.Control.drag.Data = V.toJsonString(val.Data || _.vm.data.dragData || W.Control.drag.Data);
                     back.on('mousemove', function(e) {
                         V.cancel(e), V.stopProp(e);
                         if (!W.Control.drag) return;
@@ -645,6 +652,7 @@
                             X: e.pageX,
                             Y: e.pageY
                         };
+                        //drag事件可以修改left和top进行重新定位
                         var val = _.call('drag', V.merge({ e: e, dragNode: W.Control.drag.dragNode }, W.Control.drag.val)) || W.Control.drag.val;
                         W.Control.drag.val = val;
                         W.Control.drag.dragNode && W.Control.drag.dragNode.css({
@@ -660,6 +668,7 @@
                             X: e.pageX,
                             Y: e.pageY
                         };
+                        //dragend可以修改拖拽后的drag数据 allowDrop 确认是否允许拖拽和释放.
                         var val = _.call('dragend', V.merge({ e: e, dragData: V.json(W.Control.drag.Data) || {}, dragNode: W.Control.drag.mode == 'move' ? W.Control.drag.node : W.Control.drag.dragNode }, W.Control.drag.val)) || W.Control.drag.val;
                         W.Control.drag.val = val;
                         val.Data && (W.Control.drag.Data = V.toJsonString(V.merge(V.json(W.Control.drag.Data), val.Data)));
@@ -761,6 +770,7 @@
                 onLoad: {},
                 render: {}
             }, json);
+            __.event = __.event || __.onLoad;
             var _ = this; {
                 V.inherit.apply(this, [W.Control, [__.template, __.vm]]);
                 __.prerender = _.render;
@@ -784,7 +794,13 @@
                         override: false, //是否覆盖父类方法
                         merge: false, //是否采用深度复制
                         Method: v
-                    } : v;
+                    } : V.merge({
+                        Desc: '属性没有任何描述',
+                        sync: true, //默认为同步处理,
+                        finally: false, //finally一定是异步的
+                        override: false, //是否覆盖父类方法
+                        merge: false, //是否采用深度复制
+                    }, v);
                     //Method为false或者未定义则不可作为可用属性出现
                     v && (function() {
                         v.Method = v.Method || function() {};
@@ -801,15 +817,15 @@
             _.call = function(name, param, tparam) {
                 name = name.toLowerCase();
                 var val = null;
+                V.merge(_.vm.data, _.fill(), true);
+                var mgData = {};
+                V.forC(param || {},
+                    function(k, v) {!__.merge[k.toLowerCase()] ? (_.vm.data[k] = v) : (mgData[k] = v); },
+                    function() {
+                        V.merge(_.vm.data, mgData, true);
+                    }, true);
                 //所有的事件调用全部采用异步调用方式 V.once
                 (_.events[name]) && V.tryC(function() {
-                    V.merge(_.vm.data, _.fill(), true);
-                    var mgData = {};
-                    V.forC(param || {},
-                        function(k, v) {!__.merge[k.toLowerCase()] ? (_.vm.data[k] = v) : (mgData[k] = v); },
-                        function() {
-                            V.merge(_.vm.data, mgData, true);
-                        }, true);
                     param = V.merge(_.vm.data, tparam || {});
                     val = _.events[name].apply(_.parent.vms, [param, _.vm]);
                     if (val && V.toJsonString(val).length > 2) {
@@ -820,7 +836,7 @@
                 return val;
             };
             _.onLoad = function(node) {
-                var em = V.merge({}, __.onLoad);
+                var em = V.merge({}, __.event);
                 V.forC(em, function(k, v) {
                     v = typeof(v) === 'function' ? {
                         Desc: '没有任何描述',
@@ -847,7 +863,7 @@
                 V.forC(data, function(k, v) {
                     var k2 = k.toLowerCase();
                     var name = !!__.sync[k2] ? 'sync' : (!!__.async[k2] ? 'async' : !!__.finally[k2] ? 'finally' : false);
-                    name ? ret[name][ret[name].length] = { func: __[name][k2].Method, data: v, name: k2 } : rdata[k2] = v.Method || v;
+                    name ? ret[name][ret[name].length] = { func: __[name][k2].Method, data: v, name: k2 } : rdata[k2] = (v && v.Method) || v;
                     //保证完整赋值
                     !__.merge[k2] && (_.vm.data[k] = v);
                 }, function() {
@@ -1130,7 +1146,7 @@
             param = V.merge(_.vm.data, param);
             name = name.toLowerCase();
             var val = null;
-            if (_.events[name]) V.tryC(function() {
+            (_.events[name]) && V.tryC(function() {
                 val = _.events[name].apply(_.parent.getModels(), [imme ? param : _.vm.data, _.vm]);
                 imme && V.merge(_.vm.data, param, true);
                 if (val && V.toJsonString(val).length > 2) {

@@ -457,12 +457,16 @@
                 },
                 fill: function() {
                     var value = {};
-                    (_.cons) &&
-                    _.cons.forEach(function(v) {
-                        var vm = _.parent.vms[v] ? _.parent.vms[v] : _.page.vms[v];
-                        //todo 处理控件异步初始化 导致执行事件时内部控件未初始化完成。
-                        (vm && vm.nodeName != 'fill' && vm.get) && (value[v] = vm.get().value);
-                    });
+                    _.vm.data.value = {};
+                    if (_.cons) {
+                        _.cons = _.cons && _.controls && !_.cons.length && !!_.controls.length ? _.controls.map(function(v) { return v.vm.id; }) : _.cons;
+                        (_.cons.length) &&
+                        _.cons.forEach(function(v) {
+                            var vm = (_.vms ? _.vms[v] : null) || _.parent.vms[v] || _.page.vms[v];
+                            //todo 处理控件异步初始化 导致执行事件时内部控件未初始化完成。
+                            (vm && vm.nodeName != 'fill' && vm.get) && (value[v] = vm.get().value);
+                        });
+                    }
                     return { value: value };
                 },
                 render: {
@@ -473,9 +477,9 @@
                     enctype: function(v) { _.node.attr('enctype', v) },
                     valid: function(value) {
                         value && (function() {
-                            var cons = Array.prototype.slice.call(_.cons, 0);
+                            var cons = _.cons.length ? Array.prototype.slice.apply(_.cons) : _.controls.map(function(v) { return v.vm.id });
                             V.whileC2(function() { return cons.shift(); }, function(v, next) {
-                                var vm = _.parent.vms[v] ? _.parent.vms[v] : _.page.vms[v];
+                                var vm = (_.vms ? _.vms[v] : null) || _.parent.vms[v] || _.page.vms[v];
                                 (vm) && vm.update({ valid: next });
                             }, function() {
                                 value(_.fill().value);
@@ -483,16 +487,18 @@
                         })();
                     },
                     enable: function(v) {
+                        _.cons = _.cons.length ? _.cons : _.controls.map(function(v) { return v.vm.id });
                         V.each(_.cons, function(v2) {
-                            var vm = _.parent.vms[v2] ? _.parent.vms[v2] : _.page.vms[v2];
+                            var vm = (_.vms ? _.vms[v2] : null) || _.parent.vms[v2] || _.page.vms[v2];
                             (vm) && vm.update({ enable: v });
                         })
                     },
                     value: function(v) {
                         v ? (function() {
                             _.vm.data.value = v;
+                            _.cons = _.cons.length ? _.cons : _.controls.map(function(v) { return v.vm.id });
                             V.each(_.cons, function(v2) {
-                                var vm = _.parent.vms[v2] ? _.parent.vms[v2] : _.page.vms[v2];
+                                var vm = (_.vms ? _.vms[v2] : null) || _.parent.vms[v2] || _.page.vms[v2];
                                 (vm) && (
                                     (vm.nodeName == 'fill') ? vm.update({ value: v || {} }) :
                                     (v[v2] !== undefined) && vm.update({ value: v[v2] })

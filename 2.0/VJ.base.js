@@ -820,7 +820,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
             };
             V.getRemoteJSON(data.url + (data.url.indexOf('?') >= 0 ? '&' : '?') + (data.jsonp == true ? '_bk' : data.jsonp) + '=VJ._ajaxcall[' + random + ']&' + $.param(data.data));
         } else {
-            data.cross && (
+            data.cross && funcsucc && (
                 funcsucc.crossDomain = true,
                 funcsucc.xhrFields = {
                     withCredentials: true

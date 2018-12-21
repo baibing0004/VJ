@@ -353,6 +353,10 @@
                             switch (typeof(data)) {
                                 case "string":
                                     data = data.replace(/[\r\n]+/g, '');
+                                    if (data.startWith('{')) {
+                                        _.dbtype = 'json';
+                                        data = '[[' + data + ']]'
+                                    };
                                     if (data.replace(/^(\[+\]+)/g, '').length === 0) {
                                         hasFalse = true;
                                     } else {

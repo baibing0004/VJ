@@ -112,6 +112,42 @@
             }
         };
     };
+
+    W.readyLoad = function(_) {
+        //_.readyLoad.wait唯一判断是否出现子控件 当出现子控件时 需要子控件全部完成（有异步加载的需要判断 父控件的wait为false而且本级全部子控件的ready为真，无异步加载的需要父控件判断 本级全部子控件的ready为真）才能启动onload方法调用并确定父控件的ready为真 并开始启动上级判断。 应确保父控件的ready
+        if (!_.readyLoad.ready && _.controls && _.controls.length) {
+            //此为本级无异步加载的父控件判断
+            if (!_.controls.filter(function(v) { return !v.readyLoad.ready }).length) {
+                //console.log('readyLoad', _, _.readyLoad.ready ? '' : '', _.readyLoad.wait ? '锁定' : '不锁');
+                // _.controls.map(function(v) {
+                //     console.log('readyLoad2', v, v.readyLoad.ready);
+                // });
+                _.controls.map(function(v) {
+                    try {
+                        !v.readyLoad.hasLoad && v.readyLoad.onLoad(v.readyLoad.node);
+                        v.readyLoad.hasLoad = true;
+                    } catch (e) {
+                        console.log(v, e.stack);
+                    }
+                });
+                _.readyLoad.ready = true;
+                //console.log('非叶子控件 全部完成!', _, _.parent);
+                (_.parent && _.parent.readyLoad && !_.parent.readyLoad.wait) && W.readyLoad(_.parent);
+            }
+            // else console.log('无异步但是有未完成', _.controls.filter(function(v) {
+            //     if (!v.readyLoad.ready)
+            //         console.log(v, v.readyLoad.ready);
+            //     return !v.readyLoad.ready;
+            // }).length);
+        } else {
+            //console.log('叶子节点判断', _, !_.readyLoad.ready, _.controls, _.controls && _.controls.length);
+            //有异步加载的需要判断 父控件的wait为false而且本级全部子控件的ready为真，无异步加载的需要父控件判断 本级全部子控件的ready为真
+            //叶子控件
+            _.readyLoad.ready = true;
+            //(_.parent && _.parent.readyLoad && !_.parent.readyLoad.wait) && console.log('readyLoad parent', _.parent, _.parent ? '有父亲' : '无父亲', _.parent.readyLoad ? "父亲有readyLoad" : '', _.parent.readyLoad.wait ? "父亲被锁定" : '');
+            (_.parent && _.parent.readyLoad && !_.parent.readyLoad.wait) && W.readyLoad(_.parent);
+        }
+    };
     //html与css的加载 其对应的节点的替换 事件的统一触发与处理 update事件的注入 控件均支持先创建 再init 然后bind绑定的过程 再调用onLoad和render事件
     W.Control = function(path, params) {
         var _ = this,
@@ -326,14 +362,29 @@
             _.vm.desc = function() { _.desc(); };
             _.vm.get = function(key) { _.vm.data = V.merge(_.vm.data, _.fill()); return key ? _.vm.data[key] : _.vm.data; };
             _.vm.bind(_);
+            _.readyLoad = {
+                ready: false,
+                node: null,
+                onLoad: _.onLoad,
+                path: _.path,
+                wait: false //等待递归调用readyLoad方法时等待父类的replaceNode执行完成
+            };
             if (_.path) {
                 W.getTemplate(_.path, function(node) {
                     _.replaceNode(node);
-                    _.onLoad(node);
+                    _.readyLoad.wait = false;
+                    _.readyLoad.node = node;
+                    _.preonload && _.preonload(node);
+                    W.readyLoad(_);
+                    //_.onLoad(node);
                 });
             } else {
                 _.node.show();
-                _.onLoad(_.node);
+                _.readyLoad.wait = false;
+                _.readyLoad.node = _.node;
+                _.preonload && _.preonload(_.node);
+                W.readyLoad(_);
+                //_.onLoad(_.node);
             }
         };
         //用于扩展给主要对象绑定事件使用 一般用于bind事件的默认值
@@ -371,6 +422,7 @@
         _.initControls = function(vm, node) {
             //此处进行内部控件生成需要判定controls属性
             (vm.controls || node.find('[_]').length > 0) && (function() {
+                _.readyLoad.wait = true;
                 var cons = vm.controls || {};
                 _.controls = [];
                 _.vs = {};
@@ -520,6 +572,7 @@
             _.vs[key] = obj;
             V.inherit.apply(v, [M.Control, []]);
             _.vms[key] = v;
+            _.readyLoad.ready = false;
             obj.bind(v);
             return v;
         };
@@ -543,7 +596,7 @@
                 var div = $('<div style="display:none;"></div>').appendTo(window.document.body);
                 _.node.children().appendTo(div);
                 _.node.empty();
-                V.forC(vs, function(k, v) { v.dispose(); }, function() { div.remove(); });
+                V.forC(vs, function(k, v) { v.dispose(); }, function() { div.remove(); }, true);
             } else {
                 _.controls = [];
                 _.vms = {};
@@ -774,7 +827,7 @@
             var _ = this; {
                 V.inherit.apply(this, [W.Control, [__.template, __.vm]]);
                 __.prerender = _.render;
-                __.preonLoad = _.onLoad;
+                //__.preonLoad = _.onLoad;
                 _.fill = __.fill || _.fill;
                 //todo 定义所有可监听的事件 默认这里未添加BindEvent的默认内容
                 _.Events = {};
@@ -835,7 +888,7 @@
                 });
                 return val;
             };
-            _.onLoad = function(node) {
+            _.preonload = function(node) {
                 var em = V.merge({}, __.event);
                 V.forC(em, function(k, v) {
                     v = typeof(v) === 'function' ? {
@@ -851,7 +904,7 @@
                         k = k.toLowerCase();
                         em[k] ? (em[k].Method || _.bindEvent).apply(_, [node, k, v]) : _.bindEvent.apply(_, [node, k, v]);
                     }, function() {
-                        __.preonLoad(node);
+                        //__.preonLoad(node); 不再调用父类的onLoad方法由Control统一控制完成
                         em['finally'] && em['finally'].Method.apply(_, [node]);
                     }, true);
                 }, true);
@@ -1045,21 +1098,42 @@
             }
             _.vms = _.page.vms;
             _.models = _.vms;
-            if (_.path) {
-                W.getTemplate(_.path, function(node) {
-                    _.replaceNode(node);
-                    _.onLoad(node);
-                });
-            } else {
-                _.node.show();
-                _.onLoad(_.node);
-            }
             _.middler = page.middler
             _.ni = page.ni;
             _.session = page.session;
             _.config = page.config;
+            _.readyLoad = {
+                ready: false,
+                node: null,
+                onLoad: _.onLoad,
+                path: _.path,
+                wait: false //等待递归调用readyLoad方法时等待父类的replaceNode执行完成
+            };
+            if (_.path) {
+                W.getTemplate(_.path, function(node) {
+                    _.replaceNode(node);
+                    _.readyLoad.wait = false;
+                    _.readyLoad.node = node;
+                    _.preonload && _.preonload(node);
+                    W.readyLoad({
+                        readyLoad: _.readyLoad,
+                        controls: _.controls
+                    });
+                    //_.onLoad(node);
+                });
+            } else {
+                _.node.show();
+                _.readyLoad.wait = false;
+                _.readyLoad.node = _.node;
+                _.preonload && _.preonload(_.node);
+                // W.readyLoad({
+                //     readyLoad: _.readyLoad,
+                //     controls: _.controls
+                // });
+                //_.onLoad(_.node);
+            }
         };
-        _.onLoad = function(node) {
+        _.preonload = function(node) {
             V.forC(_.events, function(k, v) {
                 switch (k) {
                     case 'close':
@@ -1082,14 +1156,13 @@
                         _.bindEvent(node, k, v);
                         break;
                 }
-            }, function() {
-                __.onLoad(node);
-            }, true);
+            }, null, true);
         };
         //用于绑定对应的控件
         _.bindControl = function(node) {
             //这里应该由真实的View层调用使用document.ready实现
             V.each(node.find('[_]').toArray(), function(v1) {
+                _.readyLoad.wait = true;
                 var v = $(v1);
                 var id = v.attr('id');
                 var json = eval("({" + v.attr('_') + "})");
@@ -1115,6 +1188,7 @@
                 //实现通过type属性完成数据初始化的功能
                 V.forC(_.page.getModels(), function(key, v) {
                     if (v.type && !v.v) {
+                        _.readyLoad.wait = true;
                         var obj = _.middler.getObjectByAppName(W.APP, v.type);
                         if (!obj) throw new Error('配置文件中没有找到对象类型定义:' + v.type);
                         var node2 = V.newEl('div');
@@ -1128,6 +1202,11 @@
                     }
                 }, function() {
                     _.onReady();
+                    _.readyLoad.wait = false;
+                    W.readyLoad({
+                        readyLoad: _.readyLoad,
+                        controls: _.controls
+                    });
                     _.call('start');
                 }, true);
             });
@@ -1191,6 +1270,7 @@
             _.vs[key] = obj;
             V.inherit.apply(v, [M.Control, []]);
             _.vm.vms[key] = v;
+            _.readyLoad.ready = false;
             obj.bind(v);
             return v;
         };

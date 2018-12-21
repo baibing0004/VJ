@@ -463,8 +463,8 @@
                         (_.cons.length) &&
                         _.cons.forEach(function(v) {
                             var vm = (_.vms ? _.vms[v] : null) || _.parent.vms[v] || _.page.vms[v];
-                            //todo 处理控件异步初始化 导致执行事件时内部控件未初始化完成。
-                            (vm && vm.nodeName != 'fill' && vm.get) && (value[v] = vm.get().value);
+                            //处理控件异步初始化 导致执行事件时内部控件未初始化完成。比较特殊 因为其包含其它控件 但是其它控件内部尚未初始化 使用Control2下的preonload和onload分离方式实现 对控件事件初始化和onLoad时间的分离
+                            (vm && vm.nodeName != 'fill') && (value[v] = vm.update().value);
                         });
                     }
                     return { value: value };
@@ -506,6 +506,10 @@
                             });
                         })() : _.node[0].reset();
                     },
+                    clear: function() {
+                        _.cons = [];
+                        _.clearControl();
+                    }
                 }
             }, typeof(path) == 'string' ? { template: path, vm: vm } : (path || {}))]]);
         }

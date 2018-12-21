@@ -105,9 +105,13 @@ String.prototype.trim = function(chr) {
         case ')':
         case '{':
         case '}':
+        case '|':
+        case '^':
+        case '$':
+        case '+':
             chr = '\\' + chr;
             break;
-    }　　
+    }
     return this.replace(VJ.isValid(chr) ? new RegExp('(^(' + chr + ')+)|((' + chr + ')+$)', 'g') : /(^\s+)|(\s+$)/g, "");
 }
 String.prototype.loadVJ = true;

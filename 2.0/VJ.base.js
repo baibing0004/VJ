@@ -755,6 +755,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
                     switch (typeof(data)) {
                         case "string":
                             data = data.replace(/[\r\n]+/g, '');
+                            data.startWith('{') ? (_this.filtData = function(v) { return v[0]; }, data = '[' + data + ']') : (_this.filtData = function(v) { return V.evalTJson(data)[0][0]; });
                             if (data.replace(/^(\[+\]+)/g, '').length === 0) {
                                 hasFalse = true;
                             } else {
@@ -766,15 +767,16 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
                                         } else return true;
                                     })() : true) :
                                     false);
-                            }
+                            }!hasFalse && V.tryC(function() { _this.bindData.apply(_this, [_this.filtData(eval(data))]); });
                             break;
                         case "object":
-                            if (data) {
-                                $(data).each(function(i, v) {
+                            if (data && data.length) {
+                                (data).map(function(v) {
                                     v = v + '';
                                     hasFalse = (hasFalse || v == 'False' || v == 'false');
                                 });
                             } else hasFalse = true;
+                            !hasFalse && V.tryC(function() { _this.bindData.apply(_this, [data]); });
                             break;
                         case 'undefined':
                         default:
@@ -782,11 +784,8 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
                             hasFalse = true;
                             break;
                     }
-                    if (!hasFalse) {
-                        setTimeout(function() { V.tryC(function() { _this.bindData.apply(_this, [_this.filtData(eval(data))]); }); }, 1);
-                    } else {
-                        setTimeout(function() { V.tryC(function() { _this.noData(hasFalse); }); }, 1);
-                    }
+                    (hasFalse) && V.tryC(function() { _this.noData(true); });
+
                 } catch (e) {
                     V.showException('V._ajaxOption success方法', e);
                 }

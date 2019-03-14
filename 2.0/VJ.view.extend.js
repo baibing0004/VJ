@@ -139,18 +139,7 @@
                         v ? _.input.removeAttr('disabled') : _.input.attr('disabled', 'disabled');
                     },
                     'title': function(v, data) {
-                        v ? (function() {
-                            _.input.focus(function() {
-                                (_.input.val() == v || _.input.text() == v || _.input.val() == _.vm.data.error || _.input.text() == _.vm.data.error) && _.input.val('');
-                            });
-                            _.input.off('blur').on('blur', function() {
-                                (_.input.val() == '' && _.input.text() == '') && _.render({ value: v });
-                            });
-                        })() : (function() {
-                            _.input.off('blur').off('focus').focus(function() {
-                                (_.input.val() == _.vm.data.error || _.input.text() == _.vm.data.error) && _.input.val('');
-                            });
-                        })();
+                        _.input.attr('placeholder', v || '');
                     },
                     'value': {
                         override: true,

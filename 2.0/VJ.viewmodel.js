@@ -301,6 +301,12 @@
                         V.merge(_.get(), _.fill(), true);
                         if (_.valid) { _.valid(data.value || _.get().value, value); } else if (value) value();
                         break;
+                    case 'validate':
+                        {
+                            var inputs = _.node.find('input');
+                            _.validate(_, inputs.length ? inputs : _.node);
+                        }
+                        break;
                     case 'show':
                         _.vm.data.visible = true;
                         _.animate(value, function() {});
@@ -861,7 +867,7 @@
                         var poi = v.finally ? 'finally' : v.sync ? 'sync' : 'async';
                         __[poi][k2] = v;
                         v.merge === true && (__.merge[k2] = true);
-                        v.as && (V.isArray(v.as) ? v.as : [v.as]).forEach(function(v2) {
+                        v.as && (v.as = V.isArray(v.as) ? v.as : [v.as]) && v.as.forEach(function(v2) {
                             __[poi][v2.toLowerCase()] = v;
                         });
                     })();
@@ -902,7 +908,7 @@
                     em['init'] && em['init'].Method.apply(_, [node]);
                     V.forC(_.events, function(k, v) {
                         k = k.toLowerCase();
-                        em[k] ? (em[k].Method || _.bindEvent).apply(_, [node, k, v]) : _.bindEvent.apply(_, [node, k, v]);
+                        ((em[k] && em[k].Method) ? em[k].Method : _.bindEvent).apply(_, [node, k, v]);
                     }, function() {
                         //__.preonLoad(node); 不再调用父类的onLoad方法由Control统一控制完成
                         em['finally'] && em['finally'].Method.apply(_, [node]);
@@ -1547,7 +1553,7 @@
                             if (success) {
                                 control.isError = false;
                                 control.onSuccess();
-                                if (func) { func(); }
+                                if (func) { func(text); }
                             }
                         });
                     };

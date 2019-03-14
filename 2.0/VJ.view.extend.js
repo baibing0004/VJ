@@ -123,8 +123,10 @@
                             _.call('Hover', { hover: false });
                         });
                     },
-                    error: function(node, k, v) {
-                        (_.get().validate) && _.validate(_, _.input);
+                    blur: function(node, k, v) {
+                        _.input && _.input.blur(function() {
+                            _.call('blur');
+                        });
                     }
                 },
                 fill: function() {
@@ -319,7 +321,7 @@
                             sb.clear();
                             sb = null;
                             if (_.vm.data.value) {
-                                setValue(_.vm.data.value);
+                                _.setValue(_.vm.data.value);
                             }
                         });
                     },
@@ -383,11 +385,6 @@
             V.inherit.apply(_, [W.Control2, [W.Control2.merge({
                 template: '<input class="c_hidden" type="hidden"/>',
                 vm: vm,
-                onLoad: {
-                    error: function(node) {
-                        _.get().validate && _.validate(_, _.node);
-                    }
-                },
                 fill: function() {
                     return { val: _.node.val() };
                 },
@@ -403,16 +400,8 @@
             V.inherit.apply(_, [W.TextBox, [W.Control2.merge({
                 template: '<span class="c_passwordBox"><span style="display:none;"></span><input type="password"/></span>',
                 vm: vm,
-                onLoad: {
-                    error: function(node) {
-                        _.get().validate && _.validate(_, _.node);
-                    }
-                },
-                fill: function() {
-                    return { val: _.node.val() };
-                },
                 render: {
-                    passchar: { as: ['alt'], Method: function(v) { _.input.attr('alt', v); } }
+                    passchar: { as: ['alt'], Method: function(v, data, key) { _.input.attr(key, v); } }
                 }
             }, typeof(path) == 'string' ? { template: path } : (path || {}))]]);
         }
@@ -494,17 +483,16 @@
                         })
                     },
                     value: function(v) {
-                        v ? (function() {
-                            _.vm.data.value = v;
-                            _.cons = _.cons.length ? _.cons : _.controls.map(function(v) { return v.vm.id });
-                            V.each(_.cons, function(v2) {
-                                var vm = (_.vms ? _.vms[v2] : null) || _.parent.vms[v2] || _.page.vms[v2];
-                                (vm) && (
-                                    (vm.nodeName == 'fill') ? vm.update({ value: v || {} }) :
-                                    (v[v2] !== undefined) && vm.update({ value: v[v2] })
-                                );
-                            });
-                        })() : _.node[0].reset();
+                        _.node[0].reset();
+                        _.vm.data.value = v || {};
+                        _.cons = _.cons.length ? _.cons : _.controls.map(function(v) { return v.vm.id });
+                        V.each(_.cons, function(v2) {
+                            var vm = (_.vms ? _.vms[v2] : null) || _.parent.vms[v2] || _.page.vms[v2];
+                            (vm) && (
+                                (vm.nodeName == 'fill') ? vm.update({ value: v || {} }) :
+                                vm.update({ value: v[v2] || false })
+                            );
+                        });
                     },
                     clear: function() {
                         _.cons = [];

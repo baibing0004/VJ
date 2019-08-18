@@ -1,6 +1,6 @@
 {
     "name": "vesh-vj",
-    "version": "2.1.1",
+    "version": "2.1.3",
     "description": "VESH's JavaScript Framework",
     "main": "VJ.js",
     "scripts": {

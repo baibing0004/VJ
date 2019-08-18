@@ -1082,12 +1082,19 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
             var caller = arguments.caller;
             var comms = S.getSettings('comms', []);
             var func = comms[name];
-            var data = [];
-            for (var i = 1; i < arguments.length; i++) data[i - 1] = arguments[i];
+            var data = Array.prototype.slice.apply(arguments, [1]);
             //主动降维 兼容旧版代码 但是存在可能降错维度的可能
             V.isArray(data[0]) && data.length == 1 && (data = data[0]);
             if (V.isValid(func) && typeof(func) == 'function') {
-                V.once(function() { func.apply(caller, data); });
+                V.once(function() {
+                    func.apply(caller, data.map(function(v) {
+                        try {
+                            return 'object'.eq(V.getType(v)) ? JSON.parse(JSON.stringify(v)) : v;
+                        } catch (e) {
+                            return v;
+                        }
+                    }));
+                });
             } else {
                 comms[name] = data;
             }
@@ -1164,15 +1171,20 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
             var caller = arguments.caller;
             var events = S.getSettings('events', []);
             var funs = events[name];
-            var data = [];
-            for (var i = 1; i < arguments.length; i++) data[i - 1] = arguments[i];
+            var data = Array.prototype.slice.apply(arguments, [1]);
             //主动降维 兼容旧版代码 但是存在可能降错维度的可能
             V.isArray(data[0]) && data.length == 1 && (data = data[0]);
             if (V.isValid(funs) && V.isArray(funs)) {
                 V.each(funs, function(func) {
                     //报错不下火线
                     V.tryC(function() {
-                        func.apply(caller, data);
+                        func.apply(caller, data.map(function(v) {
+                            try {
+                                return 'object'.eq(V.getType(v)) ? JSON.parse(JSON.stringify(v)) : v;
+                            } catch (e) {
+                                return v;
+                            }
+                        }));
                     });
                 });
             }

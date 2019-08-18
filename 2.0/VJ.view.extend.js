@@ -145,12 +145,7 @@
                         override: true,
                         as: ['text'],
                         Method: function(v, data) {
-                            (typeof(v) != 'boolean' && 'false' != ('' + v).toLowerCase() && 'undefined' != ('' + v).toLowerCase()) ? (function() {
-                                _.input.val(v);
-                                (_.vm.data.title && !V.isValid(v)) ? _.input.val(_.vm.data.title): false;
-                            })() : (function() {
-                                _.input.val('');
-                            })();
+                            _.input.val(v || '');
                         }
                     },
                     'name': {
@@ -162,7 +157,7 @@
                     'key': {
                         override: true,
                         Method: function(v, data) {
-                            _.txt.text(v).show();
+                            _.txt.html(v).show();
                         }
                     },
                     'size': {
@@ -222,9 +217,8 @@
         var _ = this,
             __ = {
                 setValue: function(value) {
-                    _.vm.data.preValue = _.input.find(':selected').val();
-                    _.input.find(':selected').attr('selected', false);
-                    _.input.find('option[value="' + value + '"]').attr('selected', true);
+                    _.vm.data.preValue = _.input.val();
+                    _.input.val(value);
                 }
             };
         V.inherit.apply(_, [W.TextBox, [W.Control2.merge({
@@ -241,7 +235,7 @@
             fill: {
                 override: true,
                 Method: function() {
-                    return { value: _.input.find("option:selected").val() };
+                    return { value: _.input.val() };
                 }
             },
             render: {

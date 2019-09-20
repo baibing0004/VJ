@@ -703,30 +703,6 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
                 return "\"" + p + "\"";
         }
     };
-    V.toTJson = function(data) {
-        if (data) {
-            if (!V.isArray(data)) data = [data];
-            var res = [];
-            if (V.isArray(data) && data[0] && V.isArray(data[0])) {
-                for (var i in data) {
-                    res[i] = V.toTJson(data[i]);
-                }
-            } else {
-                //找到第一个不是数组的实例对象进行处理
-                res[0] = [];
-                for (var k in data[0]) {
-                    res[0][res[0].length] = "\"" + k + "\"";
-                }
-                for (var v in data) {
-                    var obj = [];
-                    for (var k2 in data[v])
-                        obj[obj.length] = checkValue(data[v][k2]);
-                    res[res.length] = (obj);
-                }
-            }
-            return res;
-        } else return [];
-    };
     /*
     V.ajax用于使用默认值
     --案例
@@ -755,7 +731,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
                     switch (typeof(data)) {
                         case "string":
                             data = data.replace(/[\r\n]+/g, '');
-                            data.startWith('{') ? (_this.filtData = function(v) { return v[0]; }, data = '[' + data + ']') : (_this.filtData = function(v) { return V.evalTJson(data)[0][0]; });
+                            data.startWith('{') ? (_this.filtData = function(v) { return v[0]; }, data = '[' + data + ']') : (_this.filtData = function(v) { return V.evalTJson(v)[0][0]; });
                             if (data.replace(/^(\[+\]+)/g, '').length === 0) {
                                 hasFalse = true;
                             } else {

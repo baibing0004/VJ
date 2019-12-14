@@ -404,22 +404,22 @@
                     case 'hover':
                         if ((!$._data(node[0], "events") || (!$._data(node[0], "events")['mouseenter']) && !$._data(node[0], "events")['mouseleave']))
                             node[k](function(e) {
-                                if (node.attr('disabled') || node.parents("[disabled]").length > 0) return;
+                                if (node.attr('disabled') || node.parents('[disabled]').length > 0 || false === _.vm.data.disable || false === _.vm.data.enable) return;
                                 _.call(k, { e: e, hover: true });
                             }, function(e) {
-                                if (node.attr('disabled') || node.parents("[disabled]").length > 0) return;
+                                if (node.attr('disabled') || node.parents('[disabled]').length > 0 || false === _.vm.data.disable || false === _.vm.data.enable) return;
                                 _.call(k, { e: e, hover: false });
                             });
                         break;
                     case 'resize':
                         node[0].onresize = function(e) {
-                            if (node.attr('disabled') || node.parents('[disabled]').length > 0) return;
+                            if (node.attr('disabled') || node.parents('[disabled]').length > 0 || false === _.vm.data.disable || false === _.vm.data.enable) return;
                             _.call(k, { e: e, width: node.width(), height: node.height() });
                         }
                         break;
                     default:
                         node[k](function(e) {
-                            if (node.attr('disabled') || node.parents('[disabled]').length > 0) return;
+                            if (node.attr('disabled') || node.parents('[disabled]').length > 0 || false === _.vm.data.disable || false === _.vm.data.enable) return;
                             _.call(k, { e: e });
                         });
                 }

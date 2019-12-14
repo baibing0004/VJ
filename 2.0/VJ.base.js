@@ -21,8 +21,8 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
 //命令注册变量
 //很多地方用不了 接驳原型链报错 直接调用逻辑控件的update报错 "use strict"
 (top.location == location) ? (
-    VJ = window.top.VJ ? window.top.VJ : { load: false, cross: false }) : (
-    VJ = window.VJ ? window.VJ : { load: false, cross: true }
+    window.VJ = window.top.VJ ? window.top.VJ : { load: false, cross: false }) : (
+    window.VJ = window.VJ ? window.VJ : { load: false, cross: true }
 );
 (!VJ.load) ? (function(V, $) {
     V.load = true;
@@ -303,6 +303,48 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
         var data = {};
         V.whileC2(function() { return funs[i++] }, function(v, next) {
             return (v || next || emptyfunc)(data, next)
+        });
+    };
+
+    V.tnext = function() {
+        var i = 0;
+        var funs = arguments;
+        var data = {},
+            goerr = function() { throw new Error('请在第' + i + '个对象定义g或者go方法') },
+            rollbacks = [],
+            rollfunc = function() {
+                var r = 0;
+                V.whileC2(function() { return rollbacks[r++] }, function(v, next) {
+                    return (v || next || emptyfunc)(data, next);
+                });
+            };
+        V.whileC2(function() { return funs[i++] }, function(v, next) {
+            try {
+                var n = function(e) {
+                    try {
+                        if (e && e.__proto__) {
+                            if (e.__proto__.name == "Error") throw e;
+                        }
+                        rollbacks.unshift(v.r || v.rollback || (function() {
+                            throw new Error('请在第' + i + '个对象定义r或者rollback方法');
+                        })());
+                        if (e) {
+                            if (typeof e === 'string') throw new Error(e);
+                            throw new Error('第' + i + '个对象条件不满足开始回滚!');
+                        }
+                        next();
+                    } catch (ne) {
+                        rollbacks.push(function() {
+                            throw ne;
+                        });
+                        rollfunc();
+                    }
+                };
+                var ret = (v.g || v.go || goerr).apply(v, [data, n]);
+            } catch (e) {
+                rollfunc();
+            }
+            return ret;
         });
     };
 
@@ -597,7 +639,10 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
         //return encodeURIComponent(V.getValue(html, '').replace(/\r\n/g, ''));
         //*()_-'. encodeURIComponent 不能替换
         var other = { "(": "%28", ")": "%29", "*": "%2a", "'": '%27', ".": "%2e", "-": "%2d", "_": "%5f" };
-        return (V.getValue(html, '').replace(/[\r\n]+/g, '>v>j>').replace(/\s+/g, ' ').replace(/>v>j>/g, '\r\n').replace(/<|>|~|(\r\n)|!|@|#|\$|%|\^|;|&|\*|\(|\)|_|\+|{|}|\||:|\"|\?|`|\-|=|\[|\]|\\|;|\'|,|\.|\/|，|；/g, function(e) { return other[e] || encodeURIComponent(e) }));
+        return ((V.getValue(html, '')
+                .replace(/[\r\n]+/g, '>v>j>').replace(/\s+/g, ' ').replace(/>v>j>/g, '\r\n')
+                .match(/[a-zA-Z0-9\u4E00-\u9FA5\uF900-\uFA2D]|[\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]|<|>|~|(\r\n)|!|@|#|\$|%|\^|;|\*|\(|\)|_|\+|\{|\}|\||:|\"|\?|`|\-|=|\[|\]|\\|;|\'|,|\.|\/|，|；/g) || []).join('')
+            .replace(/<|>|~|(\r\n)|!|@|#|\$|%|\^|;|\*|\(|\)|_|\+|\{|\}|\||:|\"|\?|`|\-|=|\[|\]|\\|;|\'|,|\.|\/|，|；/g, function(e) { return other[e] || encodeURIComponent(e); }));
     };
     //对字符串进行解码
     V.decHtml = function(html) {

@@ -123,13 +123,15 @@
                         var cmd = _.res.getDBCommand();
                         cmd.connection = conn;
                         var i = 0;
+                        delete _.result.error;
                         V.whileC2(function() { return _cms[i++]; }, function(v, next) {
                             cmd.command = v.name;
                             cmd.params = v.params;
                             cmd.dbtype = v.dbtype;
                             cmd.jsonp = v.jsonp;
                             var _func = v.func;
-                            cmd.excute(_.result, function(data) {
+                            cmd.excute(_.result, function(data, error) {
+                                error && (_.result.error = error);
                                 _.result.add((!data || (V.isArray(data) && data.length == 0)) ? false : data, v.key);
                                 V.tryC(function() { _func(_.result); });
                                 next();
@@ -347,7 +349,7 @@
                     if (func) { func(false); }
                     return;
                 } else {
-                    _.connection.invoke(_, function(data) {
+                    _.connection.invoke(_, function(data, error) {
                         try {
                             var hasFalse = false;
                             switch (typeof(data)) {
@@ -402,7 +404,7 @@
                                         break;
                                 }
                             }
-                            if (func) { func(data); }
+                            if (func) { func(data, error); }
                         } catch (e) {
                             V.showException('V._ajaxOption success方法', e);
                             if (func) { func(false); }
@@ -518,14 +520,16 @@
                         var conn = _res.getDBConnection();
                         var cmd = _.res.getDBCommand();
                         cmd.connection = conn;
+                        delete _.result.error;
                         var func = function(v, next) {
                             cmd.command = v.name;
                             cmd.params = v.params;
                             cmd.dbtype = v.dbtype;
                             cmd.jsonp = v.jsonp;
                             var _func = v.func;
-                            cmd.excute(_.result, function(data) {
+                            cmd.excute(_.result, function(data, error) {
                                 V.tryC(function() {
+                                    error && (_.result.error = error);
                                     _.result.add(data ? data : false, v.key);
                                     if (_func) {
                                         V.tryC(function() {
@@ -565,9 +569,11 @@
                                 _cmd.connection = _conn;
                                 _cmd.command = _nicmd.name;
                                 _cmd.params = V.merge(_nicmd.params, v.params);
-                                _cmd.excute(_.result, function(data) {
+                                delete _.result.error;
+                                _cmd.excute(_.result, function(data, error) {
                                     V.tryC(function() {
                                         try { _.cacheres.backDBConnection(_conn); } catch (e) {}
+                                        error && (_.result.error = error);
                                         if (data) {
                                             _.result.add(data, v.key);
                                             if (v.func) {
@@ -638,14 +644,16 @@
                         var conn = _res.getDBConnection();
                         var cmd = _.res.getDBCommand();
                         cmd.connection = conn;
+                        delete _.result.error;
                         var func = function(v, next) {
                             cmd.command = v.name;
                             cmd.params = v.params;
                             cmd.dbtype = v.dbtype;
                             cmd.jsonp = v.jsonp;
                             var _func = v.func;
-                            cmd.excute(_.result, function(data) {
+                            cmd.excute(_.result, function(data, error) {
                                 V.tryC(function() {
+                                    error && (_.result.error = error);
                                     _.result.add(data ? data : false, v.key);
                                     if (_func) {
                                         V.tryC(function() {
@@ -685,9 +693,13 @@
                                 _cmd.connection = _conn;
                                 _cmd.command = _nicmd.name;
                                 _cmd.params = V.merge(_nicmd.params, v.params);
-                                _cmd.excute(_.result, function(data) {
+                                delete _.result.error;
+                                _cmd.excute(_.result, function(data, error) {
                                     V.tryC(function() {
-                                        try { _.cacheres.backDBConnection(_conn); } catch (e) {}
+                                        try {
+                                            error && (_.result.error = error);
+                                            _.cacheres.backDBConnection(_conn);
+                                        } catch (e) {}
                                         if (data) {
                                             _.result.add(data, v.key);
                                             if (v.func) {
@@ -735,14 +747,16 @@
                         var cmd = _.res.getDBCommand();
                         cmd.connection = conn;
                         var i = 0;
+                        delete _.result.error;
                         var func = function(v) {
                             cmd.command = v.name;
                             cmd.params = v.params;
                             cmd.dbtype = v.dbtype;
                             cmd.jsonp = v.jsonp;
                             var _func = v.func;
-                            cmd.excute(_.result, function(data) {
+                            cmd.excute(_.result, function(data, error) {
                                 V.tryC(function() {
+                                    error && (_.result.error = error);
                                     if (!data) {
                                         data = false;
                                     }
@@ -782,9 +796,13 @@
                                 _cmd.connection = _conn;
                                 _cmd.command = _nicmd.name;
                                 _cmd.params = V.merge(_nicmd.params, v.params);
-                                _cmd.excute(_.result, function(data) {
+                                delete _.result.error;
+                                _cmd.excute(_.result, function(data, error) {
                                     V.tryC(function() {
-                                        try { _.cacheres.backDBConnection(_conn); } catch (e) {}
+                                        try {
+                                            error && (_.result.error = error);
+                                            _.cacheres.backDBConnection(_conn);
+                                        } catch (e) {}
                                         if (!data) {
                                             data = false;
                                         }
@@ -858,14 +876,16 @@
                         var conn = _.res.getDBConnection();
                         var cmd = _.res.getDBCommand();
                         cmd.connection = conn;
+                        delete _.result.error;
                         var func = function(v, next) {
                             cmd.command = v.name;
                             cmd.params = v.params;
                             cmd.dbtype = v.dbtype;
                             cmd.jsonp = v.jsonp;
                             var _func = v.func;
-                            cmd.excute(_.result, function(data) {
+                            cmd.excute(_.result, function(data, error) {
                                 V.tryC(function() {
+                                    error && (_.result.error = error);
                                     _.result.add(data ? data : false, v.key);
                                     if (_func) {
                                         _func(_.result);
@@ -931,7 +951,7 @@
                             },
                             error: function(request, status, error) {
                                 V.showException('V._ajaxOption error方法 status:' + status, error);
-                                if (func) { func(false); }
+                                if (func) { func(false, error); }
                             }
                         }));
                     }

@@ -404,7 +404,7 @@
                                         break;
                                 }
                             }
-                            if (func) { func(data, error); }
+                            if (func) { func(data, data && data[0] && data[0][0] && data[0][0].error || error); }
                         } catch (e) {
                             V.showException('V._ajaxOption success方法', e);
                             if (func) { func(false); }
@@ -944,7 +944,7 @@
                             jsonp: cmd.jsonp,
                             success: function(data, status) {
                                 try {
-                                    if (func) { func(data); }
+                                    if (func) { func(data, error); }
                                 } catch (e) {
                                     V.showException('V._ajaxOption success方法', e);
                                 }

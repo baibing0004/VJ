@@ -18,7 +18,15 @@
             V.inherit.apply(_, [W.Control2, [W.Control2.merge({
                 template: '<div class="c_fillControl"></div>',
                 vm: vm,
-                onLoad: {
+                event: {
+                    init: function(node) {
+                        if (__.firstHide) {
+                            __.timeshow = window.setTimeout(function() {
+                                delete __.firstHide;
+                                node.show();
+                            }, 500);
+                        }
+                    },
                     click: function(node) {
                         _.node.on('click', 'input', function(e) {
                             var _this = $(this);
@@ -41,6 +49,13 @@
                 render: {
                     value: function(v) {
                         _.node.html(V.format(__.content, v));
+                    },
+                    visible: function(v) {
+                        if (!v && __.timeshow) {
+                            window.clearTimeout(__.timeshow);
+                            delete __.timeshow;
+                        }
+                        v ? _.node.show() : _.node.hide();
                     }
                 }
             }, typeof(path) == 'string' ? { template: path } : (path || {}))]]);
@@ -49,6 +64,10 @@
         _.replaceNode = function() {
             //必须覆盖这个方法否则_.node就是替换后的了
             __.content = _.node.html();
+            if (!'none'.eq(_.node.css('display'))) {
+                _.node.hide();
+                __.firstHide = true;
+            }
             __.replaceNode.apply(_, arguments);
         };
     };

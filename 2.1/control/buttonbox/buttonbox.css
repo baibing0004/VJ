@@ -1,0 +1,27 @@
+﻿div.p_buttonbox
+{
+    width: 34%;
+    text-align: center;
+    height: 2.5rem;
+    line-height: 2.5rem;
+}
+
+div.p_buttonbox div
+{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size:1rem;
+}
+
+div.p_buttonbox_left
+{
+    float: left;
+    width: 70%;
+}
+
+div.p_buttonbox_right
+{
+    float:right;
+    width: 30%;
+    cursor:pointer;
+}

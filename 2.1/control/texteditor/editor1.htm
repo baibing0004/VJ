@@ -1,0 +1,221 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="renderer" content="webkit" />
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="description" content="Add multi-touch gestures to your webpage.">
+	<title>VJ test</title>
+	<script src="../../../2.0/ref/jquery-1.8.0.min.js" type="text/javascript"></script>
+	<script src="../../../2.0/VJ.js" type="text/javascript"></script>
+	<script src="config.js" type="text/javascript"></script>
+	<script src="../../../ni.js" type="text/javascript"></script>
+	<style type="text/css">
+		.animate {
+			transition: all 0.3s;
+			-webkit-animation-timing-function: ease;
+		}
+		.htmlc-control{
+	  position:absolute;
+	  width: 408px;
+	  height:300px;
+	  left:400px;
+	  top:200px;
+	  display:none;
+	  background-color:lightcoral;
+	}
+	.htmlc-control-se{
+	    padding-left: 20px;
+    /* line-height: 30px; */
+    margin-top: 20px;
+	}
+	.htmlc-control ul{
+	    list-style: none;
+		width:100%;
+		    display: inline-block;
+       height: auto;
+	}
+	.htmlc-control-urls ul li {
+		height: 27px;
+	}
+	.htmlc-control-urls ul li {
+		height: 27px;
+	}
+	.htmlc-control li input[type=text]{
+	  width:50px;
+	}
+	.htmlc-control li input[type=button]{
+	 margin-left:10px;
+	}
+	.htmlc-control ul[datarole=style] li,ul[datarole=attrs] li{
+	 width:100px;
+	 float:left;
+	 height:11px;
+	}
+	.htmlc-control-buttons{
+	position: absolute;
+    bottom: 15px;
+    margin: 0 auto;
+	}
+	.htmlc-control-save{
+		padding-left: 18px;
+		background-image: url('images/submit.gif');
+		background-size: 16;
+		border-radius: 8px;
+		margin-left: 100px;
+		background-repeat: no-repeat;
+	}
+	.htmlc-control-delete{
+		padding-left: 18px;
+		background-image: url('images/del.png');
+		background-size: 16;
+		border-radius: 8px;
+		margin-left: 15px;
+		background-repeat: no-repeat;
+	}
+	.htmlc-control-cancel{
+		padding-left: 16px;
+		background-image: url('images/cancel.gif');
+		background-size: 14px;
+		border-radius: 8px;
+		margin-left: 15px;
+		background-repeat: no-repeat;
+	}
+	.htmlc-control ul .addline{
+		padding-left: 20px;
+		background-image: url('images/add.jpg');
+		background-size: 16px;
+		border-radius: 8px;
+		background-repeat: no-repeat;
+	}
+	.htmlc-control ul .deleteone{
+		padding-left: 20px;
+		background-image: url('images/delete.jpg');
+		background-size: 16px;
+		border-radius: 8px;
+		background-repeat: no-repeat;
+	}
+	</style>
+	<script type="text/javascript">
+		(function(V,M,$,cm,W){
+			new function(){
+				var _=this,__={};
+				{
+					cm = V.merge(cm,{
+						Middler:{
+							'VESH.view':{											
+								editor:{path:'../texteditor/xhtml.js;../texteditor/htmlbox.js;../texteditor/htmlbox.colors.js;../texteditor/htmlbox.styles.js;../texteditor/htmlbox.undoredomanager.js;../texteditor/texteditor.js',params:["",{data:{debug:true}}]},
+								htmlc:{path:'../texteditor/htmlc.js',params:["",{data:{debug:true}}]}
+							}
+						}
+					});
+					V.isDebug = true;
+					V.inherit.apply(_,[M.Page,[cm,{
+                        editor:{
+							data:{id:'editor',width:'100%',height:'600px',skin:'black',language:'zh-cn',desc:true,value:'测试内容11',toolbars:{cut: true, copy: true, paste: true, undo: true, redo: true, bold: true,outdent:true,commands:[{icon:"new.gif",tooltip:"添加新控件",command:function(){console.log(_);_.vms.htmlc.update({init:true});}},{icon:"code.gif",tooltip:"得到html",command:function(){_.vms.editor.getHtml();}}]}},
+							onLoad:function(D,I){	
+								window._=_;
+								setTimeout(function(){
+								//I.update({addvalue:'dfdsfdssdf'});
+								},2000);
+								V.registCommand('editor.editor.addvalue',function(value){
+									I.update({addvalue:value});
+								});
+							},
+							onChanged:function(D,I){
+								V.callEvent('editor.editor.changed',['editor_html']);
+							},
+							getHtml:function(){
+								var html=this.v.node.get_html();
+								html=_.vms.htmlc.getHtml(html,'editor_html');
+							}
+						},
+						htmlc:{
+							data:{
+								desc:true
+							},
+							onLoad:function(D,I){
+									V.registEvent('editor.editor.changed',function(value){
+										V.once(function(){
+											//value=value+"_html";
+											$((window.frames[value].document||window.frames[value].contentWindow.document).body).off('mousedown contextmenu','img[_control]').on('contextmenu','img[_control]',function(){return false;}).on('mousedown','img[_control]',function(e){if(e.which==3){console.log(I);I.v.editControl($(this));} });
+										},200);
+									});
+								},
+							onSave:function(D,I){
+									V.callCommand('editor.editor.addvalue',['<img src="./images/default/'+D.type+'.png" data-id="'+D.id+'" _control="'+D.type+'" />']);
+								},
+							getHtml:function(html,value){	            								
+								$((window.frames[value].document||window.frames[value].contentWindow.document).body).find('img[_control]').each(function(){
+									var _this=$(this),id=_this.attr('data-id');
+									console.log(_this.prop('outerHTML'));
+									var controlHtmls=_.vms.htmlc.v.getControls();
+									if(controlHtmls[id]){
+										html=html.replace(new RegExp('<img [^>]*data-id="'+id+'"[^>]*\/>','i'),controlHtmls[_this.attr('data-id')]);
+									}
+								});
+								console.log(html);
+								setTimeout(function(){
+									_.vms.editor.update({value:_.vms.htmlc.setHtml(html+'我来了')});	
+								},5000);
+							},
+							setHtml:function(code){
+								var controlHtmls={};
+								if(code.indexOf('_control')>0){
+									var arrs=[],len=0;
+									var id='',reg='';
+									var rand=0;
+									for (v in this.data.controls){
+										switch(v){
+											case 'text':
+												reg=/<input [^>]*_control="text" [^>]*\/>/g;
+												break;
+											case 'select':
+												reg=/<select[^(>)]+(_control="select")[^(>)]+>([^<]*<option[^(<)]+<\/option>)+<\/select>/g;
+												break;
+										}
+										if(reg||reg.length>0){
+											code=code.replace(reg,function(txt){
+												console.log(txt);
+												id=parseInt(''+(new Date()).getTime()+(rand++));
+												controlHtmls[id]=txt;
+												return '<img src="./images/default/'+v+'.png" data-id="'+id+'" _control="'+v+'" />';
+											});
+											reg='';
+										}			
+									}
+								}
+								_.vms.htmlc.v.setControls(controlHtmls);
+								return code;
+								//$((window.frames[value].document||window.frames[value].contentWindow.document).body).off('mousedown contextmenu','img[_control]').on('contextmenu','img[_control]',function(){return false;}).on('mousedown','img[_control]',function(e){if(e.which==3){_.vms.htmlc.v.editControl($(this));} });
+							}
+						},
+						page:{
+							data:{
+								title:'editor'
+							},
+							onStart:function(D,I){
+								//V.tryC(function(){I.v.middler.getObjectByAppName('VESH.view','map')});								
+								V.callEvent('test.resize',[{width:V.userAgent.width,height:V.userAgent.height}]);
+								setTimeout(function(){console.log(I.v.vms.editor.update({value:'2233222332'}));},5000);
+							},
+							onSize:function(D,I){
+								console.log('resize');
+								V.callEvent('test.resize',[{width:D.width,height:D.height}]);
+							}			
+						}
+					}]]);
+				}
+			};
+		})(VJ,VJ.viewmodel,jQuery,window.top.config,VJ.view);
+	</script>
+</head>
+
+<body>
+	<editor _="" id="editor" ></editor>
+	<htmlc _="" id="htmlc" ></htmlc>
+</body>
+
+</html>

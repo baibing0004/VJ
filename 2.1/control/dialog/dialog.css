@@ -1,0 +1,77 @@
+﻿div.p_dialog_contain {
+    background: white;
+    border-radius: 10px;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    box-shadow: 2px 2px 4px 1px;
+    z-index: 9999;
+}
+
+div.p_dialog_back {
+    z-index: 9998;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    background: #eee;
+    opacity: 0.7;
+}
+
+div.p_dialog_title {
+    height: 25px;
+    padding: 1rem;
+    text-align: left;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font: 20px/0.8rem '微软雅黑';
+    color: #ddd;
+}
+
+div.p_dialog_ok {
+    background: rgb(221, 107, 85);
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+}
+
+div.p_dialog_cancel {
+    background: #8CD4F5;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+}
+
+div.p_dialog_buttons {
+    position: absolute;
+    height: 60px;
+    left: 50%;
+    bottom: 10px;
+    vertical-align: middle;
+}
+
+    div.p_dialog_buttons div {
+        font: 30px/1rem '微软雅黑';
+        color: white;
+        border: none;
+        box-shadow: none;
+        font-size: 17px;
+        font-weight: 500;
+        -webkit-border-radius: 4px;
+        border-radius: 5px;
+        padding: 10px;
+        margin: 26px 5px 0 5px;
+        cursor: pointer;
+        width: 70px;
+        float: left;
+        text-align: center;
+    }
+
+div.p_dialog_content {
+    padding:0px 15px;
+}

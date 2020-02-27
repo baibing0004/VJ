@@ -1,0 +1,48 @@
+﻿div.g_multichoice div.p_dialog_content > div > div {
+    height: 330px;
+    float: left;
+}
+
+div.g_multichoice div.p_dialog_content > div > ul {
+    height: 100%;
+    width: 100%;
+}
+
+div.p_lstLeft, div.p_lstRight {
+    width: 45%;
+    overflow: hidden;
+    overflow-y: auto;
+    height: 330px;
+}
+
+    div.p_lstLeft span.p_mc_add {
+        background: url(../../../Style/Image/admin/add.png);
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        background-size: cover;
+        cursor: pointer;
+        margin: 0px 2px;
+        line-height: 40px;
+        float:right;
+    }
+
+    div.p_lstRight span.p_mc_remove {
+        background: url(../../../Style/Image/admin/remove.png);
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        background-size: cover;
+        cursor: pointer;
+        margin: 0px 2px;
+        line-height: 40px;
+        float:right;
+    }
+
+div.p_middle {
+    width: 9%;
+    height: 330px;
+    line-height: 330px;
+    text-align: center;
+    vertical-align: middle;
+}

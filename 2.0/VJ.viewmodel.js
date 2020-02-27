@@ -124,10 +124,10 @@
                 // });
                 _.controls.map(function(v) {
                     try {
-                        !v.readyLoad.hasLoad && v.readyLoad.onLoad(v.readyLoad.node);
-                        v.readyLoad.hasLoad = true;
+                        //特别注意 必须首先设置hasLoad为真，否则onLoad会无限循环
+                        !v.readyLoad.hasLoad && (v.readyLoad.hasLoad = true, v.readyLoad.onLoad(v.readyLoad.node));
                     } catch (e) {
-                        console.log(v, e.stack);
+                        console.log('W.readyLoad Error:', v, e.stack);
                     }
                 });
                 _.readyLoad.ready = true;
@@ -822,6 +822,7 @@
 })
      * @param {*} json 
      */
+
         W.Control2 = function(json) {
             var __ = V.merge({
                 template: '',
@@ -863,12 +864,13 @@
                     //Method为false或者未定义则不可作为可用属性出现
                     v && (function() {
                         v.Method = v.Method || function() {};
-                        _.Propertis[k] = v.Desc;
+                        _.Propertis[k] = v.Desc || '属性没有任何描述';
                         var poi = v.finally ? 'finally' : v.sync ? 'sync' : 'async';
                         __[poi][k2] = v;
                         v.merge === true && (__.merge[k2] = true);
                         v.as && (v.as = V.isArray(v.as) ? v.as : [v.as]) && v.as.forEach(function(v2) {
                             __[poi][v2.toLowerCase()] = v;
+                            _.Propertis[v2] = v.Desc;
                         });
                     })();
                 }, null, true);
@@ -902,7 +904,7 @@
                         Method: v
                     } : v;
                     em[k.toLowerCase()] = v;
-                    _.Events[k] = v.Desc;
+                    _.Events[k] = v.Desc || '没有任何描述';
                 }, function() {
                     //提供load方法作为控件初始化使用
                     em['init'] && em['init'].Method.apply(_, [node]);

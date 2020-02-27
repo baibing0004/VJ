@@ -1,0 +1,148 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ueditor图片对话框</title>
+    <script type="text/javascript" src="../internal.js"></script>
+    <script src="../../jquery-1.8.0.min.js" type="text/javascript"></script>
+    <script src="../../../VJ.js" type="text/javascript"></script>
+    <script src="config.js" type="text/javascript"></script>
+    <script src="../../../GlobalVer.js" type="text/javascript"></script>
+    <script src="../../../ni/ni.js" type="text/javascript"></script>
+    <!-- image dialog -->
+    <style>
+        body > div
+        {
+            height: 100%;
+            font-family: 微软雅黑;
+            font-size: 1rem;
+            margin: 10px;
+        }
+        span span
+        {
+            width: 70px;
+            text-align: right;
+            display: inline-block;
+        }
+        input
+        {
+            box-shadow: 0.5px 0.1px #eee;
+            height: 1.4rem;
+            margin-left: 0.5rem;
+            border-radius: 5px;
+        }
+        select
+        {
+            width: 100px;
+            min-width: 100px;
+            height: 1.4rem;
+            margin-left: 20px;
+        }
+        #Content
+        {
+            height: 80%;
+            width: 99%;
+        }
+        html
+        {
+            height: 400px;
+        }
+        body, body > div, form
+        {
+            width: 99%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <form id='frmInput' _>
+        <textbox id="id" _="key:'控件ID:'"></textbox>
+        <select id="selGloble" _="">
+        </select>
+        <br />
+        <editor id="Content" _></editor>
+        </form>
+    </div>
+    <script type="text/javascript">
+        (function (V, M, $, cm, W) {
+            new function () {
+                var _ = this, __ = {};
+                {
+                    cm = V.merge(cm, {
+                        Middler: {
+                            'VESH.view': {
+                                textbox: { params: [
+									'', {
+									    onError: function (D, I) { I.update({ value: D.error }); },
+									    onFocus: function (D, I) { if (D.isError) { I.update({ value: false }); } }
+									}]
+                                },
+                                editor: { path: '../../ueditor.config.js;../../ueditor.all.min.js;../../lang/zh-cn/zh-cn.js;../../../../Scripts/module/part/ueditor.js', params: ["", { data: { debug: true}}] }
+                            }
+                        }
+                    });
+                    V.isDebug = true;
+                    V.inherit.apply(_, [M.Page, [cm, {
+                        id: { data: { validate: { isRequired: '请输入控件ID'} }, onKeyPress: function (D, I) {
+                            this.selGloble.update({ value: '' });
+                        }
+                        },
+                        selGloble: { data: { values: V.merge({ '可选全局ID': '' }, window.top.GlobalVer) }, onChange: function (D, I) {
+                            this.id.update({ value: D.value });
+                        }
+                        },
+                        Content: {
+                            data: { inner: true, validate: { isRequired: '请输入模板内容'} },
+                            onError: function (D, I) {
+                                V.callCommand('alert', E.error);
+                            }
+                        },
+                        frmInput: {
+                            onLoad: function (D, I) {
+                                V.registEvent('inputtext.initData', function (val) {
+                                    I.update({ value: V.merge({}, val) });
+                                    if (val.Content) { V.once(function () { _.vms.Content.update({ value: val.Content }); }, 300); }
+                                });
+                            }
+                        },
+                        page: {
+                            data: {
+                                title: '列表框'
+                            },
+                            onLoad: function (D, I) {
+                                var _this = this;
+                                var img = editor.selection.getRange().getClosedNode();
+                                //获取对应节点
+                                var val = V.merge({
+                                    id: img.getAttribute("id"),
+                                    type: img.getAttribute("_type")
+                                }, eval('(' + V.getValue(img.getAttribute("_data"), '{}') + ')'));
+                                I.update({ val: val });
+                                dialog.onok = function () {
+                                    _this.frmInput.update({ valid: function () {
+                                        var val = _this.frmInput.get().value;
+                                        val.data = V.toJsonString(val);
+                                        //替换html
+                                        dialog.editor.execCommand('inserthtml', V.format("<img src='" + editor.options.UEDITOR_HOME_URL + "dialogs/input/inputarea.png' id='{id}' _type='area' _data='{data}'/>", val));
+                                        dialog.editor.selection.clearRange();
+                                        dialog.close(false);
+                                    }
+                                    });
+                                    return false;
+                                };
+                                dialog.oncancel = function () {
+                                    //必须为空 否则会循环close
+                                };
+                            },
+                            onStart: function (D, I) {
+                                V.callEvent('inputtext.initData', [D.val]);
+                            }
+                        }
+                    }]]);
+                }
+            };
+        })(VJ, VJ.viewmodel, jQuery, window.config, VJ.view);
+    </script>
+</body>
+</html>

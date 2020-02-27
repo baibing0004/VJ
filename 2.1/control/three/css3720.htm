@@ -1,0 +1,252 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="renderer" content="webkit" />
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="description" content="Add multi-touch gestures to your webpage.">
+	<title>VJ test</title>
+	<script src="../../../2.0/ref/jquery-1.8.0.min.js" type="text/javascript"></script>
+	<script src="../../../2.0/VJ.js" type="text/javascript"></script>
+	<script src="config.js" type="text/javascript"></script>
+	<script src="../../../ni.js" type="text/javascript"></script>
+	<style type="text/css">
+	body {
+				background-color: #000000;
+				margin: 0;
+				cursor: move;
+				overflow: hidden;
+			}
+
+			a {
+				color: #ffffff;
+			}
+		.animate {
+			transition: all 0.3s;
+			-webkit-animation-timing-function: ease;
+		}
+		.p_hovers{
+			cursor:pointer;
+		}
+		#desc {   
+			width: 430px;
+			height: 420px;
+			position:absolute;
+			display:none;
+			overflow:hidden;
+			border: solid 1px #eee;
+		}
+		#desc iframe {
+			position:absolute;
+			width:2000px;
+			height:2000px;
+			top: -338px;
+			left: -843px;
+		}
+		.div_button{
+			width: 100%;
+			height: 50px;
+			left :0;
+			top:52%;
+			position:absolute;
+			
+		}
+		.div_button .button_left input,.div_button .button_right input{
+		     width:48px;
+		     height:48px;
+			 border-style: none;
+			 opacity:0.7;
+			 cursor:pointer;
+		}
+		.div_button .button_left input{
+		float:left;
+		margin-left:20px;
+		background: url("720/icons.png") 0 -115px no-repeat;		
+		}
+		.div_button .button_right input{
+		float:right;
+		margin-right:20px;
+		background: url("720/icons.png") -50px -115px no-repeat;
+		}
+	</style>
+	<script type="text/javascript">
+		if(0){
+			$(function(){
+				VJ.include('three.min.js');
+				var scene = new THREE.Scene();
+				console.log(window.innerWidth/window.innerHeight);
+				var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 10000);
+				camera.lookAt({x:0,y:0,z:0});
+				camera.position.z = 500;
+				var renderer = new THREE.WebGLRenderer();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				document.body.appendChild(renderer.domElement);
+				console.log(renderer);
+				var geometry = new THREE.CubeGeometry(100,100,100);
+				var mats = [];
+				for(var i=0;i<6;i++) {
+					var map = THREE.ImageUtils.loadTexture('720/img'+i+'.jpg');
+					map.wrapS = map.wrapT = THREE.ClampToEdgeWrapping;
+					mats.push(new THREE.MeshBasicMaterial({color:0xffffff,opacity:0.5,map:map,side:THREE.DoubleSide}));
+				}
+				var material = new THREE.MeshFaceMaterial(mats);
+				var cube = new THREE.Mesh(geometry, material); 
+				cube.position.set(-200,0,0);				
+				cube.rotation.set(1,0,0);
+				scene.add(cube);
+				function render() {
+					requestAnimationFrame(render);
+					//cube.rotation.x += 0.1;
+					cube.rotation.y += 0.1;
+					//cube.rotation.z += 0.1;
+					renderer.render(scene, camera);
+				}
+				var geometry2 = new THREE.CubeGeometry(100,100,100);
+				var material2 = new THREE.MeshBasicMaterial({color: 0x0000ff});
+				var cube2 = new THREE.Mesh(geometry2, material2);
+				cube2.position.set(200,0,0);				
+				cube2.rotation.set(1,0,0);
+				scene.add(cube2);				
+				function render2() {
+					requestAnimationFrame(render2);
+					//cube2.rotation.x += 0.1;
+					cube2.rotation.y -= 0.1;
+					//cube2.rotation.z += 0.1;
+					renderer.render(scene, camera);
+				}
+				VJ.once(function(){					
+					render();	
+					render2();
+				},1000);				
+				console.log(scene);
+			});
+		}
+		else	
+		(function(V,M,$,cm,W){
+			new function(){
+				var _=this,__={};
+				{
+					cm = V.merge(cm,{
+						Middler:{
+							'VESH.view':{											
+								tmovie:{path:'../three/three.min.js;../three/stats.min.js;../three/tc.js',params:['',{data:{stats:false}}]},
+								tobject:{path:'../three/three.min.js;../three/stats.min.js;../three/tobj.js',params:["",{data:{debug:true}}]},
+								cssobject:{path:'../three/three.min.js;../three/CSS3DRenderer.js;../three/css3720.js',params: [{ middler: true }]}
+							}
+						}
+					});
+					V.isDebug = true;
+					V.inherit.apply(_,[M.Page,[cm,{
+					    cssobject1:{
+						     data:{imgs:['720/01.jpg','720/02.jpg','720/03.jpg','720/04.jpg','720/05.jpg','720/06.jpg']},
+							 onLoad:function(D,I){								
+								 I.update({auto:false,maps:[{id:"01",areas:[{shape:"rect", title:"男装T恤21-134-0822", coords:"370,335,450,490", href:"http://item.yintai.com/21-134-0822.html"}]},{
+								 id:"02",areas:[{shape:"rect" ,title:"男装T恤21-134-0859" ,coords:"800,351,865,465", href:"http://item.yintai.com/21-134-0859.html"}]},
+								 {id:"03",areas:[{shape:"rect" ,title:"男装T恤21-127-7023", coords:"810,331,880,441", href:"http://item.yintai.com/21-127-7023.html"}]},
+								 {id:'04',areas:[{shape:"poly" ,title:"男装短袖b1da62311,sku:21-119-2299", coords:"530,335,485,385,505,425,505,505,595,510,599,415,615,385,599,348" ,href:"http://item.yintai.com/21-119-2299.html"}]}]});
+								 V.registCommand('cssobject1.auto',function(direction,auto){
+								 console.log(D.auto+";"+auto+";"+direction);
+									if(!D.auto&&auto){						   
+									      I.update({auto:true,bunauto:true,direction:direction});
+									}else if(D.auto&&D.bunauto){
+									    I.update({auto:false,bunauto:false});
+									}
+								});
+							},
+							onAreaMouseover:function(D,I){
+							if(D.auto){
+							I.update({auto:false,auto1:true});
+							}
+							   //window.isshow=true;
+							   var x = D.areaE.pageX || (D.areaE.clientX +(document.documentElement.scrollLeft|| document.body.scrollLeft));
+			                   var y= D.areaE.pageY || (D.areaE.clientY +(document.documentElement.scrollTop|| document.body.scrollTop));
+			                   if((x-470)<0){
+								x=x+20;
+			                   }else{
+						          x=x-470;
+			                   }
+								if((y-430)>0){
+									y=y-430;
+								}else{
+									y=430-y;
+								}
+							   V.callCommand('desc.info',[{left:x,top:y,href:D.areaE.href}]);
+							},
+							onAreaMouseout:function(D,I){
+							console.log('area.out');
+							if(D.auto1){
+							I.update({auto:true});
+							}
+							V.callCommand('desc.hide');
+							},
+						},
+						desc:{
+							onLoad:function(D,I){
+								var _this = this;
+								V.registCommand('desc.info',function(area){
+									//pos.x = (pos.x+width/2+430)>_this.movie.data.size.width?(pos.x-430-width*2/3):(pos.x+width*2/3);
+									I.update({show:'fadeIn',css:{left:area.left,top:area.top},value:{url:area.href}});
+								});
+								V.registCommand('desc.hide',function(){
+									V.once(function(){
+									console.log('ss'+D.hover);
+										if(!D.hover) I.update({hide:'fadeOut'});
+									},200);
+								});
+							},
+							onHover:function(D,I){
+							
+								if(!D.hover){	
+									I.update({hide:'fadeOut'});
+								}
+							},
+						},
+						bunLeft:{
+						   onHover:function(D,I){
+						   //console.log(D.hover);
+						   V.callCommand('cssobject1.auto',['left',D.hover]);
+							},
+						},
+						bunRight:{
+						   onHover:function(D,I){
+						   console.log(D.hover);
+						   V.callCommand('cssobject1.auto',['right',D.hover]);
+							},
+						},
+						page:{
+							data:{
+								title:'测试页面aa'
+							},
+							onStart:function(D,I){
+								//V.tryC(function(){I.v.middler.getObjectByAppName('VESH.view','map')});								
+								V.callEvent('test.resize',[{width:V.userAgent.width,height:V.userAgent.height}]);
+							},
+							onSize:function(D,I){
+								console.log('resize');
+								V.callEvent('test.resize',[{width:D.width,height:D.height}]);
+							}			
+						}
+					}]]);
+				}
+			};
+		})(VJ,VJ.viewmodel,jQuery,window.top.config,VJ.view);
+	</script>
+</head>
+
+<body>
+
+		<cssobject id='cssobject1' _=""></cssobject>
+		<div id="desc" _="type:'fill'">
+			<iframe src="{url}"></iframe>
+		</div>
+		<div class="div_button">
+            <button class="button_left" id="bunLeft" _="">
+            </button>
+			 <button class="button_right" id="bunRight" _="">
+            </button>
+        </div>
+</body>
+
+</html>

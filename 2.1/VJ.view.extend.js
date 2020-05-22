@@ -31,7 +31,6 @@
                         _.node.on('click', 'input', function(e) {
                             var _this = $(this);
                             _.call('click', { e: e, vid: _this.val(), name: _this.attr('name') });
-                            V.stopProp(e);
                             return false;
                         });
                         _.node.on('click', 'a,.click', function(e) {
@@ -40,7 +39,6 @@
                                 return true;
                             } else {
                                 _.call('click', { e: e, vid: _this.attr('vid') || _this.attr('href'), name: _this.attr('name') });
-                                V.stopProp(e);
                                 return false;
                             }
                         });
@@ -436,73 +434,77 @@
         var _ = this,
             __ = {}; {
             V.inherit.apply(_, [W.Control2, [W.Control2.merge({
-                template: '<form method="get" action="" class="c_form"></form>',
-                vm: { data: { enctype: 'multipart/form-data' } },
-                onLoad: {
-                    init: function(node) {
-                        _.cons = [];
-                        node.find('[_]').each(function(i, v) {
-                            _.cons[_.cons.length] = ($(v).attr('id'));
-                        });
-                        _.controls = _.controls || [];
-                    }
-                },
-                fill: function() {
-                    var value = {};
-                    _.vm.data.value = {};
-                    if (_.cons) {
-                        _.cons = _.cons && _.controls && !_.cons.length && !!_.controls.length ? _.controls.map(function(v) { return v.vm.id; }) : _.cons;
-                        (_.cons.length) &&
-                        _.cons.forEach(function(v) {
-                            var vm = (_.vms ? _.vms[v] : null) || _.parent.vms[v] || _.page.vms[v];
-                            //处理控件异步初始化 导致执行事件时内部控件未初始化完成。比较特殊 因为其包含其它控件 但是其它控件内部尚未初始化 使用Control2下的preonload和onload分离方式实现 对控件事件初始化和onLoad时间的分离
-                            (vm && vm.nodeName != 'fill') && (value[v] = vm.update().value);
-                        });
-                    }
-                    return { value: value };
-                },
-                render: {
-                    method: function(v) { _.node.attr('method', v) },
-                    action: function(v) { _.node.attr('action', v) },
-                    target: function(v) { _.node.attr('target', v) },
-                    name: function(v) { _.node.attr('name', v) },
-                    enctype: function(v) { _.node.attr('enctype', v) },
-                    valid: function(value) {
-                        value && (function() {
-                            var cons = _.cons.length ? Array.prototype.slice.apply(_.cons) : _.controls.map(function(v) { return v.vm.id });
-                            V.whileC2(function() { return cons.shift(); }, function(v, next) {
-                                var vm = (_.vms ? _.vms[v] : null) || _.parent.vms[v] || _.page.vms[v];
-                                (vm) && vm.update({ valid: next });
-                            }, function() {
-                                value(_.fill().value);
+                    template: '<form method="get" action="" class="c_form"></form>',
+                    vm: { data: { enctype: 'multipart/form-data' } },
+                    onLoad: {
+                        init: function(node) {
+                            _.cons = [];
+                            node.find('[_]').each(function(i, v) {
+                                _.cons[_.cons.length] = ($(v).attr('id'));
                             });
-                        })();
+                            _.controls = _.controls || [];
+                        }
                     },
-                    enable: function(v) {
-                        _.cons = _.cons.length ? _.cons : _.controls.map(function(v) { return v.vm.id });
-                        V.each(_.cons, function(v2) {
-                            var vm = (_.vms ? _.vms[v2] : null) || _.parent.vms[v2] || _.page.vms[v2];
-                            (vm) && vm.update({ enable: v });
-                        })
+                    fill: function() {
+                        var value = {};
+                        _.vm.data.value = {};
+                        if (_.cons) {
+                            _.cons = _.cons && _.controls && !_.cons.length && !!_.controls.length ? _.controls.map(function(v) { return v.vm.id; }) : _.cons;
+                            (_.cons.length) &&
+                            _.cons.forEach(function(v) {
+                                var vm = (_.vms ? _.vms[v] : null) || _.parent.vms[v] || _.page.vms[v];
+                                //处理控件异步初始化 导致执行事件时内部控件未初始化完成。比较特殊 因为其包含其它控件 但是其它控件内部尚未初始化 使用Control2下的preonload和onload分离方式实现 对控件事件初始化和onLoad时间的分离
+                                (vm && vm.nodeName != 'fill') && (value[v] = vm.update().value);
+                            });
+                        }
+                        return { value: value };
                     },
-                    value: function(v) {
-                        _.node[0].reset();
-                        _.vm.data.value = v || {};
-                        _.cons = _.cons.length ? _.cons : _.controls.map(function(v) { return v.vm.id });
-                        V.each(_.cons, function(v2) {
-                            var vm = (_.vms ? _.vms[v2] : null) || _.parent.vms[v2] || _.page.vms[v2];
-                            (vm) && (
-                                (vm.nodeName == 'fill') ? vm.update({ value: v || {} }) :
-                                vm.update({ value: v[v2] || false })
-                            );
-                        });
-                    },
-                    clear: function() {
-                        _.cons = [];
-                        _.clearControl();
+                    render: {
+                        method: function(v) { _.node.attr('method', v) },
+                        action: function(v) { _.node.attr('action', v) },
+                        target: function(v) { _.node.attr('target', v) },
+                        name: function(v) { _.node.attr('name', v) },
+                        enctype: function(v) { _.node.attr('enctype', v) },
+                        valid: {
+                            override: true,
+                            Method: function(value) {
+                                value && (function() {
+                                    var cons = _.cons.length ? Array.prototype.slice.apply(_.cons) : _.controls.map(function(v) { return v.vm.id });
+                                    V.whileC2(function() { return cons.shift(); }, function(v, next) {
+                                        var vm = (_.vms ? _.vms[v] : null) || _.parent.vms[v] || _.page.vms[v];
+                                        (vm) && vm.update({ valid: next });
+                                    }, function() {
+                                        value(_.fill().value);
+                                    });
+                                })();
+                            }
+                        },
+                        enable: function(v) {
+                            _.cons = _.cons.length ? _.cons : _.controls.map(function(v) { return v.vm.id });
+                            V.each(_.cons, function(v2) {
+                                var vm = (_.vms ? _.vms[v2] : null) || _.parent.vms[v2] || _.page.vms[v2];
+                                (vm) && vm.update({ enable: v });
+                            })
+                        },
+                        value: function(v) {
+                            _.node[0].reset();
+                            _.vm.data.value = v || {};
+                            _.cons = _.cons.length ? _.cons : _.controls.map(function(v) { return v.vm.id });
+                            V.each(_.cons, function(v2) {
+                                var vm = (_.vms ? _.vms[v2] : null) || _.parent.vms[v2] || _.page.vms[v2];
+                                (vm) && (
+                                    (vm.nodeName == 'fill') ? vm.update({ value: v || {} }) :
+                                    vm.update({ value: v[v2] || false })
+                                );
+                            });
+                        },
+                        clear: function() {
+                            _.cons = [];
+                            _.clearControl();
+                        }
                     }
-                }
-            }, typeof(path) == 'string' ? { template: path, vm: vm } : (path || {}))]]);
+                },
+                typeof(path) == 'string' ? { template: path, vm: vm } : (path || {}))]]);
         }
     };
     //识别 上下左右滑动及其动画，同时支持滑入滑出，支持点击或者tap，支持加载动画

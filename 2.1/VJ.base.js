@@ -718,10 +718,10 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
         //转换表用的
         var _evalTJson = function(_dt) {
             var res = [];
-            $(_dt).each(function(i, v) {
+            V.isArray(_dt) && _dt.map(function(v, i) {
                 if (0 == i) return;
                 var s = {};
-                $(v).each(function(q, v2) {
+                V.isArray(v) && v.map(function(v2, q) {
                     s[_dt[0][q]] = v2;
                 });
                 res[i - 1] = s;
@@ -735,18 +735,6 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
             res[i] = _evalTJson(v);
         };
         return res;
-    };
-    var checkValue = function(p) {
-        switch (typeof(p)) {
-            case 'number':
-            case 'boolean':
-                return p;
-            case 'undefined':
-            case 'object':
-                return "\"\"";
-            default:
-                return "\"" + p + "\"";
-        }
     };
     /*
     V.ajax用于使用默认值

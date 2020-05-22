@@ -217,14 +217,14 @@
                         //drag node说明可移动的对象,mode true,false是否许可继续进行 move,copy,none(默认),func可产生移动对象
                         value = typeof(value) === 'string' ? { mode: { helper: value } } : { node: value.node || _.node, mode: value };
                         delete value.mode.node;
-                        if (value.mode.mode && !value.mode.mode.helper) value.mode.mode = { helper: value.mode.mode };
+                        if (value.mode.mode && !value.mode.helper) value.mode.helper = value.mode.mode;
                         !!value.mode ? _.setDrag(value.node, value.mode) : _.clearDrag(value.node);
                         break;
                     case 'drop':
                         //drop node说明可移动的对象,mode true,false是否许可继续进行 move,copy,none(默认)可产生移动对象
                         value = typeof(value) === 'string' ? { mode: { helper: value } } : { node: value.node || _.node, mode: value };
                         delete value.mode.node;
-                        if (value.mode.mode && !value.mode.mode.helper) value.mode.mode = { helper: value.mode.mode };
+                        if (value.mode.mode && !value.mode.helper) value.mode.helper = value.mode.mode;
                         !!value.mode ? _.setDrop(value.node || _.node, value.mode) : _.clearDrop(value.node || _.node);
                         break;
                     case 'animate':
@@ -617,8 +617,7 @@
         V.applyCommandAndEvent(this);
         _.getPosition = function(node, isLast) {
             var docs = node;
-            var pos = { x: docs.offsetLeft, y: docs.offsetTop };
-            docs = docs.offsetParent;
+            var pos = { x: 0, y: 0 };
             while (docs) {
                 var off = [];
                 if (docs.style && docs.style.transform && docs.style.transform.indexOf('translate3d') >= 0) {
@@ -630,12 +629,13 @@
                 pos.x += (off[0] ? off[0] : 0) + docs.offsetLeft; //不断叠加与祖先级的距离
                 pos.y += (off[1] ? off[1] : 0) + docs.offsetTop;
                 docs = docs.offsetParent;
-                if (isLast && docs && (docs == isLast || !!docs.getAttribute('_dragid'))) docs = null;
+                if (isLast && docs && (docs == isLast || (typeof(isLast) == 'boolean' && !!docs.getAttribute('_dragid')))) docs = null;
             }
             return pos;
         };
         _.setDrag = function(node, option) {
             node = $(node);
+            var point = { x: 0, y: 0 };
             if (!node.draggable) console.log('setDrag不生效，请先引入jquery.ui.js');
             var id = node.attr('_dragid') || V.random();
             if (option.helper && typeof(option.helper) == "string")
@@ -647,12 +647,15 @@
                         option.helper = 'clone';
                         break;
                     case 'none':
-                        option.helper = function() {
+                        option.helper = function(e) {
+                            point = { x: e.offsetX, y: e.offsetY };
                             return V.newEl('div', '', '').css({
                                 width: 10,
                                 height: 10,
-                                background: "transparent"
-                            });
+                                left: 0,
+                                top: 0,
+                                background: 'transaction'
+                            }).appendTo(node);
                         }
                         break;
                 }
@@ -660,23 +663,29 @@
                 node.draggable('option', option);
             } else {
                 W.Control.drag[id] = { node: node, vm: _.vm };
-                node.attr('_dropid', id);
+                node.attr('_dragid', id);
                 //https://www.runoob.com/jqueryui/api-draggable.html
                 option = V.merge({
                     start: function(e, ui) {
-                        var val = _.call('dragstart', { e: e, target: ui.helper, position: ui.position, offset: ui.offset, dragData: { oriposition: ui.position, orioffset: ui.offset } });
+                        var pos = { left: ui.position.left + point.x, top: ui.position.top + point.y },
+                            off = { left: ui.offset.left + point.x, top: ui.offset.top + point.y };
+                        var val = _.call('dragstart', { e: e, target: ui.helper, position: pos, offset: off, dragData: { oriposition: pos, orioffset: off } });
                         W.Control.dragSession = {
                             id: id,
                             vm: _.vm,
-                            data: val || {}
+                            data: V.merge(val || {}, { dragid: id, oriposition: pos, orioffset: off })
                         };
                     },
                     drag: function(e, ui) {
-                        var val = _.call('drag', { e: e, target: ui.helper, position: ui.position, offset: ui.offset, dragData: W.Control.dragSession.data });
+                        var pos = { left: ui.position.left + point.x, top: ui.position.top + point.y },
+                            off = { left: ui.offset.left + point.x, top: ui.offset.top + point.y };
+                        var val = _.call('drag', { e: e, target: ui.helper, position: pos, offset: off, dragData: W.Control.dragSession.data });
                         val && V.merge(W.Control.dragSession.data, val, true);
                     },
                     stop: function(e, ui) {
-                        var val = _.call('dragstop', { e: e, target: ui.helper, position: ui.position, offset: ui.offset, dragData: W.Control.dragSession.data });
+                        var pos = { left: ui.position.left + point.x, top: ui.position.top + point.y },
+                            off = { left: ui.offset.left + point.x, top: ui.offset.top + point.y };
+                        var val = _.call('dragend', { e: e, target: ui.helper, position: pos, offset: off, dragData: W.Control.dragSession.data });
                         val && V.merge(W.Control.dragSession.data, val, true);
                     },
                     //配置文件 https://www.runoob.com/jqueryui/api-draggable.html#event-start
@@ -733,34 +742,37 @@
                 W.Control.drop[id] = { node: node, vm: _.vm };
                 node.attr('_dropid', id);
                 //https://www.runoob.com/jqueryui/api-droppable.html
+                var func = function(e, ui, key) {
+                    var pos = _.getPosition(e.target, true);
+                    var dropPosition = {
+                        left: ui.offset.left - pos.x,
+                        top: ui.offset.top - pos.y
+                    };
+                    return V.merge(_.call(key, { e: e, target: ui.helper, draggable: ui.draggable, position: ui.position, offset: ui.offset, dragData: W.Control.dragSession.data, dropPosition: dropPosition }) || {}, { dropPosition: dropPosition });
+                };
                 option = V.merge({
                     over: function(e, ui) {
-                        _.call('dropover', { e: e, target: ui.helper, draggable: ui.draggable, position: ui.position, offset: ui.offset, dragData: W.Control.dragSession.data });
+                        func(e, ui, 'dropover');
                     },
                     out: function(e, ui) {
-                        _.call('dropout', { e: e, target: ui.helper, draggable: ui.draggable, position: ui.position, offset: ui.offset, dragData: W.Control.dragSession.data });
+                        func(e, ui, 'dropout');
                     },
                     drop: function(e, ui) {
-                        var val = _.call('drop', { e: e, target: ui.helper, draggable: ui.draggable, position: ui.position, offset: ui.offset, dragData: W.Control.dragSession.data }) || _.vm.data.drop;
-                        var pos = _.getPosition(e.target, true);
-                        if (val)
-                            switch (val) {
-                                case 'clone':
-                                    $(e.target).append(ui.helper.css({
-                                        left: ui.offset.left - pos.x,
-                                        top: ui.offset.top - pos.y
-                                    }));
-                                    break;
-                                case 'move':
-                                    $(e.target).append(ui.draggable.css({
-                                        left: ui.offset.left - pos.x,
-                                        top: ui.offset.top - pos.y
-                                    }));
-                                    break;
-                                case 'none':
-                                    $(e.target).remove();
-                                    break;
-                            }
+                        if (e.target == ui.draggable[0] || e.target == ui.draggable.parent()[0]) return;
+                        //这个方法后触发dragend
+                        var val = func(e, ui, 'drop') || _.vm.data.drop.mode || _.vm.data.drop;
+                        if (e.target == (val.node || ui.draggable)[0] || e.target == (val.node || ui.draggable).parent()[0]) return;
+                        switch ((val.mode || val) + '') {
+                            case 'clone':
+                                $(e.target).append((val.node || ui.draggable).clone().css(val.dropPosition));
+                                break;
+                            case 'move':
+                                $(e.target).append((val.node || ui.draggable).css(val.dropPosition));
+                                break;
+                            case 'none':
+                            default:
+                                break;
+                        }
                     },
                     //然而，通过设置该选项为 true，任何父元素的 droppable 将无法接收该元素
                     greedy: true
@@ -772,12 +784,20 @@
         _.clearDrag = function(node) {
             node = $(node);
             if (!node.draggable) console.log('clearDrag不生效，请先引入jquery.ui.js');
-            else node.draggable('disable');
+            else {
+                node.draggable('destroy');
+                delete W.Control.drag[node.attr('_dragid')];
+                node.removeAttr('_dragid');
+            }
         };
         _.clearDrop = function(node) {
             node = $(node);
             if (!node.droppable) console.log('clearDrop不生效，请先引入jquery.ui.js');
-            else node.droppable('disable');
+            else {
+                node.droppable('destroy');
+                delete W.Control.drop[node.attr('_dropid')];
+                node.removeAttr('_dropid');
+            }
         };
 
         _.wheel = function(node, func) {

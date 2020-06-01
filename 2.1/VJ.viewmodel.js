@@ -356,12 +356,12 @@
             //完成方法注入
             _.vm.update = function() {
                 if (arguments.length == 0) {
-                    _.vm.data = V.merge(_.vm.data, _.fill());
+                    _.vm.data = V.lightMerge(_.vm.data, _.fill());
                 } else {
                     var as = Array.prototype.slice.call(arguments);
                     //as = V.getValue(as, [null]);
-                    if (as[0]) V.merge(_.vm.data, as[0], true);
-                    as[0] = as[0] ? as[0] : V.merge({}, _.vm.data);
+                    if (as[0]) V[!!as[1] ? 'merge' : 'lightMerge'](_.vm.data, as[0], true);
+                    as[0] = as[0] ? as[0] : V.lightMerge({}, _.vm.data);
                     _.render.apply(_, as);
                 }
                 return _.vm.data;
@@ -1086,13 +1086,13 @@
                 //完成方法注入
                 _.vm.update = function() {
                     if (arguments.length == 0) {
-                        _.vm.data = V.merge(_.vm.data, _.fill());
+                        _.vm.data = V.lightMerge(_.vm.data, _.fill());
                     } else {
                         var as = Array.prototype.slice.call(arguments);
                         as[0] = (as.length > 0 && as[0]) ? (function() {
-                            V.merge(_.vm.data, as[0], true);
+                            V[!!as[1] ? 'merge' : 'lightMerge'](_.vm.data, as[0], true);
                             return as[0];
-                        })() : V.merge({}, _.vm.data);
+                        })() : V.lightMerge({}, _.vm.data);
                         _.render.apply(_, as);
                     }
                     return _.vm.data;

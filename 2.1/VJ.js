@@ -501,7 +501,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
                 return source;
         }
     };
-    var _merge = function(aim, source) {
+    var _merge = function(aim, source, isLightMerge) {
         if (aim == undefined) return _clone(source);
         switch (V.getType(source)) {
             case 'Array':
@@ -514,7 +514,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
                         if (aim.length < (k.mergeIndex + 1)) {
                             aim[aim.length] = k;
                         } else {
-                            aim[i3] = _merge(aim[i3], k);
+                            aim[i3] = _merge(aim[i3], k, isLightMerge);
                         }
                     } else if (typeof(k.moveIndex) == "number") {
                         hasmergeIndex = true;
@@ -531,7 +531,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
                 if (typeof(aim) == 'string') return source;
                 else {
                     for (var i in source)
-                        aim[i] = _merge(aim[i], source[i]);
+                        aim[i] = isLightMerge ? _clone(source[i]) : _merge(aim[i], source[i]);
                     return aim;
                 }
                 break;
@@ -553,6 +553,21 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
             var _ = {};
             for (var i2 = 0; i2 < argu.length; i2++)
                 _ = _merge(_, argu[i2]);
+            return _;
+        }
+    };
+    V.lightMerge = function() {
+        var argu = arguments;
+        if (argu.length < 2) { return argu[0] ? argu[0] : {} };
+        if (argu.length > 0 && true == argu[argu.length - 1]) {
+            var _ = argu[0];
+            for (var i2 = 1; i2 < argu.length - 1; i2++)
+                _ = _merge(_, argu[i2], true);
+            return _;
+        } else {
+            var _ = {};
+            for (var i2 = 0; i2 < argu.length; i2++)
+                _ = _merge(_, argu[i2], true);
             return _;
         }
     };
@@ -3884,12 +3899,12 @@ Math.D = function(a, b) {
             //完成方法注入
             _.vm.update = function() {
                 if (arguments.length == 0) {
-                    _.vm.data = V.merge(_.vm.data, _.fill());
+                    _.vm.data = V.lightMerge(_.vm.data, _.fill());
                 } else {
                     var as = Array.prototype.slice.call(arguments);
                     //as = V.getValue(as, [null]);
-                    if (as[0]) V.merge(_.vm.data, as[0], true);
-                    as[0] = as[0] ? as[0] : V.merge({}, _.vm.data);
+                    if (as[0]) V[!!as[1] ? 'merge' : 'lightMerge'](_.vm.data, as[0], true);
+                    as[0] = as[0] ? as[0] : V.lightMerge({}, _.vm.data);
                     _.render.apply(_, as);
                 }
                 return _.vm.data;
@@ -4614,13 +4629,13 @@ Math.D = function(a, b) {
                 //完成方法注入
                 _.vm.update = function() {
                     if (arguments.length == 0) {
-                        _.vm.data = V.merge(_.vm.data, _.fill());
+                        _.vm.data = V.lightMerge(_.vm.data, _.fill());
                     } else {
                         var as = Array.prototype.slice.call(arguments);
                         as[0] = (as.length > 0 && as[0]) ? (function() {
-                            V.merge(_.vm.data, as[0], true);
+                            V[!!as[1] ? 'merge' : 'lightMerge'](_.vm.data, as[0], true);
                             return as[0];
-                        })() : V.merge({}, _.vm.data);
+                        })() : V.lightMerge({}, _.vm.data);
                         _.render.apply(_, as);
                     }
                     return _.vm.data;

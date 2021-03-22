@@ -86,7 +86,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
             __.data = [];
             __._length = 0;
             __._append = function(str) {
-                __.data[__.data.length] = str;
+                __.data.push(str);
                 __._length += str.length;
             };
 
@@ -95,7 +95,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
     sb.prototype.append = function(str) {
         var _ = this,
             __ = this;
-        str = V.isValid(str) ? __._append(str) : '';
+        str = !!(str) ? __._append(str) : '';
         return _;
     };
     sb.prototype.appendFormat = function(format, data) {
@@ -283,7 +283,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
     //异步最终处理 其结果集最终处理的方式 function(共享的json对象 {})
     V.finalC = function() {
         var funs = [];
-        for (var i = 0; i < arguments.length; i++) { if (typeof(arguments[i]) == 'function') funs[funs.length] = { key: funs.length, func: arguments[i] }; }
+        for (var i = 0; i < arguments.length; i++) { if (typeof(arguments[i]) == 'function') funs.push({ key: funs.length, func: arguments[i] }); }
         if (funs.length > 1) {
             var data = {},
                 finalF = funs.length > 0 ? funs.pop().func : null,
@@ -512,7 +512,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
                     if (typeof(k.mergeIndex) == "number") {
                         hasmergeIndex = true;
                         if (aim.length < (k.mergeIndex + 1)) {
-                            aim[aim.length] = k;
+                            aim.push(k);
                         } else {
                             aim[i3] = _merge(aim[i3], k, isLightMerge);
                         }
@@ -655,9 +655,8 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
         //*()_-'. encodeURIComponent 不能替换
         var other = { "(": "%28", ")": "%29", "*": "%2a", "'": '%27', ".": "%2e", "-": "%2d", "_": "%5f" };
         return ((V.getValue(html, '')
-                .replace(/[\r\n]+/g, '>v>j>').replace(/\s+/g, ' ').replace(/>v>j>/g, '\r\n')
-                .match(/[a-zA-Z0-9\u4E00-\u9FA5\uF900-\uFA2D]|[\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]|<|>|~|(\r\n)|!|@|#|\$|%|\^|;|\*|\(|\)|_|\+|\{|\}|\||:|\"|\?|`|\-|=|\[|\]|\\|;|\'|,|\.|\/|，|；/g) || []).join('')
-            .replace(/<|>|~|(\r\n)|!|@|#|\$|%|\^|;|\*|\(|\)|_|\+|\{|\}|\||:|\"|\?|`|\-|=|\[|\]|\\|;|\'|,|\.|\/|，|；/g, function(e) { return other[e] || encodeURIComponent(e); }));
+                .match(/[ a-zA-Z0-9\u4E00-\u9FA5\uF900-\uFA2D]|[\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]|<|>|~|(\r\n)|!|@|#|\$|%|\^|;|\*|\(|\)|_|\+|\{|\}|\||:|\"|\?|`|\-|=|\[|\]|\\|;|\'|,|\.|\/|，|；|\s/g) || []).join('')
+            .replace(/<|>|~|(\r\n)|!|@|#|\$|%|\^|;|\*|\(|\)|_|\+|\{|\}|\||:|\"|\?|`|\-|=|\[|\]|\\|;|\'|,|\.|\/|，|；|\s/g, function(e) { return other[e] || encodeURIComponent(e); }));
     };
     //对字符串进行解码
     V.decHtml = function(html) {
@@ -733,10 +732,10 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
         //转换表用的
         var _evalTJson = function(_dt) {
             var res = [];
-            V.isArray(_dt) && _dt.map(function(v, i) {
+            _dt.forEach && _dt.forEach(function(v, i) {
                 if (0 == i) return;
                 var s = {};
-                V.isArray(v) && v.map(function(v2, q) {
+                v.forEach && v.forEach(function(v2, q) {
                     s[_dt[0][q]] = v2;
                 });
                 res[i - 1] = s;
@@ -795,7 +794,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
                             break;
                         case "object":
                             if (data && data.length) {
-                                (data).map(function(v) {
+                                (data).forEach(function(v) {
                                     v = v + '';
                                     hasFalse = (hasFalse || v == 'False' || v == 'false');
                                 });
@@ -1111,13 +1110,15 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
             V.isArray(data[0]) && data.length == 1 && (data = data[0]);
             if (V.isValid(func) && typeof(func) == 'function') {
                 V.once(function() {
-                    func.apply(caller, data.map(function(v) {
+                    var rets = [];
+                    data.forEach(function(v) {
                         try {
-                            return 'object'.eq(V.getType(v)) ? JSON.parse(JSON.stringify(v)) : v;
+                            rets.push('object'.eq(V.getType(v)) ? JSON.parse(JSON.stringify(v)) : v);
                         } catch (e) {
-                            return v;
+                            rets.push(v);
                         }
-                    }));
+                    });
+                    func.apply(caller, rets);
                 });
             } else {
                 comms[name] = data;
@@ -1202,13 +1203,17 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
                 V.each(funs, function(func) {
                     //报错不下火线
                     V.tryC(function() {
-                        func.apply(caller, data.map(function(v) {
+
+                        var rets = [];
+                        data.forEach(function(v) {
                             try {
-                                return 'object'.eq(V.getType(v)) ? JSON.parse(JSON.stringify(v)) : v;
+                                rets.push('object'.eq(V.getType(v)) ? JSON.parse(JSON.stringify(v)) : v);
                             } catch (e) {
-                                return v;
+                                rets.push(v);
                             }
-                        }));
+                        });
+
+                        func.apply(caller, rets);
                     });
                 });
             }
@@ -1349,7 +1354,7 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
 
     var index = 0;
     V.random = function() {
-        return parseInt('' + (new Date()).getTime() + (index++));
+        return ('' + (index++) + (new Date()).getTime());
     };
     ['toJsonString', 'json'].forEach(function(v) {
         var m = v;

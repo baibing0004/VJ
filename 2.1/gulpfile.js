@@ -8,14 +8,16 @@ const gulp = require('gulp'),
     uglify = require('gulp-uglify'), //js压缩
     del = require('del'), //删除文件插件
     named = require('vinyl-named'),
-    combiner = require('stream-combiner2');
-const paths = { static: ["./VJ.*.js", "!./VJ.collection.js", "!./VJ.view.extend.js", "!./**.min.js"], view: ["./VJ.view.js", "./VJ.view.*.js", "!./**.min.js"], coll: ["./VJ.collection.js", "!./**.min.js"], dest: './', destfile: ["./VJ.js", "./**.min.js"] };
-gulp.task('clean', function(cb) {
+    combiner = require('stream-combiner');
+const paths = { static: ["./VJ.*.js", "!./VJ.collection.js", "!./VJ.view.extend.js", "!./*.min.js"], view: ["./VJ.view.*.js", "!./*.min.js"], coll: ["./VJ.collection.js", "!./*.min.js"], dest: './out', destfile: ["./VJ.js", "./*.min.js"] };
+
+function clean(cb) {
     return del(paths.destfile, cb);
-});
-gulp.task('static', function(cb) {
+};
+
+function static(cb) {
     cb.force = true;
-    const combined = combiner.obj([
+    const combined = combiner([
         gulp.src(paths.static),
         concat("./VJ.js", { newLine: '' }),
         gulp.dest(paths.dest),
@@ -29,11 +31,13 @@ gulp.task('static', function(cb) {
     // any errors in the above streams will get caught
     // by this listener, instead of being thrown:
     combined.on('error', console.error.bind(console));
-    return combined;
-});
-gulp.task('view', function(cb) {
+    cb();
+    return;
+}
+
+function view(cb) {
     cb.force = true;
-    const combined = combiner.obj([
+    const combined = combiner([
         gulp.src(paths.view),
         gulp.dest(paths.dest),
         rename({ extname: ".min.js" }),
@@ -45,12 +49,26 @@ gulp.task('view', function(cb) {
 
     // any errors in the above streams will get caught
     // by this listener, instead of being thrown:
+    combined.on('error', function() {
+        var args = Array.prototype.slice.call(arguments);
+
+        notify.onError({
+            title: 'less 压缩失败!',
+            message: '<%=error.message %>'
+        }).apply(this, args); //替换为当前对象
+
+        this.emit();
+    });
+    // any errors in the above streams will get caught
+    // by this listener, instead of being thrown:
     combined.on('error', console.error.bind(console));
-    return combined;
-});
-gulp.task('collection', function(cb) {
+    cb();
+    return;
+}
+
+function collection(cb) {
     cb.force = true;
-    const combined = combiner.obj([
+    const combined = combiner([
         gulp.src(paths.coll),
         gulp.dest(paths.dest),
         rename({ extname: ".min.js" }),
@@ -63,11 +81,13 @@ gulp.task('collection', function(cb) {
     // any errors in the above streams will get caught
     // by this listener, instead of being thrown:
     combined.on('error', console.error.bind(console));
-    return combined;
-});
-gulp.task('common-js', function(cb) {
+    cb();
+    return;
+}
+
+function common_js(cb) {
     cb.force = true;
-    const combined = combiner.obj([
+    const combined = combiner([
         gulp.src(paths.static),
         concat("VJ.js", { newLine: ';;' }),
         named(),
@@ -82,14 +102,14 @@ gulp.task('common-js', function(cb) {
     ]);
     combined.on('error', console.error.bind(console));
     return combined;
-});
-gulp.task('default', ['clean', 'view', 'collection', 'static'], function(cb) {
-    var watcher = gulp.watch(paths.static, ['static']);
+}
+exports.default = gulp.series(clean, view, collection, static, function(cb) {
+    var watcher = gulp.watch(paths.static, static);
     watcher.on('error', e => {
         console.log(e.stack);
         gulp.src(paths.static).pipe(notify({ message: "VJ.min.js 同步生成失败:" + e.message }));
     });
-    watcher = gulp.watch(paths.view, ['view']);
+    watcher = gulp.watch(paths.view, view);
     watcher.on('error', e => {
         console.log(e.stack);
         gulp.src(paths.view).pipe(notify({ message: "VJ.view.extend.min.js 同步生成失败:" + e.message }));

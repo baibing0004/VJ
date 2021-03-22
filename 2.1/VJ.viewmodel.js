@@ -44,7 +44,7 @@
         addCallback: function(fun) {
             var _ = this,
                 __ = _.__;
-            (__.template) ? fun($(__.template)): fun && (__.funs[__.funs.length] = fun);
+            (__.template) ? fun($(__.template)): fun && __.funs.push(fun);
         },
         callback: function() {
             var __ = this.__;
@@ -119,10 +119,10 @@
             //此为本级无异步加载的父控件判断
             if (!_.controls.filter(function(v) { return !v.readyLoad.ready }).length) {
                 //console.log('readyLoad', _, _.readyLoad.ready ? '' : '', _.readyLoad.wait ? '锁定' : '不锁');
-                // _.controls.map(function(v) {
+                // _.controls.forEach(function(v) {
                 //     console.log('readyLoad2', v, v.readyLoad.ready);
                 // });
-                _.controls.map(function(v) {
+                _.controls.forEach(function(v) {
                     try {
                         //特别注意 必须首先设置hasLoad为真，否则onLoad会无限循环
                         !v.readyLoad.hasLoad && (v.readyLoad.hasLoad = true, v.readyLoad.onLoad(v.readyLoad.node));
@@ -252,11 +252,8 @@
                         }
                         break;
                     case 'globalposition':
-                        value += '';
-                        //此方法不支持重复设置
-                        if (_.node.attr('position')) {
-                            V.showException('W.Control.data.globalposition 不允许重复设置!' + _.node.attr('position'));
-                        } else {
+                        {
+                            value += '';
                             _.node.attr('position', value.toLowerCase());
                             _.node.css('position', 'absolute');
                             var parent = $(window);
@@ -277,11 +274,9 @@
                         }
                         break;
                     case 'position':
-                        value += '';
-                        //此方法不支持重复设置
-                        if (_.node.attr('position')) {
-                            V.showException('W.Control.data.postion 不允许重复设置!' + _.node.attr('position'));
-                        } else {
+                        //此方法不支持重复设置 
+                        {
+                            value += '';
                             _.node.attr('position', value.toLowerCase());
                             _.node.css('position', 'absolute');
                             var parent = _.node.parent();
@@ -369,7 +364,7 @@
             _.vm.call = function() { return _.call.apply(_.parent.vms, arguments); };
             _.vm.add = function() { _.addControl.apply(_, arguments); };
             _.vm.remove = function() { _.removeControl.apply(_, arguments); };
-            _.vm.desc = function() { _.desc(); };
+            _.vm.desc = _.desc;
             _.vm.get = function(key) { _.vm.data = V.merge(_.vm.data, _.fill()); return key ? _.vm.data[key] : _.vm.data; };
             _.vm.bind(_);
             _.readyLoad = {
@@ -449,7 +444,7 @@
                     if (!obj) V.showException('配置文件中没有找到对象类型定义:' + nodeName);
                     obj.init(_, v, V.isValid(v.attr('_')) ? json : null);
                     obj.page = _.page;
-                    _.controls[_.controls.length] = (obj);
+                    _.controls.push(obj);
                     if (!id) {
                         id = nodeName + V.random();
                     }
@@ -470,7 +465,7 @@
                             node.append(node2);
                             obj.init(_, node2, null);
                             obj.page = _.page;
-                            _.controls[_.controls.length] = (obj);
+                            _.controls.push(obj);
                             _.vs[key] = obj;
                             V.inherit.apply(v, [M.Control, []]);
                             obj.bind(v);
@@ -513,7 +508,7 @@
             name = name.toLowerCase();
             var val = null;
             //所有的事件调用全部采用异步调用方式 V.once
-            V.merge(_.vm.data, _.fill(), param || {}, true);
+            V.lightMerge(_.vm.data, _.fill(), param || {}, true);
             param = V.merge(_.vm.data, tparam || {});
             (_.events[name]) && V.tryC(function() {
                 val = _.events[name].apply(_.parent.vms, [param, _.vm]);
@@ -575,7 +570,7 @@
             node = node ? node : V.newEl('div').appendTo(_.node);
             obj.init(_, node, v.data);
             obj.page = _.page;
-            _.controls[_.controls.length] = (obj);
+            _.controls.push(obj);
             var key = V.getValue(v.id, V.random());
             if (_.vs[key]) { V.showException('控件id为' + key + '的子控件已经存在，请更换id名'); return; }
             node.attr('id', key);
@@ -623,7 +618,7 @@
                 if (docs.style && docs.style.transform && docs.style.transform.indexOf('translate3d') >= 0) {
                     docs.style.transform.replace(/[+-]\d+(px)/g, function(v) {
                         //一般第一个是 x 第二个是y
-                        off[off.length] = parseInt(v);
+                        off.push(parseInt(v));
                     });
                 }
                 pos.x += (off[0] ? off[0] : 0) + docs.offsetLeft; //不断叠加与祖先级的距离
@@ -673,7 +668,7 @@
                         W.Control.dragSession = {
                             id: id,
                             vm: _.vm,
-                            data: V.merge(val || {}, { dragid: id, oriposition: pos, orioffset: off })
+                            data: V.merge(_.vm.data.drag || _.vm.data.innerdrag || {}, val || {}, { dragid: id, oriposition: pos, orioffset: off })
                         };
                     },
                     drag: function(e, ui) {
@@ -857,6 +852,7 @@
                 //todo 定义所有属性 默认这里属性和方法必须决定是否同步或者异步执行 应该先取代再瘦身
                 //todo 父子类无法简单继承 要求 父类的json和子类的json不是覆盖关系
                 _.Propertis = {};
+                _.desc = function() { return { Event: _.Events, Propertis: _.Propertis }; };
                 __.async = {};
                 __.sync = {};
                 __.finally = {};
@@ -880,7 +876,7 @@
                     //Method为false或者未定义则不可作为可用属性出现
                     v && (function() {
                         v.Method = v.Method || function() {};
-                        _.Propertis[k] = v.Desc || '属性没有任何描述';
+                        _.Propertis[k] = { Desc: v.Desc || '属性没有任何描述', all: v.all };
                         var poi = v.finally ? 'finally' : v.sync ? 'sync' : 'async';
                         __[poi][k2] = v;
                         v.merge === true && (__.merge[k2] = true);
@@ -894,16 +890,9 @@
             _.call = function(name, param, tparam) {
                 name = name.toLowerCase();
                 var val = null;
-                V.merge(_.vm.data, _.fill(), true);
-                var mgData = {};
-                V.forC(param || {},
-                    function(k, v) {!__.merge[k.toLowerCase()] ? (_.vm.data[k] = v) : (mgData[k] = v); },
-                    function() {
-                        V.merge(_.vm.data, mgData, true);
-                    }, true);
-                //所有的事件调用全部采用异步调用方式 V.once
+                V.lightMerge(_.vm.data, _.fill(), param || {}, true);
+                param = V.merge(_.vm.data, tparam || {});
                 (_.events[name]) && V.tryC(function() {
-                    param = V.merge(_.vm.data, tparam || {});
                     val = _.events[name].apply(_.parent.vms, [param, _.vm]);
                     if (val && V.toJsonString(val).length > 2) {
                         V.merge(_.vm.data, val, true)
@@ -920,7 +909,7 @@
                         Method: v
                     } : v;
                     em[k.toLowerCase()] = v;
-                    _.Events[k] = v.Desc || '没有任何描述';
+                    !'init'.eq(k) && (_.Events[k] = v.Desc || '没有任何描述');
                 }, function() {
                     //提供load方法作为控件初始化使用
                     em['init'] && em['init'].Method.apply(_, [node]);
@@ -940,7 +929,7 @@
                 V.forC(data, function(k, v) {
                     var k2 = k.toLowerCase();
                     var name = !!__.sync[k2] ? 'sync' : (!!__.async[k2] ? 'async' : !!__.finally[k2] ? 'finally' : false);
-                    name && (ret[name][ret[name].length] = { func: __[name][k2].Method, data: v, name: k2 });
+                    name && ret[name].push({ func: __[name][k2].Method, data: v, name: k2 });
                     !(name && __[name][k2].override) && (rdata[k2] = (v && v.Method) || v);
                     //保证完整赋值
                     !__.merge[k2] && (_.vm.data[k] = v);
@@ -948,13 +937,25 @@
                     rdata = __.prerender(rdata);
                     //保证同异步同时启动 一般会是同步先执行完 然后 执行异步 最后是finally方法
                     ret.sync.forEach(function(v) {
-                        v.func.apply(_, [v.data, data, v.name]);
+                        try {
+                            v.func.apply(_, [v.data, data, v.name]);
+                        } catch (e) {
+                            console.log(_, e.stack);
+                        }
                     });
                     V.each(ret.async, function(v) {
-                        v.func.apply(_, [v.data, data, v.name]);
+                        try {
+                            v.func.apply(_, [v.data, data, v.name]);
+                        } catch (e) {
+                            console.log(_, e.stack);
+                        }
                     }, function() {
                         V.each(ret.finally, function(v) {
-                            v.func.apply(_, [v.data, data, v.name]);
+                            try {
+                                v.func.apply(_, [v.data, data, v.name]);
+                            } catch (e) {
+                                console.log(_, e.stack);
+                            }
                         })
                     });
                 }, true);
@@ -1100,7 +1101,7 @@
                 _.vm.call = function() { return _.call.apply(_.page.getModels(), arguments); };
                 _.vm.add = function() { _.addControl.apply(_, arguments); };
                 _.vm.remove = function() { _.removeControl.apply(_, arguments); };
-                _.vm.desc = function() { _.desc(); };
+                _.vm.desc = _.desc;
                 _.vm.get = function(key) { _.vm.data = V.merge(_.vm.data, _.fill()); return key ? _.vm.data[key] : _.vm.data; };
                 _.page.registEvent = _.registEvent;
                 _.page.callEvent = _.callEvent;
@@ -1198,7 +1199,7 @@
                 if (!obj) V.showException('配置文件中没有找到对象类型定义:' + nodeName);
                 obj.init(_, v, V.isValid(v.attr('_')) ? json : null);
                 obj.page = _;
-                _.controls[_.controls.length] = (obj);
+                _.controls.push(obj);
                 if (!id) {
                     id = nodeName + V.random();
                 }
@@ -1220,7 +1221,7 @@
                         node.append(node2);
                         obj.init(_, node2, null);
                         obj.page = _;
-                        _.controls[_.controls.length] = (obj);
+                        _.controls.push(obj);
                         _.vs[key] = obj;
                         V.inherit.apply(v, [M.Control, []]);
                         obj.bind(v);
@@ -1245,9 +1246,7 @@
         _.onReady = function() {};
         _.call = function(name, param, imme) {
             //所有的事件调用全部采用异步调用方式 V.once				
-            param = V.getValue(param, {});
-            V.merge(_.vm.data, _.fill(), param, true);
-            param = V.merge(_.vm.data, param);
+            param = V.lightMerge(_.vm.data, param || {});
             name = name.toLowerCase();
             var val = null;
             (_.events[name]) && V.tryC(function() {
@@ -1289,7 +1288,7 @@
             node = node ? node : V.newEl('div').appendTo(_.node);
             obj.init(_, node, v.data);
             obj.page = _;
-            _.controls[_.controls.length] = (obj);
+            _.controls.push(obj);
             var key = V.getValue(v.id, V.random());
             if (_.vs[key]) { V.showException('控件id为' + key + '的控件已经存在，请更换id名'); return; }
             _.vs[key] = obj;

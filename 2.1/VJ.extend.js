@@ -115,27 +115,75 @@ String.prototype.trim = function(chr) {
     return this.replace(VJ.isValid(chr) ? new RegExp('(^(' + chr + ')+)|((' + chr + ')+$)', 'g') : /(^\s+)|(\s+$)/g, "");
 }
 String.prototype.loadVJ = true;
+// /**
+//  * 高精度 乘法
+//  */
+// Math.X = function(a, b) {
+//     var ia = a + "";
+//     var dig_a = ia.lastIndexOf('.') >= 0 ? (ia.length - ia.lastIndexOf('.') - 1) : 0;
+//     var ib = b + '';
+//     var dig_b = ib.lastIndexOf('.') >= 0 ? (ib.length - ib.lastIndexOf('.') - 1) : 0;
+//     a = a * Math.pow(10, dig_a);
+//     b = b * Math.pow(10, dig_b);
+//     return (a * b) / Math.pow(10, dig_a + dig_b)
+// };
+// /**
+//  * 高精度 除法
+//  */
+// Math.D = function(a, b) {
+//     var ia = a + "";
+//     var dig_a = ia.lastIndexOf('.') >= 0 ? (ia.length - ia.lastIndexOf('.') - 1) : 0;
+//     var ib = b + '';
+//     var dig_b = ib.lastIndexOf('.') >= 0 ? (ib.length - ib.lastIndexOf('.') - 1) : 0;
+//     a = a * Math.pow(10, dig_a);
+//     b = b * Math.pow(10, dig_b);
+//     return (a / b) / Math.pow(10, dig_a + dig_b)
+// };
+
+/**
+ * 高精度 加法
+ */
+Math.A = function() {
+    var args = [];
+    for (var k in arguments) args.push(arguments[k]);
+    let ret = args.shift() * 1000;
+    while (args.length)
+        ret += (args.shift() * 1000)
+    return ret / 1000;
+}
+
+/**
+ * 高精度 减法
+ */
+Math.S = function() {
+    var args = [];
+    for (var k in arguments) args.push(arguments[k]);
+    let ret = args.shift() * 1000;
+    while (args.length)
+        ret -= (args.shift() * 1000)
+    return ret / 1000;
+}
+
 /**
  * 高精度 乘法
  */
-Math.X = function(a, b) {
-    var ia = a + "";
-    var dig_a = ia.lastIndexOf('.') >= 0 ? (ia.length - ia.lastIndexOf('.') - 1) : 0;
-    var ib = b + '';
-    var dig_b = ib.lastIndexOf('.') >= 0 ? (ib.length - ib.lastIndexOf('.') - 1) : 0;
-    a = a * Math.pow(10, dig_a);
-    b = b * Math.pow(10, dig_b);
-    return (a * b) / Math.pow(10, dig_a + dig_b)
+Math.X = function() {
+    var args = [];
+    for (var k in arguments) args.push(arguments[k]);
+    let ret = args.shift() * 1000;
+    while (args.length)
+        ret *= args.shift();
+    return ret / 1000;
 };
+
 /**
  * 高精度 除法
  */
-Math.D = function(a, b) {
-    var ia = a + "";
-    var dig_a = ia.lastIndexOf('.') >= 0 ? (ia.length - ia.lastIndexOf('.') - 1) : 0;
-    var ib = b + '';
-    var dig_b = ib.lastIndexOf('.') >= 0 ? (ib.length - ib.lastIndexOf('.') - 1) : 0;
-    a = a * Math.pow(10, dig_a);
-    b = b * Math.pow(10, dig_b);
-    return (a / b) / Math.pow(10, dig_a + dig_b)
+Math.D = function() {
+    var args = [];
+    for (var k in arguments) args.push(arguments[k]);
+    let ret = args.shift() * 1000;
+    while (args.length)
+        ret /= args.shift();
+    return ret / 1000;
 };

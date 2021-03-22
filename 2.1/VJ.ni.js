@@ -19,7 +19,7 @@
     */
     /*
     var t = middler.getObjectByAppName('Ni','templatename');
-    var res = t.excute('aaa.GetProductDetail',{ProductID:111},function(result){
+    var res = t.execute('aaa.GetProductDetail',{ProductID:111},function(result){
     	var res = result.last();
     });
     middler.setObjectByAppName('Ni','templatename',t);
@@ -111,7 +111,7 @@
                     })
                 }
             },
-            _excute: function() {
+            _execute: function() {
                 var _ = this,
                     __ = this;
                 var _cms = _.lstCmd;
@@ -130,7 +130,7 @@
                             cmd.dbtype = v.dbtype;
                             cmd.jsonp = v.jsonp;
                             var _func = v.func;
-                            cmd.excute(_.result, function(data, error) {
+                            cmd.execute(_.result, function(data, error) {
                                 error && (_.result.error = error);
                                 _.result.add((!data || (V.isArray(data) && data.length == 0)) ? false : data, v.key);
                                 V.tryC(function() { _func(_.result); });
@@ -144,7 +144,7 @@
                 } else { V.showException('不能调用空的命令对象!'); }
                 return _.result;
             },
-            excute: function(name, params, func) {
+            execute: function(name, params, func) {
                 var _ = this;
                 _._addCommand(name, params, func);
                 if (!_.transaction) {
@@ -152,9 +152,12 @@
                 }
                 return _.result;
             },
+            excute: function() {
+                return this.execute.apply(this, arguments);
+            },
             commit: function() {
                 var _ = this;
-                return _._excute();
+                return _._execute();
             }
         }, true);
         N.NiTemplateManager = function(cm, appName) {
@@ -164,17 +167,20 @@
                 __.middler = new V.middler.Middler(cm);
             }
         };
-        N.NiTemplateManager.prototype.excute = function(tempName, name, params, func) {
+        N.NiTemplateManager.prototype.execute = function(tempName, name, params, func) {
             var _ = this,
                 __ = this;
             var temp = __.middler.getObjectByAppName(_.KEY, tempName);
             if (temp) {
-                temp.excute(name, params, function(data) {
+                temp.execute(name, params, function(data) {
                     V.tryC(function() { func(data); });
                     __.middler.setObjectByAppName(_.KEY, tempName, temp);
                 });
             } else { throw new Error('没有找到Template:' + tempName); }
         };
+
+        N.NiTemplateManager.prototype.excute = N.NiTemplateManager.prototype.execute;
+
         //获取json对象 使得不管json还是tjson都按照最终结果进行使用
         //分离NiDataResult完成获取数据工作	
         N.NiDataResult = function() {
@@ -343,7 +349,7 @@
                 _.command = '';
                 _.params = { dbtype: 'json' };
             }
-            _.excute = function(result, func) {
+            _.execute = function(result, func) {
                 if (!_.connection || !_.connection.isOpen) {
                     V.showException('数据库未连接');
                     if (func) { func(false); }
@@ -412,6 +418,7 @@
                     });
                 }
             };
+            _.excute = _.execute;
         };
     }
     //NiTemplateDecorator NiMultiTemplateDecorator 装饰类 使得TemplateDecorator可以添加缓存，NiMultiTemplateDecorator可以根据Ni文件中定义的template进行操作
@@ -510,7 +517,7 @@
                     }
                 }
             },
-            _excute: function() {
+            _execute: function() {
                 var _ = this,
                     __ = this;
                 var _cms = _.lstCmd;
@@ -527,7 +534,7 @@
                             cmd.dbtype = v.dbtype;
                             cmd.jsonp = v.jsonp;
                             var _func = v.func;
-                            cmd.excute(_.result, function(data, error) {
+                            cmd.execute(_.result, function(data, error) {
                                 V.tryC(function() {
                                     error && (_.result.error = error);
                                     _.result.add(data ? data : false, v.key);
@@ -549,7 +556,7 @@
                                             cacheKey: V.hash(v.key + '.Set.' + V.toJsonString(cmd.params)),
                                             cacheValue: data
                                         });
-                                        _cmd.excute(_.result, function(data) {
+                                        _cmd.execute(_.result, function(data) {
                                             V.tryC(function() { _.cacheres.backDBConnection(_conn); });
                                         });
                                     }
@@ -570,7 +577,7 @@
                                 _cmd.command = _nicmd.name;
                                 _cmd.params = V.merge(_nicmd.params, v.params);
                                 delete _.result.error;
-                                _cmd.excute(_.result, function(data, error) {
+                                _cmd.execute(_.result, function(data, error) {
                                     V.tryC(function() {
                                         try { _.cacheres.backDBConnection(_conn); } catch (e) {}
                                         error && (_.result.error = error);
@@ -634,7 +641,7 @@
                     }
                 }
             },
-            _excute: function() {
+            _execute: function() {
                 var _ = this,
                     __ = this;
                 var _cms = _.lstCmd;
@@ -651,7 +658,7 @@
                             cmd.dbtype = v.dbtype;
                             cmd.jsonp = v.jsonp;
                             var _func = v.func;
-                            cmd.excute(_.result, function(data, error) {
+                            cmd.execute(_.result, function(data, error) {
                                 V.tryC(function() {
                                     error && (_.result.error = error);
                                     _.result.add(data ? data : false, v.key);
@@ -673,7 +680,7 @@
                                             cacheKey: V.hash(v.key + '.Set.' + V.toJsonString(cmd.params)),
                                             cacheValue: data
                                         });
-                                        _cmd.excute(_.result, function(data) {
+                                        _cmd.execute(_.result, function(data) {
                                             V.tryC(function() { _.cacheres.backDBConnection(_conn); });
                                         });
                                     }
@@ -694,7 +701,7 @@
                                 _cmd.command = _nicmd.name;
                                 _cmd.params = V.merge(_nicmd.params, v.params);
                                 delete _.result.error;
-                                _cmd.excute(_.result, function(data, error) {
+                                _cmd.execute(_.result, function(data, error) {
                                     V.tryC(function() {
                                         try {
                                             error && (_.result.error = error);
@@ -736,7 +743,7 @@
             }
         };
         V.inherit2(N.NiLazyTemplateDecorator, N.NiTemplateDecorator, {
-            _excute: function() {
+            _execute: function() {
                 var _ = this,
                     __ = this;
                 var _cms = _.lstCmd;
@@ -754,7 +761,7 @@
                             cmd.dbtype = v.dbtype;
                             cmd.jsonp = v.jsonp;
                             var _func = v.func;
-                            cmd.excute(_.result, function(data, error) {
+                            cmd.execute(_.result, function(data, error) {
                                 V.tryC(function() {
                                     error && (_.result.error = error);
                                     if (!data) {
@@ -779,7 +786,7 @@
                                             cacheKey: V.hash(v.key + '.Set.' + V.toJsonString(cmd.params)),
                                             cacheValue: data
                                         });
-                                        _cmd.excute(_.result, function(data) {
+                                        _cmd.execute(_.result, function(data) {
                                             V.tryC(function() { cacheres.backDBConnection(_conn); });
                                         });
                                     }
@@ -797,7 +804,7 @@
                                 _cmd.command = _nicmd.name;
                                 _cmd.params = V.merge(_nicmd.params, v.params);
                                 delete _.result.error;
-                                _cmd.excute(_.result, function(data, error) {
+                                _cmd.execute(_.result, function(data, error) {
                                     V.tryC(function() {
                                         try {
                                             error && (_.result.error = error);
@@ -827,7 +834,8 @@
                     });
                 } else { V.showException('不能调用空的命令对象!'); }
                 return _.result;
-            }
+            },
+
         });
         /**
          * 使用很多Template来完成相关操作，否则就使用默认值进行处理
@@ -846,7 +854,7 @@
                 _.KEY = V.getValue(appName, 'Ni');
                 __.ni = new N.NiTemplateManager(relcm, _.KEY);
                 //__._addCommand = _._addCommand;
-                //__._excute = _._excute;
+                //__._execute = _._execute;
                 __.lstCmd2 = {};
                 _.template = template || false;
             }
@@ -866,7 +874,7 @@
                     }
                 }
             },
-            _excute: function() {
+            _execute: function() {
                 var _ = this,
                     __ = this;
                 var _cms = _.lstCmd;
@@ -883,7 +891,7 @@
                             cmd.dbtype = v.dbtype;
                             cmd.jsonp = v.jsonp;
                             var _func = v.func;
-                            cmd.excute(_.result, function(data, error) {
+                            cmd.execute(_.result, function(data, error) {
                                 V.tryC(function() {
                                     error && (_.result.error = error);
                                     _.result.add(data ? data : false, v.key);
@@ -902,7 +910,7 @@
                             //准备处理缓存
                             if (_cms2[i]) {
                                 i++;
-                                __.ni.excute(v.template, v.key, v.params, function(result) {
+                                __.ni.execute(v.template, v.key, v.params, function(result) {
                                     V.tryC(function() {
                                         _.result.add((result && result.get(v.key)) ? result.get(v.key) : [], v.key);
                                         v.func(_.result);
@@ -951,7 +959,7 @@
                             },
                             error: function(request, status, error) {
                                 V.showException('V._ajaxOption error方法 status:' + status, error);
-                                if (func) { func(false, error); }
+                                func && func(false, request.responseText ? new Error(request.responseText) : error);
                             }
                         }));
                     }
@@ -1176,7 +1184,7 @@
                         __ = {}; {
                         V.inherit.apply(_, [N.NiDataCommand, []]);
                     }
-                    _.excute = function(result, func) {
+                    _.execute = function(result, func) {
                         if (!_.connection || _.connection.isError) {
                             V.showException('WebSocket连接失败');
                             if (func) { func(false); }
@@ -1246,6 +1254,7 @@
                             });
                         }
                     };
+                    _.excute = _.execute;
                 };
             }
             _.createDBConnection = function() { return new __.SocketConnection(); };

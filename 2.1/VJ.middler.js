@@ -147,7 +147,7 @@
                         var val = params[i];
                         if (typeof(val) == 'object') {
                             if (val === null || val === undefined) {
-                                paras[paras.length] = null;
+                                paras.push(null);
                             } else if (val.ref) {
                                 var index = val.ref.indexOf('/') >= 0 ? val.ref.indexOf('/') : val.ref.indexOf('\\') >= 0 ? val.ref.indexOf('\\') : -1;
                                 var appName = index >= 0 ? val.ref.substr(0, index) : defParam.app;
@@ -198,9 +198,8 @@
                 if (script.regist && !paras.length)
                     paras = [null, null];
                 script = __.getScript(type);
-                if (script.inherit) script.inherit.map(function(v) {
-                    paras[paras.length] = pcm.Middler.getTypeByAppName(V.view.APP || 'VESH.view', v);
-                    return null;
+                if (script.inherit) script.inherit.forEach(function(v) {
+                    paras.push(pcm.Middler.getTypeByAppName(V.view.APP || 'VESH.view', v));
                 });
                 script = script.func;
                 return V.create2(script, paras)
@@ -294,9 +293,8 @@
                                     if (script.regist && !paras.length)
                                         paras = [null, null];
                                     script = __.getScript(type);
-                                    if (script.inherit) script.inherit.map(function(v) {
-                                        paras[paras.length] = pcm.Middler.getTypeByAppName(V.view || 'VESH.view', v);
-                                        return null;
+                                    if (script.inherit) script.inherit.forEach(function(v) {
+                                        paras.push(pcm.Middler.getTypeByAppName(V.view || 'VESH.view', v));
                                     });
                                     script = script.func;
                                 }
@@ -307,9 +305,8 @@
                                     if (script.regist && !paras.length)
                                         paras = [null, null];
                                     script = __.getScript(type);
-                                    if (script.inherit) script.inherit.map(function(v) {
-                                        paras[paras.length] = pcm.Middler.getTypeByAppName(V.view || 'VESH.view', v);
-                                        return null;
+                                    if (script.inherit) script.inherit.forEach(function(v) {
+                                        paras.push(pcm.Middler.getTypeByAppName(V.view || 'VESH.view', v));
                                     });
                                     script = script.func;
                                 }

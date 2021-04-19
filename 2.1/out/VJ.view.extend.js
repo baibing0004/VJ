@@ -156,7 +156,7 @@
                         v ? _.input.removeAttr('disabled') : _.input.attr('disabled', 'disabled');
                     },
                     'title': function(v, data) {
-                        _.input.attr('placeholder', v || '');
+                        v && _.input.attr('placeholder', data.placeholder || v).attr('title', v);
                     },
                     'value': {
                         override: true,

@@ -397,7 +397,7 @@
             node = $(node);
             try {
                 ($._data(node[0], "events"));
-            } catch (e) { console.log('发现有极端情况会报nodeName错误!'); return; }
+            } catch (e) { console.log('发现有极端情况会报nodeName错误!', k); return; }
             if (typeof(node[k]) == 'function' && (!$._data(node[0], "events") || !$._data(node[0], "events")[k])) {
                 switch (k.toLowerCase()) {
                     case 'hover':
@@ -940,21 +940,21 @@
                         try {
                             v.func.apply(_, [v.data, data, v.name]);
                         } catch (e) {
-                            console.log(_, e.stack);
+                            console.log(v, _, e.stack);
                         }
                     });
                     V.each(ret.async, function(v) {
                         try {
                             v.func.apply(_, [v.data, data, v.name]);
                         } catch (e) {
-                            console.log(_, e.stack);
+                            console.log(v, _, e.stack);
                         }
                     }, function() {
                         V.each(ret.finally, function(v) {
                             try {
                                 v.func.apply(_, [v.data, data, v.name]);
                             } catch (e) {
-                                console.log(_, e.stack);
+                                console.log(v, _, e.stack);
                             }
                         })
                     });

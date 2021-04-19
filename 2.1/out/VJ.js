@@ -244,41 +244,60 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
         isSync ? syncfunc2(exp, func, finalf, exp()) : asyncfunc2(exp, func, finalf, exp());
     };
     //异步处理数组的方法
-    V.each = function(data, func, finalF, isSync) {
+    V.each = function(data, func, finalf, isSync) {
+        if (isSync) {
+            for (var i in data) {
+                try {
+                    func(data[i], i);
+                } catch (e) {
+                    showException2(e);
+                }
+            }
+            try {
+                finalf && finalf();
+            } catch (e) {
+                showException2(e);
+            }
+        } else {
+            data = Array.prototype.slice.call(data, 0);
+            V.whileC(function() { return data.shift(); }, func, finalf, false);
+        }
+    };
+    V.each2 = function(data, func, finalf, isSync) {
         var i = 0;
         data = Array.prototype.slice.call(data, 0);
-        V.whileC(function() { return data[i++]; }, func, finalF, isSync);
+        V.whileC2(function() { return data[i++]; }, func, finalf, false);
     };
-    V.each2 = function(data, func, finalF, isSync) {
-        var i = 0;
-        data = Array.prototype.slice.call(data, 0);
-        V.whileC2(function() { return data[i++]; }, func, finalF, isSync);
-    };
-    var forfunc = function(v, func) { return func(v.key, v.value); };
+    //var forfunc = function(v, func) { return func(v.key, v.value); };
     //异步遍历对象的方法
     V.forC = function(data, func, finalf, isSync) {
-        var ret = [],
-            exp = emptyfunc,
-            w = 0;
-        if (func) {
-            for (var i in data) ret[w++] = { key: i, value: data[i] };
-            w = 0;
-            exp = function() { return ret[w++] };
+        if (isSync) {
+            for (var i in data) {
+                try {
+                    func(i, data[i]);
+                } catch (e) {
+                    showException2(e);
+                }
+            }
+            try {
+                finalf && finalf();
+            } catch (e) {
+                showException2(e);
+            }
+        } else {
+            var ret = [];
+            for (var i in data) ret.push({ key: i, value: data[i] });
+            var exp = func && function() { return ret.shift(); } || emptyfunc;
+            V.whileC(exp, function(v) { return func(v.key, v.value); }, finalf, false);
         }
-        V.whileC(exp, function(v) { return forfunc(v, func) }, finalf, isSync);
     };
-    var forfunc2 = function(v, func, n) { return func(v.key, v.value, n); };
+    //var forfunc2 = function(v, func, n) { return func(v.key, v.value, n); };
     //异步链式遍历对象的方法,需要func显式调用传入的next方法
     V.forC2 = function(data, func, finalf, isSync) {
-        var ret = [],
-            exp = emptyfunc,
-            w = 0;
-        if (func) {
-            for (var i in data) ret[w++] = { key: i, value: data[i] };
-            w = 0;
-            exp = function() { return ret[w++]; }
-        }
-        V.whileC2(exp, function(v, n) { return forfunc2(v, func, n) }, finalf, isSync);
+        var ret = [];
+        for (var i in data) ret.push({ key: i, value: data[i] });
+        var exp = func && function() { return ret.shift(); } || emptyfunc;
+        V.whileC2(exp, function(v, n) { return func(v.key, v.value, n); }, finalf, isSync);
     };
     //异步最终处理 其结果集最终处理的方式 function(共享的json对象 {})
     V.finalC = function() {
@@ -286,15 +305,15 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
         for (var i = 0; i < arguments.length; i++) { if (typeof(arguments[i]) == 'function') funs.push({ key: funs.length, func: arguments[i] }); }
         if (funs.length > 1) {
             var data = {},
-                finalF = funs.length > 0 ? funs.pop().func : null,
+                finalf = funs.length > 0 ? funs.pop().func : null,
                 len = funs.length,
                 ret = {};
-            var ff = function(key) { ret[key] = true; var retlen = 0; for (var k in ret) { retlen++; }; if (retlen == len) { finalF.apply(null, [data]); } };
+            var ff = function(key) { ret[key] = true; var retlen = 0; for (var k in ret) { retlen++; }; if (retlen == len) { finalf.apply(null, [data]); } };
             V.each(funs, function(v) {
                 var value = v;
                 value.func.apply(null, [data, function() { ff(value.key); }]);
             });
-        } else { finalF.apply(null, [{}]); }
+        } else { finalf.apply(null, [{}]); }
     };
     //异步顺序处理 其结果集最终处理的方式 function(共享的json对象 {})
     V.next = function() {
@@ -3999,7 +4018,7 @@ Math.D = function() {
             node = $(node);
             try {
                 ($._data(node[0], "events"));
-            } catch (e) { console.log('发现有极端情况会报nodeName错误!'); return; }
+            } catch (e) { console.log('发现有极端情况会报nodeName错误!', k); return; }
             if (typeof(node[k]) == 'function' && (!$._data(node[0], "events") || !$._data(node[0], "events")[k])) {
                 switch (k.toLowerCase()) {
                     case 'hover':
@@ -4542,21 +4561,21 @@ Math.D = function() {
                         try {
                             v.func.apply(_, [v.data, data, v.name]);
                         } catch (e) {
-                            console.log(_, e.stack);
+                            console.log(v, _, e.stack);
                         }
                     });
                     V.each(ret.async, function(v) {
                         try {
                             v.func.apply(_, [v.data, data, v.name]);
                         } catch (e) {
-                            console.log(_, e.stack);
+                            console.log(v, _, e.stack);
                         }
                     }, function() {
                         V.each(ret.finally, function(v) {
                             try {
                                 v.func.apply(_, [v.data, data, v.name]);
                             } catch (e) {
-                                console.log(_, e.stack);
+                                console.log(v, _, e.stack);
                             }
                         })
                     });

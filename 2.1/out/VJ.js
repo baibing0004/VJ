@@ -246,9 +246,10 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
     //异步处理数组的方法
     V.each = function(data, func, finalf, isSync) {
         if (isSync) {
+            if (!V.isArray(data)) data = Array.prototype.slice.call(data, 0);
             for (var i in data) {
                 try {
-                    func(data[i], i);
+                    func && func(data[i], i);
                 } catch (e) {
                     showException2(e);
                 }
@@ -260,13 +261,12 @@ Array.prototype.forEach = Array.prototype.forEach || function(func) {
             }
         } else {
             data = Array.prototype.slice.call(data, 0);
-            V.whileC(function() { return data.shift(); }, func, finalf, false);
+            V.whileC(function() { return data.shift(); }, func, finalf, isSync);
         }
     };
     V.each2 = function(data, func, finalf, isSync) {
-        var i = 0;
         data = Array.prototype.slice.call(data, 0);
-        V.whileC2(function() { return data[i++]; }, func, finalf, false);
+        V.whileC2(function() { return data.shift(); }, func, finalf, isSync);
     };
     //var forfunc = function(v, func) { return func(v.key, v.value); };
     //异步遍历对象的方法
